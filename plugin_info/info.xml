@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<info>
+    <id>arduidom</id>
+    <name>Arduidom</name>
+    <description>Plugin pour utiliser un Arduino avec sketch arduidom</description>
+    <icon>fa fa-bug</icon>
+    <licence>AGPL</licence>
+    <author>Benoit Masquelier</author>
+    <installation>A venir...</installation>
+    <require>1.66</require>
+    <version>0.4</version>
+    <category>automation protocol</category>
+</info>
+
