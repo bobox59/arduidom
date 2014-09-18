@@ -18,8 +18,8 @@ data = ""
 pin1 = ""
 oldpin1 = "x"
 pinvalue = ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", ".", "xxx", "xxx", "xxx", "xxx", "xxx"]
-pinmode = ["z", "z", "z", "z", "z", "z", "z", "z", "z", "z", "z", "z", "z", "z", ".", "z", "z", "z", "z", "z", "z"]
-oldpinvalue = ["y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y"]
+pinmode = ["z", "z", "z", "z", "z", "z", "z", "z", "z", "z", "z", "z", "z", "z", ".", "z", "z", "z", "z", "z", "z", "z"]
+oldpinvalue = ["y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "z"]
 count = 1
 arduino_rx = "aaa"
 currentline = 99
@@ -50,7 +50,7 @@ def print_time(threadName, delay):
         print "pinvalue=" + str(pinvalue)
         if (oldpinvalue != pinvalue):
             cmd = 'nice -n 19 /usr/bin/php /usr/share/nginx/www/jeedom/plugins/arduidom/core/php/jeeArduidom.php '
-            for pinnumber in range(0, 20+1):
+            for pinnumber in range(0, 20):
                 if (pinnumber != 14):
                     cmd += str(pinnumber)
                     cmd += "="
