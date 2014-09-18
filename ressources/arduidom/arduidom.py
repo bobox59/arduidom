@@ -49,12 +49,14 @@ def print_time(threadName, delay):
         print "          D00  D01  D02  D03  D04  D05  D06  D07  D08  D09  D10  D11  D12  D13   x    A0     A1     A2     A3     A4     A5"
         print "pinvalue=" + str(pinvalue)
         if (oldpinvalue != pinvalue):
-            for pinnumber in range(0, 15):
-                cmd = 'nice -n 19 /usr/bin/php /usr/share/nginx/www/jeedom/plugins/arduidom/core/php/jeeArduidom.php '
-                cmd += str(pinnumber)
-                cmd += "="
-                cmd += pinvalue[pinnumber]
-                print(RED + cmd)
+            cmd = 'nice -n 19 /usr/bin/php /usr/share/nginx/www/jeedom/plugins/arduidom/core/php/jeeArduidom.php '
+            for pinnumber in range(0, 20):
+                if (pinnumber != 14):
+                    cmd += str(pinnumber)
+                    cmd += "="
+                    cmd += pinvalue[pinnumber]
+                    cmd += " "
+            print(RED + cmd)
 
         oldpinvalue = pinvalue
         print " pinmode=" + str(pinmode)
