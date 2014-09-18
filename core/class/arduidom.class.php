@@ -68,8 +68,21 @@ class arduidom extends eqLogic {
         $tcpcheck = str_replace("_OK",'',$tcpcheck);
         // throw new Exception(__("Info TCP [" . $tcpcheck . "]", __FILE__));
         log::add('arduidom', 'debug', 'debut des sets');
-        $_logicalId->setValue($tcpcheck);
-        $_logicalId->event($tcpcheck);
+        /*foreach (self::byType('arduidom') as $eqLogic) {
+            if (is_object($eqLogic)) {
+                foreach ($eqLogic->getCmd('info') as $objet) {
+                    $ga=$objet->getConfiguration('KnxObjectGad');
+                    $dpt=$objet->getConfiguration('KnxObjectType');
+                    $con = new EIBConnection($host);
+                    $BusValue=EibdRead($con,$ga);
+                    $objet->event($BusValue);
+                    $objet->setValue($objet->getId());
+                    $objet->save();
+                    //$objet->event($objet->execute());
+                    $con->EIBClose();
+                }
+            }
+        } */
         log::add('arduidom', 'event', 'Mise à jour de ' . $eqLogic->getHumanName() . ' terminée');
 
         return $tcpcheck;
