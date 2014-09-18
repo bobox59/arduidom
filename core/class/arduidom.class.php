@@ -39,6 +39,7 @@ class arduidom extends eqLogic {
 
     public static function start() {
         log::add('arduidom', 'debug', 'start() called');
+        self::pull();
         self::setPinMapping();
     }
 
@@ -59,14 +60,14 @@ class arduidom extends eqLogic {
             if ($config == 'ain') { $CP = $CP . "a";}
         }
         log::add('arduidom', 'debug', 'setPinMapping to ' . $CP);
-        arduidom::sendtoArduino($CP);
+        self::sendtoArduino($CP);
     }
 
 
     public static function getPinValue($_logicalId) {
         log::add('arduidom', 'debug', 'getPinValue(' . $_logicalId . ') called');
         $tcpmsg = "GP" . sprintf("%02s", $_logicalId);
-        $tcpcheck = arduidom::sendtoArduino($tcpmsg);
+        $tcpcheck = self::sendtoArduino($tcpmsg);
         $tcpcheck = str_replace($tcpmsg,'',$tcpcheck);
         $tcpcheck = str_replace("=",'',$tcpcheck);
         $tcpcheck = str_replace("_OK",'',$tcpcheck);
