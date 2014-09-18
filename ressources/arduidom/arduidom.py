@@ -49,11 +49,12 @@ def print_time(threadName, delay):
         cmd = 'nice -n 19 /usr/bin/php /usr/share/nginx/www/jeedom/plugins/arduidom/core/php/jeeArduidom.php '
         for pinnumber in range(0, 20):
             if (pinnumber != 14):
-                if (oldpinvalue[pinnumber] != pinvalue[pinnumber]):
-                    cmd += str(pinnumber)
-                    cmd += "="
-                    cmd += pinvalue[pinnumber]
-                    cmd += " "
+                if (pinmode[pinnumber] == "a" | pinmode[pinnumber] == "i"):
+                    if (oldpinvalue[pinnumber] != pinvalue[pinnumber]):
+                        cmd += str(pinnumber)
+                        cmd += "="
+                        cmd += pinvalue[pinnumber]
+                        cmd += " "
         print(RED + cmd)
         subprocess.Popen(cmd, shell=True)
 
