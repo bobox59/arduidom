@@ -67,12 +67,19 @@ class arduidom extends eqLogic {
         $tcpcheck = str_replace("=",'',$tcpcheck);
         $tcpcheck = str_replace("_OK",'',$tcpcheck);
         // throw new Exception(__("Info TCP [" . $tcpcheck . "]", __FILE__));
-        log::add('arduidom', 'debug', 'getPinValue(' . $_logicalId . ') returns ' . $tcpcheck);
-        log::add('arduidom','debug', 'Mise à jour de la pin ' . $_logicalId . ' a '. $_GET[$cmd->getLogicalId()]);
-        $cmd->setValue($_logicalId);
-        $cmd->event($_logicalId);
-        log::add('arduidom', 'event', 'Mise à jour de ' . $eqLogic->getHumanName() . ' terminée');
-        return $tcpcheck;
+        foreach (eqLogic::byType('arduidom') as $eqLogic){
+            log::add('arduidom', 'error', '$eqLogic = ' . $eqLogic);
+            foreach ($eqLogic->getCmd('info') as $cmd) {
+                log::add('arduidom', 'error', '$cmd = ' . $cmd);
+                if (array_key_exists($cmd->getLogicalId(), $_GET)) {
+                    //if ($cmd->getLogicalId() == 3) {
+                    log::add('arduidom','debug', 'Mise à jour de la pin ' . $cmd->getLogicalId() . ' a '. $_GET[$cmd->getLogicalId()]);
+                    $cmd->setValue($_GET[$cmd->getLogicalId()]);
+                    $cmd->event($_GET[$cmd->getLogicalId()]);
+                    log::add('arduidom', 'event', 'Mise à jour de ' . $eqLogic->getHumanName() . ' terminée');
+                }
+            }
+        }        return $tcpcheck;
     }
 
     public static function setPinValue($_logicalId, $_value) {
