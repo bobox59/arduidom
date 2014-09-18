@@ -55,8 +55,9 @@ def print_time(threadName, delay):
                         cmd += "="
                         cmd += pinvalue[pinnumber]
                         cmd += " "
-        print(RED + cmd)
-        subprocess.Popen(cmd, shell=True)
+        if (cmd != 'nice -n 19 /usr/bin/php /usr/share/nginx/www/jeedom/plugins/arduidom/core/php/jeeArduidom.php '):
+            print(RED + cmd)
+            subprocess.Popen(cmd, shell=True)
 
         oldpinvalue = pinvalue
         #print " pinmode=" + str(pinmode)
