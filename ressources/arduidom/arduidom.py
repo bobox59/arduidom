@@ -57,6 +57,7 @@ def print_time(threadName, delay):
                     cmd += pinvalue[pinnumber]
                     cmd += " "
             print(RED + cmd)
+            subprocess.Popen(cmd, shell=True)
 
         oldpinvalue = pinvalue
         print " pinmode=" + str(pinmode)
@@ -240,6 +241,7 @@ def COMServer(threadName, delay):
                     cmd += "="
                     cmd += pinvalue[pinnumber]
                     print(RED + cmd)
+                    subprocess.Popen(cmd, shell=True)
 
             if line.find("RFD:") > -1:
                 print "Radio Code Received:"
