@@ -25,8 +25,8 @@ function arduidom_install() {
         $cron = new cron();
         $cron->setClass('arduidom');
         $cron->setFunction('pull');
-        $cron->setEnable(0);
-        $cron->setDeamon(0);
+        $cron->setEnable(1);
+        $cron->setDeamon(1);
         $cron->setSchedule('* * * * *');
         $cron->save();
     }
