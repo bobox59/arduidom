@@ -58,13 +58,13 @@ class arduidom extends eqLogic {
 
 
     public static function getPinValue($_logicalId) {
-        log::add('arduidom', 'debug', 'getPinValue(' . $_logicalId . ') return ');
         $tcpmsg = "GP" . sprintf("%02s", $_logicalId);
         $tcpcheck = arduidom::sendtoArduino($tcpmsg);
         $tcpcheck = str_replace($tcpmsg,'',$tcpcheck);
         $tcpcheck = str_replace("=",'',$tcpcheck);
         $tcpcheck = str_replace("_OK",'',$tcpcheck);
         //throw new Exception(__("Info TCP [" . $tcpcheck . "]", __FILE__));
+        log::add('arduidom', 'debug', 'getPinValue(' . $_logicalId . ') returns ' . $tcpcheck);
         return $tcpcheck;
     }
 
@@ -104,7 +104,6 @@ class arduidom extends eqLogic {
 
     public function event() {
         self::pull();
-        //echo "OK\n";
     }
     /*     * *********************Methode d'instance************************* */
 
