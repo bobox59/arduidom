@@ -50,11 +50,9 @@ foreach ($_GET as $key => $value){
 log::add('arduidom', 'debug', 'Trame recu ' . $key . '=' . $value . '  ******************************');
 
 foreach (eqLogic::byType('arduidom') as $eqLogic){
-    log::add('arduidom', 'info', '$eqLogic = ' . $eqLogic);
     foreach ($eqLogic->getCmd('info') as $cmd) {
-        log::add('arduidom', 'info', '$cmd = ' . $cmd);
         if (array_key_exists($cmd->getLogicalId(), $_GET)) {
-        //if ($cmd->getLogicalId() == 3) {
+            //if ($cmd->getLogicalId() == 3) {
             log::add('arduidom','debug', 'Mise à jour de la pin ' . $cmd->getLogicalId() . ' a '. $_GET[$cmd->getLogicalId()]);
             $cmd->setValue($_GET[$cmd->getLogicalId()]);
             $cmd->event($_GET[$cmd->getLogicalId()]);
@@ -62,4 +60,3 @@ foreach (eqLogic::byType('arduidom') as $eqLogic){
         }
     }
 }
-
