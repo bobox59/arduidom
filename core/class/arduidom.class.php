@@ -84,16 +84,12 @@ class arduidom extends eqLogic {
                 }
             }
         }
-
         return $tcpcheck;
     }
 
     public static function setPinValue($_logicalId, $_value) {
-        //global $ARDUPINMAP;
         log::add('arduidom', 'debug', 'setPinValue(' . $_logicalId . ',' . $_value . ') called');
-
         $config = config::byKey('pin::' . $_logicalId, 'arduidom');
-        log::add('arduidom', 'debug', 'setPinMapping(' . $_logicalId . ') ' . $config);
         if ($config == 'disable') { $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value; }
         if ($config == 'out') { $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value; }
         if ($config == 'rout') { $tcpmsg = "SR" . $_value; }
@@ -103,7 +99,7 @@ class arduidom extends eqLogic {
         if ($tcpcheck != $tcpmsg . "_OK") {
             throw new Exception(__("Erreur setPinValue " . $tcpcheck, __FILE__));
         }
-
+        return $tcpcheck;
     }
 
     public static function sendtoArduino($_tcpmsg) {
@@ -162,17 +158,15 @@ class arduidomCmd extends cmd {
     public function execute($_options = null) {
         log::add('arduidom', 'debug', 'execute() called');
         if ($this->getType() == 'action') {
-            log::add('arduidom', 'debug', '1cmd(action) called');
-            // log::add('arduidom', 'debug', '2cmd(action) return ' . arduidom::setPinValue($this->getLogicalId(), $this->getConfiguration('value')));
+            log::add('arduidom', 'debug', 'execute() called on type action');
             return arduidom::setPinValue($this->getLogicalId(), $this->getConfiguration('value'));
         }
         if ($this->getType() == 'info') {
-            log::add('arduidom', 'debug', '1cmd(info) called');
-            //log::add('arduidom', 'debug', '2cmd(info) return ' . arduidom::getPinValue($this->getLogicalId()));
+            log::add('arduidom', 'debug', 'execute() called on type info');
             return arduidom::getPinValue($this->getLogicalId());
         }
-
-        log::add('arduidom', 'debug', 'foreach...');
+        throw new Exception(__("Erreur: BAH J LAI TROUVE ENFIN LUI", __FILE__));
+        log::add('arduidom', 'debug', 'foreach.....................');
         foreach (eqLogic::byType('arduidom') as $eqLogic){
             log::add('arduidom', 'debug', 'by type arduidom');
             foreach ($eqLogic->getCmd('info') as $cmd) {
