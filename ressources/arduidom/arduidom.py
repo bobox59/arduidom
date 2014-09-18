@@ -33,17 +33,15 @@ def print_time(threadName, delay):
     global arduino_rx
     while True:
         time.sleep(delay)
-        count += 1
-        if (count > 2):
-            count = 1
-            print("Send $$RF to Arduino")
-            arduino_rx = ""
-            ArduinoPort.write("$$RF")
-            while (arduino_rx == ""):
-                time.sleep(0.01)
+        #count += 1
+        print("Send $$RF to Arduino")
+        arduino_rx = ""
+        ArduinoPort.write("$$RF")
+        while (arduino_rx == ""):
+            time.sleep(0.01)
 
-            print("arduino_rx=" + arduino_rx)
-            pinvalue = arduino_rx.rsplit(',')
+        print("arduino_rx=" + arduino_rx)
+        pinvalue = arduino_rx.rsplit(',')
 
         print VIOLET + "%s: %s" % ( threadName, time.ctime(time.time()) )
         #print "          D00  D01  D02  D03  D04  D05  D06  D07  D08  D09  D10  D11  D12  D13   x    A0     A1     A2     A3     A4     A5"
