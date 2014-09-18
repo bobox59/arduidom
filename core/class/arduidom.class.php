@@ -92,9 +92,8 @@ class arduidom extends eqLogic {
         //global $ARDUPINMAP;
         log::add('arduidom', 'debug', 'setPinValue(' . $_logicalId . ',' . $_value . ') called');
 
-        $config = config::byKey('pin::' . $logicalId, 'arduidom');
-        log::add('arduidom', 'debug', 'setPinMapping(' . $logicalId . ') ' . $config);
-        if ($config == '') { $CP = $CP . "z";}
+        $config = config::byKey('pin::' . $_logicalId, 'arduidom');
+        log::add('arduidom', 'debug', 'setPinMapping(' . $_logicalId . ') ' . $config);
         if ($config == 'disable') { $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value; }
         if ($config == 'out') { $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value; }
         if ($config == 'rout') { $tcpmsg = "SR" . $_value; }
