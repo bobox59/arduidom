@@ -142,7 +142,7 @@ class arduidomCmd extends cmd {
         log::add('arduidom', 'debug', 'execute() called');
         if ($this->getType() == 'action') {
             log::add('arduidom', 'debug', '1cmd(action) called');
-            //log::add('arduidom', 'debug', '2cmd(action) return ' . arduidom::setPinValue($this->getLogicalId(), $this->getConfiguration('value')));
+            // log::add('arduidom', 'debug', '2cmd(action) return ' . arduidom::setPinValue($this->getLogicalId(), $this->getConfiguration('value')));
             return arduidom::setPinValue($this->getLogicalId(), $this->getConfiguration('value'));
         }
         if ($this->getType() == 'info') {
