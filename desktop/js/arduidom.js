@@ -151,3 +151,14 @@ function addCmdToTable(_cmd) {
     $('#table_cmd tbody tr:last').setValues(_cmd, '.cmdAttr');
     handlePin($('#table_cmd tbody tr:last'));
 }
+
+$('#addStatToTable').on('click', function() {
+    var _cmd = {type: 'info'};
+    _cmd.configuration = {'type':'stat'};
+    addCmdToTable(_cmd);
+});
+$('#addDataToTable').on('click', function() {
+    var _cmd = {type: 'info'};
+    _cmd.configuration = {'type':'data'};
+    addCmdToTable(_cmd);
+});
