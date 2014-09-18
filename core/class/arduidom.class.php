@@ -83,7 +83,6 @@ class arduidom extends eqLogic {
                 }
             }
         } */
-        log::add('arduidom', 'event', 'Mise à jour de ' . $eqLogic->getHumanName() . ' terminée');
 
         return $tcpcheck;
     }
