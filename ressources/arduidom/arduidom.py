@@ -297,7 +297,7 @@ except:
     print "Error with Thread TH-TcpServer"
 
 try:
-    thread.start_new_thread( print_time, ("TH-time", 1))
+    thread.start_new_thread( print_time, ("TH-time", 3))
 except:
     print "Error with Thread TH-Time"
 
