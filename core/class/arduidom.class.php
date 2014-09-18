@@ -68,21 +68,17 @@ class arduidom extends eqLogic {
         $tcpcheck = str_replace("_OK",'',$tcpcheck);
         // throw new Exception(__("Info TCP [" . $tcpcheck . "]", __FILE__));
         log::add('arduidom', 'debug', 'debut des sets');
-        /*foreach (self::byType('arduidom') as $eqLogic) {
-            if (is_object($eqLogic)) {
-                foreach ($eqLogic->getCmd('info') as $objet) {
-                    $ga=$objet->getConfiguration('KnxObjectGad');
-                    $dpt=$objet->getConfiguration('KnxObjectType');
-                    $con = new EIBConnection($host);
-                    $BusValue=EibdRead($con,$ga);
-                    $objet->event($BusValue);
-                    $objet->setValue($objet->getId());
-                    $objet->save();
-                    //$objet->event($objet->execute());
-                    $con->EIBClose();
+        foreach (eqLogic::byType('arduidom') as $eqLogic){
+            foreach ($eqLogic->getCmd('info') as $cmd) {
+                if (array_key_exists($cmd->getLogicalId(), $_GET)) {
+                    //if ($cmd->getLogicalId() == 3) {
+                    log::add('arduidom','debug', 'Mise à jour de la pin ' . $cmd->getLogicalId() . ' a '. $_GET[$cmd->getLogicalId()]);
+                    $cmd->setValue($_GET[$cmd->getLogicalId()]);
+                    $cmd->event($_GET[$cmd->getLogicalId()]);
+                    log::add('arduidom', 'event', 'Mise à jour de ' . $eqLogic->getHumanName() . ' terminée');
                 }
             }
-        } */
+        }
 
         return $tcpcheck;
     }
