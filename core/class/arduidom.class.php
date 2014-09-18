@@ -33,6 +33,10 @@ class arduidom extends eqLogic {
         }
     }
 
+    public static function daemoncheck() {
+        log::add('arduidom', 'debug', 'cron DaemonCheck.');
+    }
+
     public static function start() {
         log::add('arduidom', 'debug', 'start() called');
         self::setPinMapping();

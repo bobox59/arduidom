@@ -47,7 +47,7 @@ foreach ($_GET as $key => $value){
     $array_recu = $array_recu . $key . $value . ' / ';
 }
 
-log::add('arduidom', 'debug', 'Trame recu ' . $key . '=' . $value . '  ******************************');
+//log::add('arduidom', 'debug', 'Trame recu ' . $key . '=' . $value . '  ******************************');
 
 foreach (eqLogic::byType('arduidom') as $eqLogic){
     foreach ($eqLogic->getCmd('info') as $cmd) {
