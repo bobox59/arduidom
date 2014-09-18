@@ -66,48 +66,51 @@ function getPinMapping() {
 function handlePin(tr) {
     if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'in') {
         tr.find('.cmdAttr[data-l1key=type]').value('info');
-        tr.find('.cmdAttr[data-l1key=arduport]').value('arduport?');
-        tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
-        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').hide();
-        //tr.find('.cmdAttr[data-l1key=configuration][data-l2key=code]').hide();
-        tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
         tr.find('.cmdAttr[data-l1key=subType]').value('binary');
-    }
-    if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'rin') {
-        tr.find('.cmdAttr[data-l1key=type]').value('info');
-        tr.find('.cmdAttr[data-l1key=arduport]').value('arduport?');
         tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
         tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').hide();
         //tr.find('.cmdAttr[data-l1key=configuration][data-l2key=code]').hide();
         tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
-        tr.find('.cmdAttr[data-l1key=subType]').value('string');
-    }
-    if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'ain') {
-        tr.find('.cmdAttr[data-l1key=type]').value('info');
-        tr.find('.cmdAttr[data-l1key=arduport]').value('arduport?');
-        tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
-        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').hide();
-        //tr.find('.cmdAttr[data-l1key=configuration][data-l2key=code]').hide();
-        tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
-        tr.find('.cmdAttr[data-l1key=subType]').value('other');
     }
     if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'out') {
         tr.find('.cmdAttr[data-l1key=type]').value('action');
-        tr.find('.cmdAttr[data-l1key=arduport]').value('arduport?');
+        tr.find('.cmdAttr[data-l1key=subType]').value('binary');
         tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').hide();
         tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').hide();
         tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').show();
         //tr.find('.cmdAttr[data-l1key=configuration][data-l2key=code]').hide();
-        tr.find('.cmdAttr[data-l1key=subType]').value('other');
+    }
+    if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'rin') {
+        tr.find('.cmdAttr[data-l1key=type]').value('info');
+        tr.find('.cmdAttr[data-l1key=subType]').value('string');
+        tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
+        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').hide();
+        //tr.find('.cmdAttr[data-l1key=configuration][data-l2key=code]').hide();
+        tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
     }
     if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'rout') {
         tr.find('.cmdAttr[data-l1key=type]').value('action');
-        tr.find('.cmdAttr[data-l1key=arduport]').value('arduport?');
+        tr.find('.cmdAttr[data-l1key=subType]').value('string');
         tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').hide();
         tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').hide();
         tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').show();
         //tr.find('.cmdAttr[data-l1key=configuration][data-l2key=code]').show();
-        tr.find('.cmdAttr[data-l1key=subType]').value('string');
+    }
+    if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'ain') {
+        tr.find('.cmdAttr[data-l1key=type]').value('info');
+        tr.find('.cmdAttr[data-l1key=subType]').value('numeric');
+        tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
+        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').hide();
+        //tr.find('.cmdAttr[data-l1key=configuration][data-l2key=code]').hide();
+        tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
+    }
+    if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'pout') {
+        tr.find('.cmdAttr[data-l1key=type]').value('action');
+        tr.find('.cmdAttr[data-l1key=subType]').value('numeric');
+        tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
+        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').hide();
+        //tr.find('.cmdAttr[data-l1key=configuration][data-l2key=code]').hide();
+        tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
     }
 }
 
@@ -120,12 +123,11 @@ function addCmdToTable(_cmd) {
     tr += '<input class="cmdAttr form-control input-sm" data-l1key="id" style="display : none;">';
     tr += '<input class="cmdAttr form-control input-sm" data-l1key="name"></td>';
     tr += '<td>';
-    tr += '<input class="cmdAttr form-control input-sm" data-l1key="subType" value="binary">';
+    tr += '<input class="cmdAttr form-control input-sm" data-l1key="subType" style=""...">';
     tr += '<select class="cmdAttr form-control input-sm" data-l1key="logicalId">';
     tr += pin_select;
     tr += '</select><br/>';
     tr += '<input class="cmdAttr form-control input-sm" data-l1key="type">';
-    tr += '<input class="cmdAttr form-control input-sm" data-l1key="arduport" disabled>';
     tr += '<td>';
     //tr += '<select class="cmdAttr form-control input-sm" data-l1key="configuration" data-l2key="value">';
     //tr += '<option value="0">{{Arret}}</option>';
