@@ -156,7 +156,7 @@ class arduidomCmd extends cmd {
     }
 
     public function execute($_options = null) {
-        log::add('arduidom', 'debug', 'execute() called');
+        log::add('arduidom', 'debug', 'execute() called by ' . $this);
         if ($this->getType() == 'action') {
             log::add('arduidom', 'debug', 'execute() called on type action');
             return arduidom::setPinValue($this->getLogicalId(), $this->getConfiguration('value'));
