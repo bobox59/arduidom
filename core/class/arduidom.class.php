@@ -89,8 +89,17 @@ class arduidom extends eqLogic {
     }
 
     public static function setPinValue($_logicalId, $_value) {
+        //global $ARDUPINMAP;
         log::add('arduidom', 'debug', 'setPinValue(' . $_logicalId . ',' . $_value . ') called');
-        $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
+
+        $config = config::byKey('pin::' . $logicalId, 'arduidom');
+        log::add('arduidom', 'debug', 'setPinMapping(' . $logicalId . ') ' . $config);
+        if ($config == '') { $CP = $CP . "z";}
+        if ($config == 'disable') { $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value; }
+        if ($config == 'out') { $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value; }
+        if ($config == 'rout') { $tcpmsg = "SR" . $_value; }
+        if ($config == 'pout') { $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value; }
+
         $tcpcheck = arduidom::sendtoArduino($tcpmsg);
         if ($tcpcheck != $tcpmsg . "_OK") {
             throw new Exception(__("Erreur setPinValue " . $tcpcheck, __FILE__));
