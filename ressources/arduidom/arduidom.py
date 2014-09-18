@@ -33,8 +33,8 @@ def print_time(threadName, delay):
     while True:
         time.sleep(delay)
         count += 1
-        if (count > 5):
-            count = 0
+        if (count > 2):
+            count = 1
             print("Send $$RF to Arduino")
             arduino_rx = ""
             ArduinoPort.write("$$RF")
@@ -47,6 +47,15 @@ def print_time(threadName, delay):
         print VIOLET + "%s: %s" % ( threadName, time.ctime(time.time()) )
         print "          D00  D01  D02  D03  D04  D05  D06  D07  D08  D09  D10  D11  D12  D13   x    A0     A1     A2     A3     A4     A5"
         print "pinvalue=" + str(pinvalue)
+        if (oldpinvalue != pinvalue):
+            for pinnumber in range(0, 15):
+                cmd = 'nice -n 19 /usr/bin/php /usr/share/nginx/www/jeedom/plugins/arduidom/core/php/jeeArduidom.php '
+                cmd += pinnumber
+                cmd += "="
+                cmd += pinvalue[pinnumber]
+                print(RED + cmd)
+
+        oldpinvalue = pinvalue
         print " pinmode=" + str(pinmode)
         print "arduino_rx=" + arduino_rx
 
@@ -285,7 +294,7 @@ except:
     print "Error with Thread TH-TcpServer"
 
 try:
-    thread.start_new_thread( print_time, ("TH-time", 2))
+    thread.start_new_thread( print_time, ("TH-time", 1))
 except:
     print "Error with Thread TH-Time"
 
