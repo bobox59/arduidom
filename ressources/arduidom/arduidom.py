@@ -34,7 +34,7 @@ def print_time(threadName, delay):
     while True:
         time.sleep(delay)
         #count += 1
-        print("Send $$RF to Arduino")
+        print(GREEN + "Send $$RF to Arduino")
         arduino_rx = ""
         ArduinoPort.write("$$RF")
         while (arduino_rx == ""):
