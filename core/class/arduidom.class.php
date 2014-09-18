@@ -34,11 +34,13 @@ class arduidom extends eqLogic {
     }
 
     public static function start() {
+        log::add('arduidom', 'debug', 'start() called');
         self::setPinMapping();
     }
 
     public static function setPinMapping() {
         global $ARDUPINMAP;
+        log::add('arduidom', 'debug', 'setPinMapping() called');
         $CP = "CP";
         foreach ($ARDUPINMAP as $logicalId => $pin) {
             $config = config::byKey('pin::' . $logicalId, 'arduidom');
@@ -58,6 +60,7 @@ class arduidom extends eqLogic {
 
 
     public static function getPinValue($_logicalId) {
+        log::add('arduidom', 'debug', 'getPinValue(' . $_logicalId . ') called');
         $tcpmsg = "GP" . sprintf("%02s", $_logicalId);
         $tcpcheck = arduidom::sendtoArduino($tcpmsg);
         $tcpcheck = str_replace($tcpmsg,'',$tcpcheck);
@@ -73,7 +76,7 @@ class arduidom extends eqLogic {
     }
 
     public static function setPinValue($_logicalId, $_value) {
-        log::add('arduidom', 'debug', 'setPinValue(' . $_logicalId . ',' . $_value . ')');
+        log::add('arduidom', 'debug', 'setPinValue(' . $_logicalId . ',' . $_value . ') called');
         $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
         $tcpcheck = arduidom::sendtoArduino($tcpmsg);
         if ($tcpcheck != $tcpmsg . "_OK") {
@@ -83,6 +86,7 @@ class arduidom extends eqLogic {
     }
 
     public static function sendtoArduino($_tcpmsg) {
+        log::add('arduidom', 'debug', 'sendtoArduino(' . $_tcpmsg . ') called');
         $fp = fsockopen("127.0.0.1", 58174, $errno, $errstr, 1);
         if (!$fp) {
             if ($errno == 111) {
@@ -107,6 +111,7 @@ class arduidom extends eqLogic {
     }
 
     public function event() {
+        log::add('arduidom', 'debug', 'event() called');
         self::pull();
     }
     /*     * *********************Methode d'instance************************* */
@@ -134,6 +139,7 @@ class arduidomCmd extends cmd {
     }
 
     public function execute($_options = null) {
+        log::add('arduidom', 'debug', 'execute() called');
         if ($this->getType() == 'action') {
             log::add('arduidom', 'debug', '1cmd(action) called');
             //log::add('arduidom', 'debug', '2cmd(action) return ' . arduidom::setPinValue($this->getLogicalId(), $this->getConfiguration('value')));
