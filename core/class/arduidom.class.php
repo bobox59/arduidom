@@ -26,8 +26,11 @@ class arduidom extends eqLogic {
     /*     * ***********************Methode static*************************** */
 
     public static function pull() {
+        global $ARDUPINMAP;
         log::add('arduidom', 'debug', 'pull() called');
-        arduidom::sendtoArduino("RF");
+        foreach ($ARDUPINMAP as $logicalId => $pin) {
+            arduidom::getPinValue($logicalId);
+        }
     }
 
     public static function start() {
