@@ -67,11 +67,11 @@ class arduidom extends eqLogic {
         $tcpcheck = str_replace("=",'',$tcpcheck);
         $tcpcheck = str_replace("_OK",'',$tcpcheck);
         // throw new Exception(__("Info TCP [" . $tcpcheck . "]", __FILE__));
-
+        log::add('arduidom', 'debug', 'debut des sets');
         $_logicalId->setValue($tcpcheck);
         $_logicalId->event($tcpcheck);
         log::add('arduidom', 'event', 'Mise à jour de ' . $eqLogic->getHumanName() . ' terminée');
-        
+
         return $tcpcheck;
     }
 
