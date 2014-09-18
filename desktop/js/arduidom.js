@@ -120,7 +120,7 @@ function addCmdToTable(_cmd) {
     tr += '<input class="cmdAttr form-control input-sm" data-l1key="id" style="display : none;">';
     tr += '<input class="cmdAttr form-control input-sm" data-l1key="name"></td>';
     tr += '<td>';
-    tr += '<input class="cmdAttr form-control input-sm" data-l1key="subType" value="binary" style="display : none;">';
+    tr += '<input class="cmdAttr form-control input-sm" data-l1key="subType" value="binary">';
     tr += '<select class="cmdAttr form-control input-sm" data-l1key="logicalId">';
     tr += pin_select;
     tr += '</select><br/>';
