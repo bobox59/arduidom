@@ -156,14 +156,25 @@ class arduidomCmd extends cmd {
     }
 
     public function execute($_options = null) {
+        throw new Exception(__("Erreur: BAH J LAI TROUVE ENFIN LUI", __FILE__));
         log::add('arduidom', 'debug', 'execute() called by ' . $this);
         if ($this->getType() == 'action') {
-            log::add('arduidom', 'debug', 'execute() called on type action');
-            return arduidom::setPinValue($this->getLogicalId(), $this->getConfiguration('value'));
+            try{
+               log::add('arduidom', 'debug', 'execute() called on type action');
+               return arduidom::setPinValue($this->getLogicalId(), $this->getConfiguration('value'));
+            } catch (Exception $e) {
+               log::add('arduidom', 'debug', 'execute() ' . $e);
+               return "bad";
+            }
         }
         if ($this->getType() == 'info') {
-            log::add('arduidom', 'debug', 'execute() called on type info');
-            return arduidom::getPinValue($this->getLogicalId());
+            try{
+                log::add('arduidom', 'debug', 'execute() called on type info');
+                return arduidom::getPinValue($this->getLogicalId());
+            } catch (Exception $e) {
+                log::add('arduidom', 'debug', 'execute() ' . $e);
+                return "bad";
+            }
         }
         throw new Exception(__("Erreur: BAH J LAI TROUVE ENFIN LUI", __FILE__));
         log::add('arduidom', 'debug', 'foreach.....................');
@@ -176,6 +187,7 @@ class arduidomCmd extends cmd {
                     log::add('arduidom', 'debug', 'Mise à jour de : ' . $cmd->getConfiguration('value') . ':'. $_GET[$cmd->getConfiguration('value')]);
                     $cmd->setValue($_GET[$cmd->getConfiguration('value')]);
                     $cmd->event($_GET[$cmd->getConfiguration('value')]);
+                    $cmd->save();
                 }
             }
             log::add('arduidom', 'event', 'Mise à jout de ' . $eqLogic->getHumanName() . ' terminée');

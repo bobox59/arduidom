@@ -69,7 +69,6 @@ function handlePin(tr) {
         tr.find('.cmdAttr[data-l1key=subType]').value('binary');
         tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
         tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').hide();
-        //tr.find('.cmdAttr[data-l1key=configuration][data-l2key=code]').hide();
         tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
     }
     if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'out') {
@@ -78,14 +77,12 @@ function handlePin(tr) {
         tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').hide();
         tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').hide();
         tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').show();
-        //tr.find('.cmdAttr[data-l1key=configuration][data-l2key=code]').hide();
     }
     if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'rin') {
         tr.find('.cmdAttr[data-l1key=type]').value('info');
         tr.find('.cmdAttr[data-l1key=subType]').value('string');
         tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
         tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').hide();
-        //tr.find('.cmdAttr[data-l1key=configuration][data-l2key=code]').hide();
         tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
     }
     if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'rout') {
@@ -94,14 +91,12 @@ function handlePin(tr) {
         tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').hide();
         tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').hide();
         tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').show();
-        //tr.find('.cmdAttr[data-l1key=configuration][data-l2key=code]').show();
     }
     if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'ain') {
         tr.find('.cmdAttr[data-l1key=type]').value('info');
         tr.find('.cmdAttr[data-l1key=subType]').value('numeric');
         tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
         tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').hide();
-        //tr.find('.cmdAttr[data-l1key=configuration][data-l2key=code]').hide();
         tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
     }
     if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'pout') {
@@ -109,7 +104,6 @@ function handlePin(tr) {
         tr.find('.cmdAttr[data-l1key=subType]').value('numeric');
         tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
         tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').hide();
-        //tr.find('.cmdAttr[data-l1key=configuration][data-l2key=code]').hide();
         tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
     }
 }
@@ -152,7 +146,7 @@ function addCmdToTable(_cmd) {
     handlePin($('#table_cmd tbody tr:last'));
 }
 
-$('#addStatToTable').on('click', function() {
+/*$('#addStatToTable').on('click', function() {
     var _cmd = {type: 'info'};
     _cmd.configuration = {'type':'stat'};
     addCmdToTable(_cmd);
@@ -162,3 +156,4 @@ $('#addDataToTable').on('click', function() {
     _cmd.configuration = {'type':'data'};
     addCmdToTable(_cmd);
 });
+*/
