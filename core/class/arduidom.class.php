@@ -70,11 +70,11 @@ class arduidom extends eqLogic {
         log::add('arduidom', 'debug', 'debut des sets');
         foreach (eqLogic::byType('arduidom') as $eqLogic){
             foreach ($eqLogic->getCmd('info') as $cmd) {
-                if (array_key_exists($cmd->getLogicalId(), $_GET)) {
+                if (array_key_exists($cmd->getLogicalId(), $_logicalId)) {
                     //if ($cmd->getLogicalId() == 3) {
-                    log::add('arduidom','debug', 'Mise à jour de la pin ' . $cmd->getLogicalId() . ' a '. $_GET[$cmd->getLogicalId()]);
-                    $cmd->setValue($_GET[$cmd->getLogicalId()]);
-                    $cmd->event($_GET[$cmd->getLogicalId()]);
+                    log::add('arduidom','debug', 'Mise à jour de la pin ' . $cmd->getLogicalId() . ' a '. $tcpcheck);
+                    $cmd->setValue($tcpcheck);
+                    $cmd->event($tcpcheck);
                     log::add('arduidom', 'event', 'Mise à jour de ' . $eqLogic->getHumanName() . ' terminée');
                 }
             }
