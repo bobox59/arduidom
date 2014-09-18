@@ -66,7 +66,7 @@ class arduidom extends eqLogic {
         $tcpcheck = str_replace($tcpmsg,'',$tcpcheck);
         $tcpcheck = str_replace("=",'',$tcpcheck);
         $tcpcheck = str_replace("_OK",'',$tcpcheck);
-        //throw new Exception(__("Info TCP [" . $tcpcheck . "]", __FILE__));
+        // throw new Exception(__("Info TCP [" . $tcpcheck . "]", __FILE__));
         log::add('arduidom', 'debug', 'getPinValue(' . $_logicalId . ') returns ' . $tcpcheck);
         log::add('arduidom','debug', 'Mise à jour de la pin ' . $cmd->getLogicalId() . ' a '. $_GET[$cmd->getLogicalId()]);
         $cmd->setValue($_logicalId);
