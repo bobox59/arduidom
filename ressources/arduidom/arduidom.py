@@ -27,6 +27,7 @@ radiorxpin = 0
 
 def print_time(threadName, delay):
     global pinvalue
+    global oldpinvalue
     global pinmode
     global count
     global arduino_rx
