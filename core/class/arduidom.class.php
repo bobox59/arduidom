@@ -33,8 +33,8 @@ class arduidom extends eqLogic {
         }
     }
 
-    public static function daemoncheck() {
-        log::add('arduidom', 'debug', 'cron DaemonCheck.');
+    public static function checkdaemon() {
+        log::add('arduidom', 'debug', 'cron Daemon Check.');
     }
 
     public static function start() {
