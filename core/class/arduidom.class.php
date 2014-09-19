@@ -158,22 +158,28 @@ class arduidomCmd extends cmd {
     }
 
     public function execute($_options = null) {
-        exec('echo "test" >> /tmp/arduidom');
+        exec('echo "execute 1" >> /tmp/arduidom');
         log::add('arduidom', 'debug', 'execute() called by ' . $this);
+        exec('echo "execute 2" >> /tmp/arduidom');
         if ($this->getType() == 'action') {
             try{
-               log::add('arduidom', 'debug', 'execute() called on type action');
-               return arduidom::setPinValue($this->getLogicalId(), $this->getConfiguration('value'));
+                exec('echo "execute 3" >> /tmp/arduidom');
+                log::add('arduidom', 'debug', 'execute() called on type action');
+                exec('echo "execute 4" >> /tmp/arduidom');
+                return arduidom::setPinValue($this->getLogicalId(), $this->getConfiguration('value'));
             } catch (Exception $e) {
-               log::add('arduidom', 'debug', 'execute() ' . $e);
+                exec('echo "execute 5" >> /tmp/arduidom');
+                log::add('arduidom', 'debug', 'execute() ' . $e);
                return "bad";
             }
         }
         if ($this->getType() == 'info') {
             try{
+                exec('echo "execute 6" >> /tmp/arduidom');
                 log::add('arduidom', 'debug', 'execute() called on type info');
                 return arduidom::getPinValue($this->getLogicalId());
             } catch (Exception $e) {
+                exec('echo "execute 7" >> /tmp/arduidom');
                 log::add('arduidom', 'debug', 'execute() ' . $e);
                 return "bad";
             }
