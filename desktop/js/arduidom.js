@@ -117,7 +117,7 @@ function addCmdToTable(_cmd) {
     tr += '<input class="cmdAttr form-control input-sm" data-l1key="id" style="display : none;">';
     tr += '<input class="cmdAttr form-control input-sm" data-l1key="name"></td>';
     tr += '<td>';
-    tr += '<input class="cmdAttr form-control input-sm" data-l1key="subType" style=""...">';
+    tr += '<input class="cmdAttr form-control input-sm" data-l1key="subType" style="display : none;">';
     tr += '<select class="cmdAttr form-control input-sm" data-l1key="logicalId">';
     tr += pin_select;
     tr += '</select><br/>';
@@ -127,7 +127,7 @@ function addCmdToTable(_cmd) {
     //tr += '<option value="0">{{Arret}}</option>';
     //tr += '<option value="1">{{Marche}}</option>';
     //tr += '</select>';
-    tr += '<input class="cmdAttr form-control input-sm" data-l1key="configuration" data-l2key="value">';
+    tr += '<input class="cmdAttr form-control input-sm" data-l1key="configuration" data-l2key="value" disabled>';
     tr += '</td>';
     tr += '</td>';
     tr += '<td>';

@@ -125,6 +125,7 @@ class arduidom extends eqLogic {
             }
             fclose($fp);
         }
+    return "BAD";
     }
 
     public function event() {
@@ -192,7 +193,7 @@ class arduidomCmd extends cmd {
             log::add('arduidom', 'event', 'Mise à jout de ' . $eqLogic->getHumanName() . ' terminée');
         }
 
-
+    return "BAD";
     }
 
 
