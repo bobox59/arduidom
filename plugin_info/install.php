@@ -20,11 +20,11 @@ require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
 function arduidom_install() {
     arduidom::setPinMapping();
-    $cron = cron::byClassAndFunction('arduidom', 'pull');
+    $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
     if (!is_object($cron)) {
         $cron = new cron();
         $cron->setClass('arduidom');
-        $cron->setFunction('pull');
+        $cron->setFunction('checkdaemon');
         $cron->setEnable(1);
         $cron->setDeamon(1);
         $cron->setSchedule('* * * * * *');
@@ -34,11 +34,11 @@ function arduidom_install() {
 
 function arduidom_update() {
     arduidom::setPinMapping();
-    $cron = cron::byClassAndFunction('arduidom', 'pull');
+    $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
     if (!is_object($cron)) {
         $cron = new cron();
         $cron->setClass('arduidom');
-        $cron->setFunction('pull');
+        $cron->setFunction('checkdaemon');
         $cron->setEnable(1);
         $cron->setDeamon(1);
         $cron->setSchedule('* * * * *');
@@ -48,7 +48,7 @@ function arduidom_update() {
 }
 
 function arduidom_remove() {
-    $cron = cron::byClassAndFunction('arduidom', 'pull');
+    $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
     if (is_object($cron)) {
         $cron->remove();
     }
