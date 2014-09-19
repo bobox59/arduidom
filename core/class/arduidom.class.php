@@ -159,7 +159,7 @@ class arduidomCmd extends cmd {
 
     public function execute($_options = null) {
         exec('echo "execute 1" >> /tmp/arduidom');
-        log::add('arduidom', 'debug', 'execute() called by ' . $this);
+        log::add('arduidom', 'debug', 'execute() called');
         exec('echo "execute 2" >> /tmp/arduidom');
         if ($this->getType() == 'action') {
             try{
