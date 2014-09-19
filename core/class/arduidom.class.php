@@ -156,7 +156,6 @@ class arduidomCmd extends cmd {
     }
 
     public function execute($_options = null) {
-        throw new Exception(__("Erreur: BAH J LAI TROUVE ENFIN LUI", __FILE__));
         log::add('arduidom', 'debug', 'execute() called by ' . $this);
         if ($this->getType() == 'action') {
             try{
