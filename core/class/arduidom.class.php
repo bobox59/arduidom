@@ -34,6 +34,7 @@ class arduidom extends eqLogic {
     }
 
     public static function checkdaemon() {
+        exec('echo "test checkdaemon" >> /tmp/arduidom');
         log::add('arduidom', 'debug', 'cron Daemon Check.');
     }
 
@@ -157,6 +158,7 @@ class arduidomCmd extends cmd {
     }
 
     public function execute($_options = null) {
+        exec('echo "test" >> /tmp/arduidom');
         log::add('arduidom', 'debug', 'execute() called by ' . $this);
         if ($this->getType() == 'action') {
             try{
