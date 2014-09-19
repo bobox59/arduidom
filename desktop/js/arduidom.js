@@ -127,7 +127,7 @@ function addCmdToTable(_cmd) {
     //tr += '<option value="0">{{Arret}}</option>';
     //tr += '<option value="1">{{Marche}}</option>';
     //tr += '</select>';
-    tr += '<input class="cmdAttr form-control input-sm" data-l1key="configuration" data-l2key="value" disabled>';
+    tr += '<input class="cmdAttr form-control input-sm" data-l1key="configuration" data-l2key="value">';
     tr += '</td>';
     tr += '</td>';
     tr += '<td>';
