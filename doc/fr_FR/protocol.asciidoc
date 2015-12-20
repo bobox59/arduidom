@@ -1,0 +1,87 @@
+Au démarrage, l'arduino lit la dernière configuration des PIN dans l'eeprom ou la remplace à chaque nouvelle config envoyée par le plugin. Il les stocke dans l'eeprom puis les applique.
+Seul les PIN  dits « INT » peuvent être configuré en Entrée Radio car ils ont la capacité de passer prioritaire dans le programme en cours et donc améliore la lecture des code radio dans un sketch déjà bien chargé.
+Les pins 0 et 1 sont  les PIN tx0/rx0 sur tous les modèles Arduino ce qui correspond au port série matériel directement reliés à la communication USB, donc mettre en z (Désactivées)
+
+=== Configuration des PIN ===
+Lors de la configuration des PIN dans Jeedom le démon envoi une trame sur le port série
+ CP01234....
+CP = Configurer Pins
+
+0 à 13 = Pins Digitales
+
+14 à 19 = Pins Analogiques
+
+Pour chaque pins, un mode:
+
+z = Désactivée, i = Entrée Digitale, o = Sortie Digitale, p = Sortie PWM, r = Entrée Radio RX, t = Sortie Radio TX
+
+'''Exemple :'''
+ CPzzriiiiiitooooaaaazz
+Cette commande configure l'arduino en :
+
+pin 2 = Radio Récepteur
+
+pin 3 à 8 = Entrées digitales
+
+pin 9 = Sortie Radio Emetteur
+
+pin 10 à 13 = Sorties Digitales
+
+Entrées A0 à A2 = Entrées Analogiques
+
+Entrées A3 à A5 = Désactivées
+
+=== <br>Envoi des états/valeurs à l’Arduino ===
+Une fois configuré, l'arduino attend les ordres :
+
+'''SP= Set Pin'''
+
+Si le PIN est configuré en i ou o (Entrée digitale ou Sortie digitale)
+
+2 bytes pour le PIN
+
+1 byte pour la valeur
+
+<u>Exemple:</u>
+ SP131
+Mettre le PIN 13 à l'état Haut (allume la LED intégrée à l'arduino)
+
+Si le PIN est configuré en p (Sortie pwm)
+
+2 bytes pour la pin
+
+3 bytes pour la valeur
+ SP05123
+Mettre le PIN 5 en sortie pwm = 123
+
+'''SR= Send Radio'''
+
+1 byte sur le mode
+
+1 à 50 bytes pour la valeur
+
+<u>Exemple:</u>
+ SRT001100110
+envoie le code radio TriState 001100110 sur le PIN configuré en t RadioTX
+
+=== Réception des états/valeurs depuis l’Arduino ===
+'''RF=''' Rafraichir les données (pull)
+
+RF renvoie un tableau avec les valeurs de chaque PINS
+ '1', '0', '0', '1', '0', '0', '0', '0', '0', '0', '1', '0', '0', '0', 'x', '1023', '1022', '1023', '0', '128', '230'
+Il faut donc comprendre : pin0 et 1 = USB, pin2 = 0, pin3=1, pin4 à 9 = 0, pin10 = 1, pin11 à 13 = 0 puis les Pins A0 à A2 = 1023, pin A3=0, pinA4 = 128, pinA5 = 230
+
+'''HI'''(équivaut à un Ping réseau, HI renvoie un HELLO)
+
+Répond HELLO
+
+=== Réception de données radio ===
+Lors d'une réception de données radios l'arduino renvoie un code RFD de ce type:
+ RFD:data:A:adresse:P:protocole
+<u>Exemple :</u>
+ RFD:4128768:A:1:P:1
+'''P:1''' signifie que le code reçu est un Tristate (prises télécommandées par ex.)
+
+Un code radio Tristate 4128768 a été reçu, le bloc Adresse n’étant pas utilisé dans cet exemple. Le plugin effectue la conversion du Data en Tristate dans le log du plugin ou sont regroupés tous les code reçus. (arduidom.message) :
+ 2015-01-20 15:17:26 => 2 => RFD:3125489:A:1:P:1 (TRISTATE : T00011100110F)
+ 2015-01-20 15:30:47 => 2 => RFD:3125496:A:1:P:1 (TRISTATE : T000011100110)

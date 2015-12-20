@@ -1,0 +1,39 @@
+Après l'installation du plugin vous devez l'activer et préparer l'arduino depuis la page de configuration (Général/Plugins/Arduidom). Une fois le démon démarré il convient d’envoyer la configuration des PIN à l’EEPROM de l’Arduino.
+
+=== Configuration Générale ===
+1. Activez le plugin.
+
+2. Sélectionnez le model d'Arduino. ATENTION A NE PAS VOUS TROMPER ICI !!
+
+3. Sélectionnez le port repéré dans les prérequis.
+
+4. Sauvegardez.
+
+5. Téléversez le sketch. (Sauf si vous l’avez déjà fait manuellement)
+
+image::../images/Arduidom_Wiki_3-1.png[]
+
+=== Configuration des PIN ===
+La configuration des PIN est une partie très importante pour le fonctionnement du système. C’est ici que vous définissez quels PIN sert à quoi pour permettre au plugin de les configurer dans l’EEPROM de l’Arduino. Sans cette configuration l’Arduino n’activera aucuns de ses PIN et vous n’aurrez aucun choix possible dans les menu déroulant pendant la création d’un équipement.
+Rendez-vous sur la page Plugins/Protocol Domotique/Arduidom et sélectionnez « Configuration des PIN ». Un tableau vous propose de sélectionner le mode de fonctionnement de vos PIN, chaque PIN a ses particularités tous ne sont pas compatible avec toutes les fonctions ci-dessous :
+
+'''''Désactivée ''  '''               Vous n’avez rien connecté ou vous l’utilisez sur du code perso dans le sketch.
+
+'''''Entrée Digitale    '''''        Pour remonter l’état 1/0 en entrée de la PIN (bouton, radar IR…).
+
+'''''Sortie Digitale  '''''           Pour piloter la sortie à l’état 1/0 de la PIN (Relais, LED…).
+
+'''''Entrée Analogique'''''       Pour remonter l’état 0/1024 lu par l’entrée analogique (photorésistance, thermistance, capteur analogique…)
+
+'''''Sortie PWM     '''''           Pour piloter la sortie PWM de 0/1024 (bandeau LED, dimmer DIY…)
+
+'''''Récepteur Radio '''''              Pour connecter la PIN Data de votre récepteur 433mhz.
+
+'''''Emetteur Radio '''''               Pour connecter la PIN Data de votre émetteur 433mhz.
+
+'''''Entrée Virtuelle  '''''         Pour remonter une valeur « float » (ex : -12.55) depuis la partie perso de votre sketch.
+
+'''''Sortie Virtuelle '''''           Pour envoyer une valeur « float » (ex : -12.55) disponible dans Jeedom à la partie perso de votre sketch.
+
+'''''Réservé DHT  '''''            Non configurable depuis Jeedom il vous indique le numéro de PIN à choisir dans votre équipement si vous utilisez les sondes DHT.
+image::../images/Arduidom_Wiki_3-3.png[]

@@ -19,32 +19,40 @@
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
 function arduidom_install() {
-    arduidom::setPinMapping();
+    arduidom::start();
     $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
     if (!is_object($cron)) {
         $cron = new cron();
         $cron->setClass('arduidom');
         $cron->setFunction('checkdaemon');
         $cron->setEnable(1);
-        $cron->setDeamon(1);
-        $cron->setSchedule('* * * * * *');
+        $cron->setDeamon(0);
+        $cron->setSchedule('* * * * *');
         $cron->save();
     }
+    @exec("sudo usermod -G dialout www-data");
 }
 
 function arduidom_update() {
-    arduidom::setPinMapping();
+    arduidom::stopdaemon();
+    $MigrationCheck = config::byKey('db_version', 'arduidom', 0);
+    if ($MigrationCheck < 108) {
+        arduidom::MigrateDatas();
+        arduidom::start();
+    }
+    arduidom::startdaemon();
     $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
     if (!is_object($cron)) {
         $cron = new cron();
         $cron->setClass('arduidom');
         $cron->setFunction('checkdaemon');
         $cron->setEnable(1);
-        $cron->setDeamon(1);
+        $cron->setDeamon(0);
         $cron->setSchedule('* * * * *');
         $cron->save();
     }
     $cron->stop();
+    @exec("sudo usermod -G dialout www-data");
 }
 
 function arduidom_remove() {
@@ -52,6 +60,14 @@ function arduidom_remove() {
     if (is_object($cron)) {
         $cron->remove();
     }
+    arduidom::stopdaemon(1);
+    arduidom::stopdaemon(2);
+    arduidom::stopdaemon(3);
+    arduidom::stopdaemon(4);
+    arduidom::stopdaemon(5);
+    arduidom::stopdaemon(6);
+    arduidom::stopdaemon(7);
+    arduidom::stopdaemon(8);
 }
 
 ?>
