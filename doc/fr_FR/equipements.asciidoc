@@ -1,0 +1,11 @@
+Cas pratique d'utilisation d'une prise radio:
+Sur le plugin Arduidom, on crée un objet, puis on lui crée deux commandes (OFF et ON)
+on leur attribue la pin qui sers a l'envoi Radio (Emetteur 433MHz)
+On reprend le code T011100001000 recu dans le log arduidom, qu'on colle dans la partie Données de la commande ON
+On reprend le code T011100000000 recu dans le log arduidom, qu'on colle dans la partie Données de la commande OFF
+Voila, cliquer sur les Test, normalement la prise va s'allumer ou s'eteindre.
+Pour l'utilisation des entrées, je passe beaucoup par des virtuels (plugin)
+J'y ai prealablement créé une commande nommée Recepteur Radio dans mon plugin avec la pin Recepteur Radio 433MHz.
+Je retourne dans le virtuel, et j'y crée une commande info, avec ceci comme valeur:
+ [Detecteurs][Recepteur Radio][RadioRX]#=RFD:4128768:A:1:P:1
+Ca aura pour effet de lire cette entrée uniquement a reception du code radio correspondant. (utile pour utiliser des detecteurs infrarouge/contacts).
