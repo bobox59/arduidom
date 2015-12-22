@@ -35,7 +35,7 @@ if ($daemonRunning != 1) {
         60%
     </div>
 </div>
-<pre id='pre_ardulog' style='overflow: auto; height: 95%;with:90%;'></pre>
+<pre id='pre_ardulog' style='overflow: auto; height: 95%;width:90%;'></pre>
 
 <script>
     getArduidomCodeLearn(1)

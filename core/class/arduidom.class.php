@@ -442,7 +442,6 @@ class arduidom extends eqLogic
 
     public static function setPinValue($_logicalId, $_value)
     {
-        $General_Debug = (file_exists("/tmp/arduidom_debug_mode_on"));
         $arduid = 0;
         if ($_logicalId > 999) {
             $arduid = $_logicalId[0];

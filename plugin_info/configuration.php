@@ -118,7 +118,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                             <input class="form-control pull-right" id="in_compileLogSearch<?php echo $i ?>" style="width : 300px;" placeholder="{{Rechercher}}" />
                         </div>
                         <div class="col-lg-12">
-                            <pre id='pre_compilelog<?php echo $i ?>' style='overflow: auto; height: 50%;with:90%;'></pre>
+                            <pre id='pre_compilelog<?php echo $i ?>' style='overflow: auto; height: 50%;width:90%;'></pre>
                         </div>
                     </div>
                 </fieldset>
@@ -258,7 +258,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                                 log : 'arduidom_log<?php echo $i ?>',
                                 display : $('#pre_compilelog<?php echo $i ?>'),
                                 search : $('#in_compileLogSearch<?php echo $i ?>'),
-                                control : $('#bt_compileLogStopStart<?php echo $i ?>'),
+                                control : $('#bt_compileLogStopStart<?php echo $i ?>')
                             });
                         }
                     });
@@ -286,7 +286,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                     log : 'arduidom_log<?php echo $i ?>',
                     display : $('#pre_compilelog<?php echo $i ?>'),
                     search : $('#in_compileLogSearch<?php echo $i ?>'),
-                    control : $('#bt_compileLogStopStart<?php echo $i ?>'),
+                    control : $('#bt_compileLogStopStart<?php echo $i ?>')
                 });
             }
         });
@@ -296,7 +296,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                 type: 'POST',
                 url: 'plugins/arduidom/core/ajax/arduidom.ajax.php',
                 data: {
-                    action: 'CompileArduino<?php echo $i ?>',
+                    action: 'CompileArduino<?php echo $i ?>'
                 },
                 dataType: 'json',
                 error: function (request, status, error) {
@@ -311,7 +311,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                         log : 'arduidom_log<?php echo $i ?>',
                         display : $('#pre_compilelog<?php echo $i ?>'),
                         search : $('#in_compileLogSearch<?php echo $i ?>'),
-                        control : $('#bt_compileLogStopStart<?php echo $i ?>'),
+                        control : $('#bt_compileLogStopStart<?php echo $i ?>')
                     });
                 }
             });

@@ -96,6 +96,8 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', '1');
                     // R√©glage des Pins PWM, DIGITAL, ANALOGIQUE et INT (compatible r√©cepteur radio)
                     $pinPWM = 0;
                     $pinINT = 0;
+                    $pinANA = 0;
+                    $pinDIG = 0;
                     //DUO
                     if ($model == "due") {
                         $pinDIG = 54;

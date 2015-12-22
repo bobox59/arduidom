@@ -26,7 +26,7 @@ echo '<div class="alert alert-warning">{{En attente...}}</div>';
 <a class="btn btn-warning pull-right" data-state="1" id="bt_compileLogStopStart"><i class="fa fa-pause"></i> {{Pause}}</a>
 <input class="form-control pull-right" id="in_compileLogSearch" style="width : 300px;" placeholder="{{Rechercher}}" />
 <br/><br/><br/>
-<pre id='pre_compilelog' style='overflow: auto; height: 80%;with:90%;'></pre>
+<pre id='pre_compilelog' style='overflow: auto; height: 80%;width:90%;'></pre>
 
 
 <script>

@@ -25,7 +25,7 @@ if (!isConnect('admin')) {
 ?>
 
 
-<pre id='pre_ardulog' style='overflow: auto; height: 95%;with:90%;'></pre>
+<pre id='pre_ardulog' style='overflow: auto; height: 95%;width:90%;'></pre>
 
 
 <script>

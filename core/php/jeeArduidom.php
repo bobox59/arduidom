@@ -18,6 +18,7 @@
 require_once dirname(__FILE__) . "/../../../../core/php/core.inc.php";
 $ardulogfile = dirname(__FILE__) . "/../../../../log/arduidom.message";
 $arduid = 0;
+$id = "";
 $time_before = microtime(true) ;
 //$bench_id = 0;
 //$bench_id++; $elapsed_time = microtime(true) - $time_before; log::add('arduidom','debug', '                                                                                   benchmark b(' . $bench_id . '): ' . ($elapsed_time * 1000) . " ms ");

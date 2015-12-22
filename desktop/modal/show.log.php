@@ -41,7 +41,7 @@ if (!isConnect('admin')) {
     <?php for ($i=1; $i < 9; $i++) { ?>
         <div class="tab-pane<?php if ($i == 1) echo " active" ?>" id="tab_<?php echo $i ?>">
             <hr size="14" color="blue">ARDUINO N° <?php echo $i ?>
-            <pre id='pre_ardulog<?php echo $i ?>' style='overflow: auto; height: 95%;with:90%;'></pre>
+            <pre id='pre_ardulog<?php echo $i ?>' style='overflow: auto; height: 95%;width:90%;'></pre>
         </div>
     <?php } ?>
 </div>
