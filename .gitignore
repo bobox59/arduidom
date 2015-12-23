@@ -18,7 +18,6 @@ ressources/._.DS_Store
 ressources/._.idea
 ressources/._avrdude.conf
 ressources/._avrdude.uno.cmd
-ressources/Sketch.zip
 ressources/arduidom.zip
 ressources/*.hex
 ressources/*.kill
