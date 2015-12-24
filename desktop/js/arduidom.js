@@ -229,7 +229,6 @@ function handlePin(tr) {
     tr.find('.cmdAttr[data-l1key=type]').prop('disabled', true);
     tr.find('.cmdAttr[data-l1key=subType]').prop('disabled', true);
     tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').hide();
-    console.log("Value hide...");
     tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').hide();
     tr.find('.cmdAttr[id="bt_LearnCode2"]').hide();
     tr.find('.cmdAttr[data-l1key=unite]').hide();
@@ -255,14 +254,21 @@ function handlePin(tr) {
     if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'out') {
         console.log("data Mode is : out");
         console.log("type:" + (tr.find('.cmdAttr[data-l1key=type]').value != ''));
-        if (tr.find('.cmdAttr[data-l1key=type]').value == '') tr.find('.cmdAttr[data-l1key=type]').value('action');
+        if (tr.find('.cmdAttr[data-l1key=type]').value == '') {
+            tr.find('.cmdAttr[data-l1key=type]').value('action');
+        }
+        if (tr.find('.cmdAttr[data-l1key=type]').value == 'action') {
+            tr.find('.cmdAttr[data-l1key=configuration][data-l2key=value]').show();
+        }
+        if (tr.find('.cmdAttr[data-l1key=type]').value == 'info') {
+            tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
+            tr.find('.cmdAttr[data-l1key=unite]').show();
+            tr.find('.cmdAttr[data-l1key=configuration][data-l2key=minValue]').show();
+            tr.find('.cmdAttr[data-l1key=configuration][data-l2key=maxValue]').show();
+            tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
+        }
         tr.find('.cmdAttr[data-l1key=type]').prop('disabled', false);
 
-        if (tr.find('.cmdAttr[data-l1key=type]').value == 'info') {
-            tr.find('.cmdAttr[data-l1key=unite]').show();
-        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=minValue]').show();
-        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=maxValue]').show();
-        }
 
 
         if (tr.find('.cmdAttr[data-l1key=subType]').value == '') tr.find('.cmdAttr[data-l1key=subType]').value('other');
@@ -388,6 +394,16 @@ function addCmdToTable(_cmd) {
     tr += '</tr>';
     $('#table_cmd tbody').append(tr);
     $('#table_cmd tbody tr:last').setValues(_cmd, '.cmdAttr');
+    if (isset(_cmd.configuration.requestType)) {
+        $('#table_cmd tbody tr:last .cmdAttr[data-l1key=configuration][data-l2key=requestType]').value(init(_cmd.configuration.requestType));
+        $('#table_cmd tbody tr:last .cmdAttr[data-l1key=configuration][data-l2key=requestType]').trigger('change');
+    }
+
+    if (isset(_cmd.type)) {
+        $('#table_cmd tbody tr:last .cmdAttr[data-l1key=type]').value(init(_cmd.type));
+    }
+    jeedom.cmd.changeType($('#table_cmd tbody tr:last'), init(_cmd.subType));
+    initTooltips();
     handlePin($('#table_cmd tbody tr:last'));
 }
 
