@@ -17,17 +17,9 @@ import optparse
 import sys
 import signal
 
-import pprint
 
-data = ""
-dhtvalue = 0
-pinvalue = ["z"]
-oldpinvalue = ["z"]
-xl = 0
-while xl < 101:
-    pinvalue.append("z")
-    oldpinvalue.append("z")
-    xl += 1
+pinvalue = []
+oldpinvalue = []
 
 VIOLET = '\033[95m'
 BLUE = '\033[94m'
@@ -35,24 +27,14 @@ GREEN = '\033[92m'
 YELLOW = '\033[93m'
 RED = '\033[91m'
 WHITE = '\033[0m'
-radiorxpin = 0
-compteur = 0
-pyfolder = os.path.dirname(os.path.realpath(__file__)) + "/"
 
 ARDUINO_ID = 1
 
-LOG_FILENAME = pyfolder + '../../../log/arduidom_daemon_' + str(ARDUINO_ID)
-KILL_FILENAME = pyfolder + 'arduidom' + str(ARDUINO_ID) + '.kill'
-PID_FILENAME = pyfolder + 'arduidom' + str(ARDUINO_ID) + '.pid'
-compteurraz = 0
-lastradiosend = datetime.now()
-readinputs = 0
-mypid = os.getpid()
+lastradiosend = 0
 ARDUINO_CPOK = 0
 ARDUINO_SPOK = 0
 ARDUINO_PINGOK = 0
 cnt_timeout = 0
-_externalip = ''
 
 
 def log(level, message):
@@ -64,7 +46,7 @@ def cli_parser(argv=None):
    parser.add_option("-d", "--device", dest="deviceport", default="none", type="string", help="device port Arduino (ex:/dev/ttyACM0)")
    parser.add_option("-l", "--loglevel", dest="loglevel", default=1, type="string", help="Log Level")
    parser.add_option("-a", "--apikey", dest="apikey", default="none", type="string", help="JeeDom Api Key")
-   parser.add_option("-e", "--extip", dest="_externalip", default='', type="string", help="MASTER JeeDom IP")
+   parser.add_option("-e", "--extip", dest="externalip", default='', type="string", help="MASTER JeeDom IP")
    parser.add_option("-n", dest="nodaemon", default="no", help="Mettre -nd pour le lancer en DEBUG")
    return parser.parse_args(argv)
 
@@ -167,8 +149,6 @@ def handler(options,clientsocket, clientaddr):
 
 
 def tcpServerThread(options,threadName):
-    global pinvalue
-    global arduino_rx
     log(0, "Thread " + threadName + " Started.")
     host = "0.0.0.0"
     port = 58200 + ARDUINO_ID
@@ -193,14 +173,10 @@ def COMServer(options,threadName):
     global pinvalue
     global oldpinvalue
     global arduino_rx
-    global radiorxpin
-    global compteur
-    global compteurraz
     global lastradiosend
     global ARDUINO_CPOK
     global ARDUINO_SPOK
     global ARDUINO_PINGOK
-    global _externalip
     log(0, "Thread " + threadName + " Started.")
 
     while True:  # This is the main loop of program...................................................................
@@ -233,8 +209,8 @@ def COMServer(options,threadName):
                     #log(2, "RF values => FOUND")
                     pinvalue = line.rsplit(',')
 
-                    if _externalip != "":
-                        cmd = 'http://' + _externalip + '/plugins/arduidom/core/php/jeeArduidom.php?'
+                    if options.externalip != "":
+                        cmd = 'http://' + options.externalip + '/plugins/arduidom/core/php/jeeArduidom.php?'
                         _Separateur = "&"
                     else:
                         cmd = 'nice -n 19 /usr/bin/php '
@@ -266,8 +242,8 @@ def COMServer(options,threadName):
                     #log(2, "DHT values => FOUND")
                     dhtvalue = line.rsplit(';')
 
-                    if _externalip != "":
-                        cmd = 'http://' + _externalip + '/plugins/arduidom/core/php/jeeArduidom.php?'
+                    if options.externalip != "":
+                        cmd = 'http://' + options.externalip + '/plugins/arduidom/core/php/jeeArduidom.php?'
                         _Separateur = "&"
                     else:
                         cmd = 'nice -n 19 /usr/bin/php '
@@ -302,8 +278,8 @@ def COMServer(options,threadName):
                         oldpinvalue[pinnumber] = psplit2[0]
                         pinvalue[pinnumber] = psplit2[0]
 
-                        if _externalip != "":
-                            cmd = 'http://' + _externalip + '/plugins/arduidom/core/php/jeeArduidom.php?'
+                        if options.externalip != "":
+                            cmd = 'http://' + options.externalip + '/plugins/arduidom/core/php/jeeArduidom.php?'
                             _Separateur = "&"
                         else:
                             cmd = 'nice -n 19 /usr/bin/php '
@@ -329,10 +305,20 @@ def COMServer(options,threadName):
 
 
 def main(argv=None):
+    pyfolder = os.path.dirname(os.path.realpath(__file__)) + "/"
+    KILL_FILENAME = pyfolder + 'arduidom' + str(ARDUINO_ID) + '.kill'
+    PID_FILENAME = pyfolder + 'arduidom' + str(ARDUINO_ID) + '.pid'
     nbprocesses = 0
+    lastradiosend = datetime.now()
+    for x in range(0,102):
+        pinvalue.append("z")
+        oldpinvalue.append("z")
+
     (options, args) = cli_parser(argv)
     options.ArduinoPortCfg = options.deviceport
+    options.externalip = ""     #Sinon, cela ne fonctionne pas !!!!
 
+    LOG_FILENAME = pyfolder + '../../../log/arduidom_daemon_' + str(ARDUINO_ID)
     if options.nodaemon != "no":
         print "Lancement en DEBUG MODE"
         time.sleep(2)
@@ -343,7 +329,7 @@ def main(argv=None):
     if options.deviceport == "none":
         parser.error("incorrect number of options, Exiting...")
         quit()
-
+    mypid = os.getpid()
     log(0, "Mon PID = " + str(mypid))
     ps = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE).communicate()[0]
     processes = ps.split('\n')
