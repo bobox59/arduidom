@@ -16,19 +16,11 @@ import os
 import optparse
 import sys
 import signal
+import logging
 
 import pprint
 
 pinvalue = []
-oldpinvalue = []
-
-VIOLET = '\033[95m'
-BLUE = '\033[94m'
-GREEN = '\033[92m'
-YELLOW = '\033[93m'
-RED = '\033[91m'
-WHITE = '\033[0m'
-
 
 lastradiosend = 0
 ARDUINO_CPOK = 0
@@ -36,10 +28,6 @@ ARDUINO_SPOK = 0
 ARDUINO_PINGOK = 0
 cnt_timeout = 0
 
-
-def log(level, message):
-#    if (int(level) <= int(options.loglevel)):
-        print(str(strftime("%Y-%m-%d %H:%M:%S", localtime())) + " | debug | ") + str(message)
 
 def cli_parser(argv=None):
    parser = optparse.OptionParser("usage: %prog -h   pour l'aide")
@@ -60,7 +48,7 @@ def handler(options,clientsocket, clientaddr):
     global ARDUINO_SPOK
     global ARDUINO_PINGOK
     global cnt_timeout
-    #log("Accepted jeedom connection from: " + str(clientaddr))
+    logger.debug("Accepted jeedom connection from: " + str(clientaddr))
 
     while 1:
         jeedata = clientsocket.recv(1024)
@@ -69,89 +57,88 @@ def handler(options,clientsocket, clientaddr):
         if not jeedata:
             break
         else:
-            log(1, " ")
-            log(1, (YELLOW + "JeeDom  >> [" + jeedata + "]" + WHITE))
+            logger.debug("JeeDom  >> [" + jeedata + "]")
             if jeedata[0:4] == 'PING':
-                log(1, "PING Received !")
+                logger.debug( "PING Received !")
                 ARDUINO_PINGOK = 0
                 arduino_rx = ""
-                log(1, (BLUE + "[" + jeedata + "] >> Arduino" + WHITE))
+                logger.debug("[" + jeedata + "] >> Arduino")
                 options.ArduinoPort.write(jeedata + '\n')
-                log(1, "Wait Arduino Response...")
+                logger.debug("Wait Arduino Response...")
                 while ARDUINO_PINGOK != 1:
                     time.sleep(0.1)
-                log(1, ("Arduino >> [" + arduino_rx + "]"))
+                logger.debug("Arduino >> [" + arduino_rx + "]")
                 arduino_rx = ""
                 msg = jeedata + "_OK"
                 clientsocket.send(msg)
-                log(1, ("[" + msg + "] >> JeeDom"))
+                logger.debug("[" + msg + "] >> JeeDom")
 
             if jeedata[0:2] == 'CP':
-                log(0, "CP Received !")
+                logger.debug("CP Received !")
                 ARDUINO_CPOK = 0
                 cnt_cp_timeout = 0
                 arduino_rx = ""
-                log(0, (BLUE + "[" + jeedata[0:64] + "] >> Arduino" + WHITE))  # ENVOI EN 2 PARTIES POUR SUPPORT LIMITE 64 Bytes Arduino Serial
+                logger.info("[" + jeedata[0:64] + "] >> Arduino" )  # ENVOI EN 2 PARTIES POUR SUPPORT LIMITE 64 Bytes Arduino Serial
                 options.ArduinoPort.write(jeedata[0:64])
                 time.sleep(0.5)
-                log(0, (BLUE + "[" + jeedata[64:127] + "] >> Arduino" + WHITE))
+                logger.info("[" + jeedata[64:127] + "] >> Arduino")
                 options.ArduinoPort.write(jeedata[64:127] + '\n')
-                log(0, "Wait Arduino CP_OK Response...")
+                logger.debug("Wait Arduino CP_OK Response...")
                 while ARDUINO_CPOK != 1:
                     time.sleep(0.1)
                     cnt_cp_timeout += 1
                     if cnt_cp_timeout > 60:
                         msg = jeedata + "_BAD"
-                        log(0, "[" + msg + "] >> JeeDom")
+                        logger.debug( "[" + msg + "] >> JeeDom")
                         clientsocket.send(msg)
                         ARDUINO_CPOK = 1
 
                 if cnt_cp_timeout <= 60:
-                    log(0, ("Arduino >> [" + arduino_rx + "]"))
+                    logger.debug("Arduino >> [" + arduino_rx + "]")
                     arduino_rx = ""
                     msg = jeedata + "_OK"
-                    log(0, "[" + msg + "] >> JeeDom")
+                    logger.debug( "[" + msg + "] >> JeeDom")
                     clientsocket.send(msg)
 
             if jeedata[0:2] == 'SP':
-                log(1, "SP Received !")
+                logger.debug( "SP Received !")
                 ARDUINO_SPOK = 0
                 cnt_timeout = 0
-                log(1, (BLUE + "[" + jeedata + "] >> Arduino" + WHITE))
+                logger.info("[" + jeedata + "] >> Arduino" )
                 options.ArduinoPort.write(jeedata + '\n')
-                log(1, "Wait Arduino SP_OK Response...")
+                logger.debug( "Wait Arduino SP_OK Response...")
                 while ARDUINO_SPOK != 1:
                     time.sleep(0.1)
                     cnt_timeout += 1
                     if cnt_timeout > 30:
                         msg = jeedata + "_BAD"
-                        log(1, "[" + msg + "] >> JeeDom")
+                        logger.info("[" + msg + "] >> JeeDom")
                         clientsocket.send(msg)
                         ARDUINO_SPOK = 1
 
                 if cnt_timeout <= 30:
                     msg = jeedata + "_OK"
-                    log(1, ("[" + msg + "] >> JeeDom"))
+                    logger.info("[" + msg + "] >> JeeDom")
                     clientsocket.send(msg)
 
             if jeedata[0:2] == 'RF':  # *** Refresh Datas
-                log(1, "RF Received !")
+                logger.debug( "RF Received !")
                 arduino_rx = ""
-                log(1, (BLUE + "[" + "RF" + "] >> Arduino" + WHITE))
+                logger.info("[" + "RF" + "] >> Arduino" )
                 options.ArduinoPort.write("RF\n")
                 while arduino_rx == "":
                     time.sleep(0.01)
 
-                log(1, "arduino_rx=" + arduino_rx)
+                logger.debug( "arduino_rx=" + arduino_rx)
                 pinvalue = arduino_rx.rsplit(',')
 
             break
-    #log(0, "Close Jeedom Socket")
+    logger.debug("Close Jeedom Socket")
     clientsocket.close()
 
 
 def tcpServerThread(options,threadName):
-    log(0, "Thread " + threadName + " Started.")
+    logger.debug( "Thread " + threadName + " Started.")
     host = "0.0.0.0"
     addr = (host, options.port)
     serversocket = socket(AF_INET, SOCK_STREAM)
@@ -162,23 +149,21 @@ def tcpServerThread(options,threadName):
         exit()
 
     while 1:
-        #log(0, "TCP Server is waiting for jeedom connection...")
         clientsocket, clientaddr = serversocket.accept()
         thread.start_new_thread(handler, (options,clientsocket, clientaddr))
 
-    log(0, "Server Stop to listening !")
+    logger.debug("Server Stop to listening !")
     serversocket.close()
 
 
 def COMServer(options,threadName):
     global pinvalue
-    global oldpinvalue
     global arduino_rx
     global lastradiosend
     global ARDUINO_CPOK
     global ARDUINO_SPOK
     global ARDUINO_PINGOK
-    log(0, "Thread " + threadName + " Started.")
+    logger.debug( "Thread " + threadName + " Started.")
 
     while True:  # This is the main loop of program...................................................................
         line = ''
@@ -201,13 +186,13 @@ def COMServer(options,threadName):
             line = line.replace('\r', '')
             arduino_rx = line
             if line.find("Raw data:") == -1:
-                log(1, GREEN + "Arduino >> [" + line + "]" + WHITE)
+                logger.debug(1,  "Arduino >> [" + line + "]" )
             if line.find("Raw data:") != -1:
-                log(1, VIOLET + "Arduino >> [" + line + "]" + WHITE)
+                logger.debug(1,  "Arduino >> [" + line + "]" )
 
             if line.find("DATA:") > -1:
                 if ARDUINO_CPOK > 0:
-                    #log(2, "RF values => FOUND")
+                    logger.debug( "RF values => FOUND")
                     pinvalue = line.rsplit(',')
 
                     if options.externalip != "":
@@ -232,15 +217,13 @@ def COMServer(options,threadName):
                         cmd += _Separateur
                         cmdlog += " "
                     if len(cmd) > 120:
-                        log(1, RED + cmdlog + WHITE)
+                        logger.info( cmdlog )
                         subprocess.Popen(cmd, shell=True)
 
-                    for pinnumber in range(0, len(pinvalue)):
-                        oldpinvalue[pinnumber] = pinvalue[pinnumber]
 
             if line.find("DHT:") > -1:
                 if ARDUINO_CPOK > 0:
-                    #log(2, "DHT values => FOUND")
+                    logger.debug("DHT values => FOUND")
                     dhtvalue = line.rsplit(';')
 
                     if options.externalip != "":
@@ -267,16 +250,14 @@ def COMServer(options,threadName):
                             cmd += _Separateur
                             cmdlog += " "
                     if len(cmd) > 120:
-                        log(2, RED + cmdlog + WHITE)
+                        logger.info( cmdlog )
                         subprocess.Popen(cmd, shell=True)
 
-            if line.find(">>") > -1:
-                if line.find("<<") > -1:
+            if line.find(">>") > -1 and line.find("<<") > -1:
                     if ARDUINO_CPOK > 0:
                         psplit = line.rsplit('>>')
                         pinnumber = int(psplit[0])
                         psplit2 = psplit[1].rsplit('<<')
-                        oldpinvalue[pinnumber] = psplit2[0]
                         pinvalue[pinnumber] = psplit2[0]
 
                         if options.externalip != "":
@@ -300,135 +281,137 @@ def COMServer(options,threadName):
                         cmd += _Separateur
                         cmdlog += " "
                         if len(cmd) > 120:
-                            log(2, RED + cmdlog + WHITE)
+                            logger.info( cmdlog )
                             subprocess.Popen(cmd, shell=True)
 
 
 
 def main(argv=None):
+    global logger
     pyfolder = os.path.dirname(os.path.realpath(__file__)) + "/"
     nbprocesses = 0
     lastradiosend = datetime.now()
     for x in range(0,102):
         pinvalue.append("z")
-        oldpinvalue.append("z")
 
     (options, args) = cli_parser(argv)
+    LOG_FILENAME = pyfolder + '../../../log/arduidom_daemon_' + str(options.arduino_id)
+    formatter = logging.Formatter('%(asctime)s - %(threadName)s - %(module)s:%(lineno)d - %(levelname)s - %(message)s')
+    if (options.loglevel == 1):
+        loglevel = "DEBUG" 
+    else: 
+        loglevel = "INFO"
+    if options.nodaemon != "no":
+        loglevel = "DEBUG"
+        handler = logging.StreamHandler()
+    else:
+        handler = logging.FileHandler(LOG_FILENAME+"_logger")
+    handler.setFormatter(formatter)
+    logger = logging.getLogger("arduidom"+str(options.arduino_id))
+    logger.setLevel(logging.getLevelName(loglevel))
+    logger.addHandler(handler)
+
+    logger.info("######################################")
+    logger.info("# ArduiDom - Arduino Link for jeeDom #")
+    logger.info("# v1.03                  by Bobox 59 #")
+    logger.info("######################################")
+    logger.debug("Python version: %s.%s.%s" % sys.version_info[:3])
+
+#    sys.stdout = open(LOG_FILENAME, 'a', 1)
+    sys.stderr = open(LOG_FILENAME+"_stderr", 'a', 1)
+
+
     KILL_FILENAME = pyfolder + 'arduidom' + str(options.arduino_id) + '.kill'
     PID_FILENAME = pyfolder + 'arduidom' + str(options.arduino_id) + '.pid'
     options.ArduinoPortCfg = options.deviceport
     options.externalip = ""     #Sinon, cela ne fonctionne pas !!!!
-
-    LOG_FILENAME = pyfolder + '../../../log/arduidom_daemon_' + str(options.arduino_id)
-    if options.nodaemon != "no":
-        print "Lancement en DEBUG MODE"
-        time.sleep(2)
-    else:
-        sys.stdout = open(LOG_FILENAME, 'a', 1)
-        sys.stderr = open(LOG_FILENAME, 'a', 1)
-
     if options.deviceport == "none":
+        logger.error("incorrect number of options, Exiting...")
         parser.error("incorrect number of options, Exiting...")
         quit()
     mypid = os.getpid()
-    log(0, "Mon PID = " + str(mypid))
+    logger.debug("Mon PID = " + str(mypid))
     ps = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE).communicate()[0]
     processes = ps.split('\n')
     nfields = len(processes[0].split()) - 1
     for row in processes[1:]:
         procs = str(row.split(None, nfields))
-        if procs.find("arduidomx" + str(options.arduino_id) + ".py -i "+str(options.arduino_id)) > -1:
+        if procs.find("arduidomx.py -i "+str(options.arduino_id)) > -1:
             line = procs.split("', '")
             pid = int(line[1])
             if pid != mypid:
-                log(0, row.split(None, nfields))
-                log(0, RED + "Tentative de terminer le démon : " + str(pid) + WHITE)
-                log(0, os.kill(pid, signal.SIGKILL))
-
+                logger.debug(row.split(None, nfields))
+                logger.info("Tentative de terminer le démon : " + str(pid) )
+                logger.debug(os.kill(pid, signal.SIGKILL))
     ps = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE).communicate()[0]
     processes = ps.split('\n')
     nfields = len(processes[0].split()) - 1
     for row in processes[1:]:
         procs = str(row.split(None, nfields))
-        if procs.find("arduidomx" + str(options.arduino_id) + ".py -i "+ str(options.arduino_id)) > -1:
+        if procs.find("arduidomx.py -i "+ str(options.arduino_id)) > -1:
             nbprocesses += 1
 
-    log(0, "Nombre de processus arduidom" + str(options.arduino_id) + ".py = " + str(nbprocesses))
+    logger.debug("Nombre de processus arduidom" + str(options.arduino_id) + ".py = " + str(nbprocesses))
     if nbprocesses > 1:
-        log(0, RED + "ERREUR FATALE, IL RESTE UN DEMON QUI TOURNE ENCORE !" + WHITE)
+        logger.error("ERREUR FATALE, IL RESTE UN DEMON QUI TOURNE ENCORE !")
         exit()
-
-
-    log(0, "")
-    log(0, "######################################")
-    log(0, "# ArduiDom - Arduino Link for jeeDom #")
-    log(0, "# v1.03                  by Bobox 59 #")
-    log(0, "######################################")
-    log(0, "")
     while os.path.isfile(KILL_FILENAME):
-        log(0, "fichier KILL trouvé au démarrage, suppression...")
+        logger.debug("fichier KILL trouvé au démarrage, suppression...")
         os.remove(KILL_FILENAME)
         time.sleep(0.5)
 
     if os.path.isfile(PID_FILENAME):
-        log(0, "fichier PID trouvé au démarrage, suppression...")
+        logger.debug("fichier PID trouvé au démarrage, suppression...")
         #os.kill(PID_FILENAME, signal.SIGKILL)
         os.remove(PID_FILENAME)
         file.write(PID_FILENAME, os.getpid())
 
-    log(0, "Opening Arduino USB Port...")
+    logger.info("Opening Arduino USB Port...")
     options.ArduinoPort = serial.Serial(options.deviceport, 115200, timeout=0.1)
-    log(0, options.ArduinoPort)
+    logger.debug(options.ArduinoPort)
     time.sleep(1)
-    log(0, "En attente de l'arduino (HELLO)")
-    log(0, (BLUE + "[" + "PING" + "] >> Arduino" + WHITE))
+    logger.debug("En attente de l'arduino (HELLO)")
+    logger.debug("[" + "PING" + "] >> Arduino" )
     options.ArduinoPort.write("PING\n")
 
     time.sleep(0.5)
     arduino_rx = options.ArduinoPort.readline()
     while arduino_rx.find("PING_OK") == -1:
-        log(0, (BLUE + "[" + "PING" + "] >> Arduino" + WHITE))
+        logger.debug("[" + "PING" + "] >> Arduino" )
         options.ArduinoPort.write("PING\n")
         arduino_rx = options.ArduinoPort.readline()
-        log(0, arduino_rx)
+        logger.debug(arduino_rx)
 
     arduino_rx = ""
-    log(0, ":)")
-    log(0, "")
-    log(0, "")
-    log(0, "")
     time.sleep(0.1)
     options.ArduinoPort.flush()
 
-    log(0, "Launch USB Thread...")
+    logger.info("Launch USB Thread...")
     # noinspection PyBroadException
     try:
         thread.start_new_thread(COMServer, (options,"TH-COMServer",))
     except ImportError, e:
-        log(0, "Error with Thread TH-COMServer")
-        log(0, e)
+        logger.error("Error with Thread TH-COMServer :"+str(e))
         quit()
 
 
-    log(0, "Launch TCP Thread...")
+    logger.info("Launch TCP Thread...")
     # noinspection PyBroadException
     try:
         thread.start_new_thread(tcpServerThread, (options,"TH-TcpServer",))
     except ImportError, e:
-        log(0, "Error with Thread TH-TcpServer")
-        log(0, e)
+        logger.error("Error with Thread TH-TcpServer "+str(e))
         quit()
 
 
-    log(0, "Surveille le .kill ...")
+    logger.info("Surveille le .kill ...")
     while 1:
         time.sleep(0.5)
         if os.path.isfile(KILL_FILENAME):
-            log(0, "---------------------------------------")
-            log(0, "KILL FILE FOUND, EXITING...")
+            logger.warning("KILL FILE FOUND, EXITING...")
             quit()
-
         pass
+    logger.info("after kill...")
 
 
 if __name__ == '__main__':
