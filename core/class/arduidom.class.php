@@ -250,7 +250,6 @@ class arduidom extends eqLogic
 
     public static function stopdaemon($_AID = '')
     {
-        $General_Debug = (file_exists("/tmp/arduidom_debug_mode_on"));
         for ($d = 1; $d < 9; $d++) {
             if ($_AID == '' || $_AID == $d) {
                 log::add('arduidom', 'info', 'Stop Daemon ' . $d);
@@ -268,7 +267,7 @@ class arduidom extends eqLogic
                 exec('kill ' . $result . ' >/dev/null');
                 sleep(.4);
 
-                if ($General_Debug) log::add('arduidom', 'debug', 'Desactivation du démon ' . $d . '...');
+                log::add('arduidom', 'debug', 'Desactivation du démon ' . $d . '...');
                 config::save('A' . $d . "_daemonenable", 0, 'arduidom');
 
             }
@@ -278,7 +277,6 @@ class arduidom extends eqLogic
 
     public static function startdaemon($_AID = '')
     {
-        $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
         $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
 
         log::add('arduidom', 'debug', 'startdaemon(' . $_AID . ').');
@@ -290,14 +288,14 @@ class arduidom extends eqLogic
                     config::save('A' . $d . "_daemonenable", 1, 'arduidom');
                     if (file_exists($port) || $port == "Network") {
 
-                        if ($General_Debug) log::add('arduidom', 'debug', 'Tentative de démarrage du Démon arduidom ' . $d . '...');
+                        log::add('arduidom', 'debug', 'Tentative de démarrage du Démon arduidom ' . $d . '...');
 
                         if ($port != 'Network') {
                             unlink($daemon_path . '/arduidom' . $d . '.kill');
-                            $cmd = 'nice -n 19 /usr/bin/python ' . $daemon_path . '/arduidom' . $d . '.py' . " -d " . $port . " -l " . config::byKey('A' . $d . '_daemonlog', 'arduidom') . " -a " . config::byKey('api') . " -e " . config::byKey('A' . $d . '_daemonip', 'arduidom', "127.0.0.1");
-                            if ($General_Debug) log::add('arduidom', 'info', 'Lancement démon ' . $d . ' : ' . $cmd);
+                            $cmd = 'nice -n 19 /usr/bin/python ' . $daemon_path . '/arduidomx.py -i ' . $d . " -d " . $port . " -l " . config::byKey('A' . $d . '_daemonlog', 'arduidom') . " -a " . config::byKey('api') . " -e " . config::byKey('A' . $d . '_daemonip', 'arduidom', "127.0.0.1");
+                            log::add('arduidom', 'info', 'Lancement démon ' . $d . ' : ' . $cmd);
                             $result = exec($cmd . ' >> ' . log::getPathToLog('arduidom') . ' 2>&1 &');
-                            if ($General_Debug) log::add('arduidom', 'info', 'Lancement démon ' . $d . ' : result : ' . $result);
+                            log::add('arduidom', 'info', 'Lancement démon ' . $d . ' : result : ' . $result);
                             if (strpos(strtolower($result), 'error') !== false || strpos(strtolower($result), 'traceback') !== false) {
                                 //log::add('arduidom', 'error', $result);
                                 if ($_AID == $d) return 0;
@@ -331,12 +329,11 @@ class arduidom extends eqLogic
 
     public static function checkdaemon($_AID)
     {
-        $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
-        if ($General_Debug) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ")");
+        log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ")");
 
         $MigrationCheck = config::byKey('db_version', 'arduidom', 0);
         if ($MigrationCheck < 108) {
-            if ($General_Debug) log::add('arduidom', 'info', "La version de la base de données Arduidom n'est pas la bonne...");
+            log::add('arduidom', 'info', "La version de la base de données Arduidom n'est pas la bonne...");
             log::add('arduidom', 'error', "Une Migration des données Arduidom est necessaire depuis la v1.08 ! vous pouvez l'executer depuis la configuration du Plugin");
         }
 
@@ -344,7 +341,7 @@ class arduidom extends eqLogic
             if ($_AID == '' || $_AID == $d) {
                 $DaemonEnabled = config::byKey('A' . $d . "_daemonenable", 'arduidom', 0);
                 if ($DaemonEnabled == 0) {
-                    if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' ne sera pas verifié car il a été stoppé manuellement ou Désactivé');
+                    log::add('arduidom', 'debug', 'Le démon ' . $d . ' ne sera pas verifié car il a été stoppé manuellement ou Désactivé');
                     if ($_AID == $d) return 0;
                 } else {
                     $tcpcheck = arduidom::sendtoArduino("PING", $d);
@@ -359,7 +356,7 @@ class arduidom extends eqLogic
                             arduidom::startdaemon($d);
                         }
                     } else {
-                        if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' fonctionne correctement.');
+                        log::add('arduidom', 'debug', 'Le démon ' . $d . ' fonctionne correctement.');
                         if ($_AID == $d) return 1;
                     }
                 }
@@ -371,7 +368,6 @@ class arduidom extends eqLogic
 
     public static function setPinMapping($_AID)
     {
-        $General_Debug = (file_exists("/tmp/arduidom_debug_mode_on"));
         global $ARDUPINMAP_A, $ARDUPINMAP_B, $ARDUPINMAP_C;
         log::add('arduidom', 'debug', 'setPinMapping(' . $_AID . ') called');
         //sleep(2);
@@ -384,7 +380,7 @@ class arduidom extends eqLogic
         foreach ($ARDUPINMAP as $logicalId => $pin) {
             if ($logicalId > 1) {
                 $config = config::byKey('A' . $_AID . '_pin::' . $logicalId, 'arduidom');
-                if ($General_Debug) log::add('arduidom', 'debug', 'setPinMapping(' . $logicalId . ') ' . $config);
+                log::add('arduidom', 'debug', 'setPinMapping(' . $logicalId . ') ' . $config);
                 if ($config == '') {
                     $CP = $CP . "z";
                 } // Si Modifs, penser a les mettres aussi dans ajax !
@@ -417,7 +413,7 @@ class arduidom extends eqLogic
                 }
             }
         }
-        if ($General_Debug) log::add('arduidom', 'debug', 'setPinMapping to ' . $CP);
+        log::add('arduidom', 'debug', 'setPinMapping to ' . $CP);
         $tcp_check = self::sendtoArduino($CP, $_AID);
         if (config::byKey('A' . $_AID . '_port', 'arduidom', 'none') == "Network") { // Envoi de la clé API aux arduino ethernet
             if ($tcp_check != "CP_OK") {
@@ -476,8 +472,7 @@ class arduidom extends eqLogic
 
     public static function sendtoArduino($_tcpmsg, $_AID)
     {
-        $General_Debug = (file_exists("/tmp/arduidom_debug_mode_on"));
-        if ($General_Debug) log::add('arduidom', 'debug', 'sendtoArduino(' . $_tcpmsg . ',' . $_AID . ') called');
+        log::add('arduidom', 'debug', 'sendtoArduino(' . $_tcpmsg . ',' . $_AID . ') called');
 
         $DaemonEnabled = config::byKey('A' . $_AID . "_daemonenable", 'arduidom', 0);
         if ($DaemonEnabled == 0) {
@@ -490,24 +485,22 @@ class arduidom extends eqLogic
             if ($port != 'none' && $port != "") {
                 if (file_exists($port) || $port == 'Network') {
                     if ($port != 'Network') {
-                        if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $_AID . ' est un démon python');
+                        log::add('arduidom', 'debug', 'Le démon ' . $_AID . ' est un démon python');
                         $fp = fsockopen($ip, (58200 + intval($_AID)), $errno, $errstr, 1);
                     } else {
-                        if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $_AID . ' est un arduino Réseau (IP:' . $ip . ")");
+                        log::add('arduidom', 'debug', 'Le démon ' . $_AID . ' est un arduino Réseau (IP:' . $ip . ")");
                         $fp = fsockopen($ip, (58174), $errno, $errstr, 1);
                     }
 
                     stream_set_timeout($fp, 7);
 
                     if (!$fp) {
-                        //if ($General_Debug) log::add('arduidom', 'error', "Le démon ArduiDom " . $_AID . " n'est pas connecté ! (connection impossible)");
-                        //if ($General_Debug) log::add('arduidom', 'error', "Le démon ArduiDom " . $_AID . " n'est pas connecté ! (errno:)" . $errno);
                         log::add('arduidom', 'error', "Le démon ArduiDom " . $_AID . " n'est pas connecté ! (errstr:)" . $errstr);
                         return $errstr;
 
                     } else {
 
-                        if ($General_Debug) log::add('arduidom', 'debug', "Le démon ArduiDom " . $_AID . " est connecté, envoi...");
+                        log::add('arduidom', 'debug', "Le démon ArduiDom " . $_AID . " est connecté, envoi...");
 
                         if ($port == "Network") $_tcpmsg = $_tcpmsg . "\n"; // ajout d'une fin de ligne pour shield ethernet
                         fwrite($fp, $_tcpmsg);
@@ -515,13 +508,13 @@ class arduidom extends eqLogic
                         $resp = "";
 
                         if ($port == "Network") {
-                            if ($General_Debug) log::add('arduidom', 'debug', "Attente de la réponse du démon ArduiDom " . $_AID . " ...");
+                            log::add('arduidom', 'debug', "Attente de la réponse du démon ArduiDom " . $_AID . " ...");
                             while (!feof($fp)) {
                                 $resp = $resp . fgets($fp);
                             }
                             $resp = str_replace("\r", '', $resp);
                             $resp = str_replace("\n", '', $resp);
-                            if ($General_Debug) log::add('arduidom', 'debug', 'Réponse TCP recue  $_tcpmsg=' . $resp);
+                            log::add('arduidom', 'debug', 'Réponse TCP recue  $_tcpmsg=' . $resp);
                             if ((time() - $start_time) > 7) { // Time out de 7 secondes pour le check du démon
                                 log::add('arduidom', 'error', 'Erreur: TIMEOUT sur Réponse du démon ' . $_AID);
                                 return "TIMEOUT";
@@ -533,7 +526,7 @@ class arduidom extends eqLogic
                             while (!feof($fp)) {
                                 $resp = fgets($fp);
                                 $_tcpmsg = str_replace("\n", '', $_tcpmsg);
-                                if ($General_Debug) log::add('arduidom', 'debug', 'Debug: $_tcpmsg=' . $_tcpmsg);
+                                log::add('arduidom', 'debug', 'Debug: $_tcpmsg=' . $_tcpmsg);
 
                                 if ((time() - $start_time) > 7) { // Time out de 7 secondes pour le check du démon
                                     log::add('arduidom', 'error', 'Erreur: TIMEOUT sur Réponse du démon ' . $_AID);
