@@ -291,8 +291,9 @@ class arduidom extends eqLogic
                         log::add('arduidom', 'debug', 'Tentative de démarrage du Démon arduidom ' . $d . '...');
 
                         if ($port != 'Network') {
+                            $ip_port =  58200 + $d;
                             unlink($daemon_path . '/arduidom' . $d . '.kill');
-                            $cmd = 'nice -n 19 /usr/bin/python ' . $daemon_path . '/arduidomx.py -i ' . $d . " -d " . $port . " -l " . config::byKey('A' . $d . '_daemonlog', 'arduidom') . " -a " . config::byKey('api') . " -e " . config::byKey('A' . $d . '_daemonip', 'arduidom', "127.0.0.1");
+                            $cmd = 'nice -n 19 /usr/bin/python ' . $daemon_path . '/arduidomx.py -i ' . $d . " -d " . $port . " -l " . config::byKey('A' . $d . '_daemonlog', 'arduidom') . " -a " . config::byKey('api') . " -p " . $ip_port . " -e " . config::byKey('A' . $d . '_daemonip', 'arduidom', "127.0.0.1");
                             log::add('arduidom', 'info', 'Lancement démon ' . $d . ' : ' . $cmd);
                             $result = exec($cmd . ' >> ' . log::getPathToLog('arduidom') . ' 2>&1 &');
                             log::add('arduidom', 'info', 'Lancement démon ' . $d . ' : result : ' . $result);
