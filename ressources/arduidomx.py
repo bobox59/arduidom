@@ -296,7 +296,7 @@ def main(argv=None):
 
     (options, args) = cli_parser(argv)
     LOG_FILENAME = pyfolder + '../../../log/arduidom_daemon_' + str(options.arduino_id)
-    formatter = logging.Formatter('%(asctime)s - %(threadName)s - %(module)s:%(lineno)d - %(levelname)s - %(message)s')
+    formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(threadName)s - %(module)s:%(lineno)d - %(message)s')
     if (options.loglevel == 1):
         loglevel = "DEBUG" 
     else: 
