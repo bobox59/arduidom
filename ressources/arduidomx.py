@@ -395,7 +395,7 @@ def main(argv=None):
         quit()
 
 
-    logger.info("Launch TCP Thread...")
+    logger.info("Launch TCP Thread on port " + str(options.port) + "...")
     # noinspection PyBroadException
     try:
         thread.start_new_thread(tcpServerThread, (options,"TH-TcpServer",))
@@ -408,7 +408,7 @@ def main(argv=None):
     while 1:
         time.sleep(0.5)
         if os.path.isfile(KILL_FILENAME):
-            logger.warning("KILL FILE FOUND, EXITING...")
+            logger.warning("KILL FILE " + str(KILL_FILENAME) + " FOUND, EXITING...")
             quit()
         pass
     logger.info("after kill...")

@@ -294,10 +294,10 @@ class arduidom extends eqLogic
 
                         if ($port != 'Network') {
                             unlink($daemon_path . '/arduidom' . $d . '.kill');
-                            $cmd = 'nice -n 19 /usr/bin/python ' . $daemon_path . '/arduidom' . $d . '.py' . " -d " . $port . " -l " . config::byKey('A' . $d . '_daemonlog', 'arduidom') . " -a " . config::byKey('api') . " -e " . config::byKey('A' . $d . '_daemonip', 'arduidom', "127.0.0.1");
-                            if ($General_Debug) log::add('arduidom', 'info', 'Lancement démon ' . $d . ' : ' . $cmd);
+                            $cmd = 'nice -n 19 /usr/bin/python ' . $daemon_path . '/arduidomx.py' . " -p " . (58200 + $d) . " -d " . $port . " -l " . config::byKey('A' . $d . '_daemonlog', 'arduidom') . " -i " . $d . " -a " . config::byKey('api') . " -e " . config::byKey('A' . $d . '_daemonip', 'arduidom', "127.0.0.1");
+                            log::add('arduidom', 'info', 'Lancement démon ' . $d . ' : ' . $cmd);
                             $result = exec($cmd . ' >> ' . log::getPathToLog('arduidom') . ' 2>&1 &');
-                            if ($General_Debug) log::add('arduidom', 'info', 'Lancement démon ' . $d . ' : result : ' . $result);
+                            log::add('arduidom', 'info', 'Lancement démon ' . $d . ' : result : ' . $result);
                             if (strpos(strtolower($result), 'error') !== false || strpos(strtolower($result), 'traceback') !== false) {
                                 //log::add('arduidom', 'error', $result);
                                 if ($_AID == $d) return 0;
@@ -360,6 +360,7 @@ class arduidom extends eqLogic
                         }
                     } else {
                         if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' fonctionne correctement.');
+                        self::sendtoArduino("RF",$d);
                         if ($_AID == $d) return 1;
                     }
                 }
