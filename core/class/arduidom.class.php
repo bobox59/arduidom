@@ -360,7 +360,6 @@ class arduidom extends eqLogic
                         }
                     } else {
                         if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' fonctionne correctement.');
-                        self::sendtoArduino("RF",$d);
                         if ($_AID == $d) return 1;
                     }
                 }
