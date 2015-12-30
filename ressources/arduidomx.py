@@ -364,8 +364,8 @@ def main(argv=None):
         logger.debug("fichier PID trouvé au démarrage, suppression...")
         #os.kill(PID_FILENAME, signal.SIGKILL)
         os.remove(PID_FILENAME)
-        file.write(PID_FILENAME, os.getpid())
 
+    file(PID_FILENAME, 'w').write(str(os.getpid()))
     logger.info("Opening Arduino USB Port...")
     options.ArduinoPort = serial.Serial(options.deviceport, 115200, timeout=0.1)
     logger.debug(options.ArduinoPort)

@@ -259,10 +259,16 @@ class arduidom extends eqLogic
                 //log::add('arduidom', 'debug', 'touch ' . $daemon_path . '/arduidom' . $d . '.kill');
                 sleep(1);
 
-                $result = exec("ps aux | grep arduidom" . $d . ".py | grep -v grep | awk '{print $2}'");
-                if ($result != "") log::add('arduidom', 'debug', 'PIDs encore démarrés : ' . $result);
-                exec('kill -9 ' . $result . ' >/dev/null');
+                $result = exec("cat " . $daemon_path . "/arduidom" . $d . ".pid");
+                if ($result != "" && file_exists($daemon_path . "/arduidom" . $d . ".pid")) {
+                    log::add('arduidom', 'info', "PID à quitter : " . $result);
+                    log::add('arduidom', 'debug', 'kill -9 ' . $result);
+                    exec('kill -9 ' . $result . ' >/dev/null');
+                    sleep(.4);
+                    unlink($daemon_path . "/arduidom" . $d . ".pid");
+                }
 
+                // Ancienne methode a supprimer, conservée quelques temps pour compatibilité avec version avant 30 déc 2015
                 $result = exec("ps aux | grep arduidom" . $d . ".py | grep -v grep | awk '{print $2}'");
                 if ($result != "") log::add('arduidom', 'debug', 'PIDs encore démarrés : ' . $result);
                 exec('kill ' . $result . ' >/dev/null');
