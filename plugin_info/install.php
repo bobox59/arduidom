@@ -40,6 +40,20 @@ function arduidom_update() {
         arduidom::MigrateDatas();
         arduidom::start();
     }
+    if ($MigrationCheck < 145) {
+        arduidom::stopdaemon();
+        $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
+        log::add('arduidom', 'info', "Suppression de arduidom1.py devenu inutile => " . unlink($daemon_path . "/arduidom1.py"));
+        log::add('arduidom', 'info', "Suppression de arduidom2.py devenu inutile => " . unlink($daemon_path . "/arduidom2.py"));
+        log::add('arduidom', 'info', "Suppression de arduidom3.py devenu inutile => " . unlink($daemon_path . "/arduidom3.py"));
+        log::add('arduidom', 'info', "Suppression de arduidom4.py devenu inutile => " . unlink($daemon_path . "/arduidom4.py"));
+        log::add('arduidom', 'info', "Suppression de arduidom5.py devenu inutile => " . unlink($daemon_path . "/arduidom5.py"));
+        log::add('arduidom', 'info', "Suppression de arduidom6.py devenu inutile => " . unlink($daemon_path . "/arduidom6.py"));
+        log::add('arduidom', 'info', "Suppression de arduidom7.py devenu inutile => " . unlink($daemon_path . "/arduidom7.py"));
+        log::add('arduidom', 'info', "Suppression de arduidom8.py devenu inutile => " . unlink($daemon_path . "/arduidom8.py"));
+        config::save('db_version', 145, 'arduidom'); // Inscrit la version de migration dans la config
+        arduidom::start();
+    }
     arduidom::startdaemon();
     $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
     if (!is_object($cron)) {
