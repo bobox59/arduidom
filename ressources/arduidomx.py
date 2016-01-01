@@ -6,7 +6,6 @@ __author__ = 'bmasquelier'
 #
 
 import serial
-import thread
 from socket import *
 import time
 from time import localtime, strftime
@@ -17,17 +16,67 @@ import optparse
 import sys
 import signal
 import logging
+import re
 
 import pprint
 
-pinvalue = []
+from Queue import Queue
+from threading import Thread
 
-lastradiosend = 0
-ARDUINO_CPOK = 0
-ARDUINO_SPOK = 0
-ARDUINO_PINGOK = 0
-cnt_timeout = 0
+import thread
 
+to_arduino = Queue()
+from_arduino = Queue()
+
+class from_jeedom:
+    def __init__(self, command, confirm):
+       self.request = command
+       self._answer = ""
+       self._status = "WAITING"   # START|IN_PROGRESS|OK|TIMEOUT
+       self.timeout = 10
+       self.confirm = confirm
+       self.start_time = int(time.time())
+    def start_processing(self):
+       self._status = "IN_PROGRESS"
+       return(self.request)
+    def status(self):
+       #logger.debug("IN CLASS " + str(self.start_time) + " " + str(self.timeout) + " " + str(time.time()))
+       if ( int(time.time()) - self.start_time ) >=  self.timeout:
+           self._status = "TIMEOUT"
+       return self._status
+    def finished(self):
+        if self.status() == "OK" or self.status() == "TIMEOUT":
+            return True
+        else:
+            return False
+    def answer(self):
+        if self.status() == "OK":
+           return self._answer
+        else:
+           return self.request + "_BAD"
+    def result(self,_answer):
+        self._status = "OK"
+        self._answer = _answer
+
+
+class Jeedom:
+    # Mode = (php|tcp)
+    def __init__(self,mode,url,ip,apikey):
+       self.ip = ip
+       self.apikey = apikey
+       #if mode == "php":
+       self._Separateur = " "
+       self.prefix = "nice -n 19 /usr/bin/php "
+       self.prefix += "/usr/share/nginx/www/jeedom/plugins/arduidom/core/php/jeeArduidom.php "
+       self.prefix += 'api=' + apikey + self._Separateur
+        #TODO Else tcp
+
+    def send(self,cmds):
+        cmd_line = self.prefix
+        for cmd in cmds:
+            cmd_line +=  self._Separateur + cmd
+        logger.debug("CLASS_JEEDOM->send" + cmd_line)
+        subprocess.Popen(cmd_line, shell=True)
 
 def cli_parser(argv=None):
    parser = optparse.OptionParser("usage: %prog -h   pour l'aide")
@@ -42,14 +91,8 @@ def cli_parser(argv=None):
 
 
 def handler(options,clientsocket, clientaddr):
-    global pinvalue
-    global arduino_rx
-    global ARDUINO_CPOK
-    global ARDUINO_SPOK
-    global ARDUINO_PINGOK
-    global cnt_timeout
+    global to_arduino
     logger.debug("Accepted jeedom connection from: " + str(clientaddr))
-
     while 1:
         jeedata = clientsocket.recv(1024)
         jeedata = jeedata.replace('\n', '')
@@ -59,79 +102,42 @@ def handler(options,clientsocket, clientaddr):
         else:
             logger.debug("JeeDom  >> [" + jeedata + "]")
             if jeedata[0:4] == 'PING':
-                logger.debug( "PING Received !")
-                ARDUINO_PINGOK = 0
-                arduino_rx = ""
-                logger.debug("[" + jeedata + "] >> Arduino")
-                options.ArduinoPort.write(jeedata + '\n')
-                logger.debug("Wait Arduino Response...")
-                while ARDUINO_PINGOK != 1:
+                logger.debug( "Jeedom PING Received !")
+                ping_request = from_jeedom(jeedata,"PING_OK")
+                to_arduino.put(ping_request)
+                
+                while not ping_request.finished():
                     time.sleep(0.1)
-                logger.debug("Arduino >> [" + arduino_rx + "]")
-                arduino_rx = ""
-                msg = jeedata + "_OK"
-                clientsocket.send(msg)
-                logger.debug("[" + msg + "] >> JeeDom")
+                answer = ping_request.answer()
+                logger.debug("[" + str(answer) + "] >> JeeDom")
+                clientsocket.send(answer)
 
-            if jeedata[0:2] == 'CP':
-                logger.debug("CP Received !")
-                ARDUINO_CPOK = 0
-                cnt_cp_timeout = 0
-                arduino_rx = ""
-                logger.info("[" + jeedata[0:64] + "] >> Arduino" )  # ENVOI EN 2 PARTIES POUR SUPPORT LIMITE 64 Bytes Arduino Serial
-                options.ArduinoPort.write(jeedata[0:64])
-                time.sleep(0.5)
-                logger.info("[" + jeedata[64:127] + "] >> Arduino")
-                options.ArduinoPort.write(jeedata[64:127] + '\n')
-                logger.debug("Wait Arduino CP_OK Response...")
-                while ARDUINO_CPOK != 1:
+            elif jeedata[0:2] == 'CP':
+                cp_request = from_jeedom(jeedata,"CP_OK")
+                to_arduino.put(cp_request)
+                while not cp_request.finished():
                     time.sleep(0.1)
-                    cnt_cp_timeout += 1
-                    if cnt_cp_timeout > 60:
-                        msg = jeedata + "_BAD"
-                        logger.debug( "[" + msg + "] >> JeeDom")
-                        clientsocket.send(msg)
-                        ARDUINO_CPOK = 1
+                answer = cp_request.answer()
+                logger.debug("[" + str(answer) + "] >> JeeDom")
+                clientsocket.send(answer)
 
-                if cnt_cp_timeout <= 60:
-                    logger.debug("Arduino >> [" + arduino_rx + "]")
-                    arduino_rx = ""
-                    msg = jeedata + "_OK"
-                    logger.debug( "[" + msg + "] >> JeeDom")
-                    clientsocket.send(msg)
-
-            if jeedata[0:2] == 'SP':
-                logger.debug( "SP Received !")
-                ARDUINO_SPOK = 0
-                cnt_timeout = 0
-                logger.info("[" + jeedata + "] >> Arduino" )
-                options.ArduinoPort.write(jeedata + '\n')
-                logger.debug( "Wait Arduino SP_OK Response...")
-                while ARDUINO_SPOK != 1:
+            elif jeedata[0:2] == 'SP':
+                sp_request = from_jeedom(jeedata,"SP_OK")
+                to_arduino.put(sp_request)
+                while not sp_request.finished():
                     time.sleep(0.1)
-                    cnt_timeout += 1
-                    if cnt_timeout > 30:
-                        msg = jeedata + "_BAD"
-                        logger.info("[" + msg + "] >> JeeDom")
-                        clientsocket.send(msg)
-                        ARDUINO_SPOK = 1
+                answer = sp_request.answer()
+                logger.debug("[" + str(answer) + "] >> JeeDom")
+                clientsocket.send(answer)
 
-                if cnt_timeout <= 30:
-                    msg = jeedata + "_OK"
-                    logger.info("[" + msg + "] >> JeeDom")
-                    clientsocket.send(msg)
-
-            if jeedata[0:2] == 'RF':  # *** Refresh Datas
-                logger.debug( "RF Received !")
-                arduino_rx = ""
-                logger.info("[" + "RF" + "] >> Arduino" )
-                options.ArduinoPort.write("RF\n")
-                while arduino_rx == "":
-                    time.sleep(0.01)
-
-                logger.debug( "arduino_rx=" + arduino_rx)
-                pinvalue = arduino_rx.rsplit(',')
-
+            elif jeedata[0:2] == 'RF':  # *** Refresh Datas
+                rf_request = from_jeedom(jeedata,"DBG_Data to do:RF")
+                to_arduino.put(rf_request)
+                while not rf_request.finished():
+                    time.sleep(0.1)
+                answer = rf_request.answer()
+                logger.debug("[" + str(answer) + "] >> JeeDom")
+                clientsocket.send(answer)
             break
     logger.debug("Close Jeedom Socket")
     clientsocket.close()
@@ -150,162 +156,131 @@ def tcpServerThread(options,threadName):
 
     while 1:
         clientsocket, clientaddr = serversocket.accept()
-        thread.start_new_thread(handler, (options,clientsocket, clientaddr))
-
+        worker_handler = Thread(target=handler, args=(options, clientsocket, clientaddr))
+        worker_handler.setDaemon(True)
+        worker_handler.start()
     logger.debug("Server Stop to listening !")
     serversocket.close()
 
+def parse_adrduino_answer(options,line):
+    line = line.replace('\n', '')
+    line = line.replace('\r', '')
+    if line != '':
+            logger.debug("Arduino >> [" + line + "]")
+            if re.search("^DBG",line) or re.search("^SP",line) or  re.search("^Pin ",line):
+                 logger.debug("Arduino DBG >> [" + line + "]")
+                 test = 1
 
-def COMServer(options,threadName):
-    global pinvalue
-    global arduino_rx
-    global lastradiosend
-    global ARDUINO_CPOK
-    global ARDUINO_SPOK
-    global ARDUINO_PINGOK
-    logger.debug( "Thread " + threadName + " Started.")
-
-    while True:  # This is the main loop of program...................................................................
-        line = ''
-        while True:
-            line = options.ArduinoPort.readline()
-            if line != '':
-                break
-
-        if line.find("CP_OK") > -1:
-            ARDUINO_CPOK = 1
-
-        if line.find("SP_OK") > -1:
-            ARDUINO_SPOK = 1
-
-        if line.find("PING_OK") > -1:
-            ARDUINO_PINGOK = 1
-
-        if line != '':
-            line = line.replace('\n', '')
-            line = line.replace('\r', '')
-            arduino_rx = line
-            if line.find("Raw data:") == -1:
-                logger.debug(1,  "Arduino >> [" + line + "]" )
-            if line.find("Raw data:") != -1:
-                logger.debug(1,  "Arduino >> [" + line + "]" )
-
-            if line.find("DATA:") > -1:
-                if ARDUINO_CPOK > 0:
+            elif line.find("DATA:") > -1:
                     logger.debug( "RF values => FOUND")
                     pinvalue = line.rsplit(',')
-
-                    if options.externalip != "":
-                        cmd = 'http://' + options.externalip + '/plugins/arduidom/core/php/jeeArduidom.php?'
-                        _Separateur = "&"
-                    else:
-                        cmd = 'nice -n 19 /usr/bin/php '
-                        cmd += '/usr/share/nginx/www/jeedom/plugins/arduidom/core/php/jeeArduidom.php '
-                        _Separateur = " "
-                    #cmd = 'nice -n 19 /usr/bin/php '
-                    #cmd += '/usr/share/nginx/www/jeedom/plugins/arduidom/core/php/jeeArduidom.php '
-                    cmd += 'api=' + options.apikey + _Separateur
-                    cmd += 'arduid=' + str(options.arduino_id) + _Separateur
-                    cmdlog = 'PHP=> '
+                    cmd = []
+                    cmd.append('arduid=' + str(options.arduino_id))
+                    cmdlog = 'PHP(DATA)=> '
                     for pinnumber in range(0, len(pinvalue)):
-                        cmd += str(pinnumber)
-                        cmdlog += str(pinnumber)
-                        cmd += "="
-                        cmdlog += "="
-                        cmd += pinvalue[pinnumber].replace("DATA:", "")
-                        cmdlog += pinvalue[pinnumber].replace("DATA:", "")
-                        cmd += _Separateur
-                        cmdlog += " "
-                    if len(cmd) > 120:
-                        logger.info( cmdlog )
-                        subprocess.Popen(cmd, shell=True)
+                        cmd.append( str(pinnumber) + "=" + pinvalue[pinnumber].replace("DATA:", ""))
+                        cmdlog += ":" + str(pinnumber) + "=" +  pinvalue[pinnumber].replace("DATA:", "")
+                    logger.debug( cmdlog )
+                    options.jeedom.send(cmd)
 
-
-            if line.find("DHT:") > -1:
-                if ARDUINO_CPOK > 0:
+            elif line.find("DHT:") > -1:
                     logger.debug("DHT values => FOUND")
                     dhtvalue = line.rsplit(';')
-
-                    if options.externalip != "":
-                        cmd = 'http://' + options.externalip + '/plugins/arduidom/core/php/jeeArduidom.php?'
-                        _Separateur = "&"
-                    else:
-                        cmd = 'nice -n 19 /usr/bin/php '
-                        cmd += '/usr/share/nginx/www/jeedom/plugins/arduidom/core/php/jeeArduidom.php '
-                        _Separateur = " "
-                    #cmd = 'nice -n 19 /usr/bin/php '
-                    #cmd += '/usr/share/nginx/www/jeedom/plugins/arduidom/core/php/jeeArduidom.php '
-                    cmd += 'api=' + options.apikey + _Separateur
-                    cmd += 'arduid=' + str(options.arduino_id) + _Separateur
-                    cmdlog = cmd
-                    ####cmdlog = 'PHP=> '
+                    cmd = []
+                    cmd.append('arduid=' + str(options.arduino_id))
+                    cmdlog = "PHP(DTH)->"
                     for pinnumber in range(0, len(dhtvalue)):
                         if dhtvalue[pinnumber].find("nan") == -1:
-                            cmd += str(pinnumber + 501)
-                            cmdlog += str(pinnumber + 501)
-                            cmd += "="
-                            cmdlog += "="
-                            cmd += dhtvalue[pinnumber].replace("DHT:", "")
-                            cmdlog += dhtvalue[pinnumber].replace("DHT:", "")
-                            cmd += _Separateur
-                            cmdlog += " "
-                    if len(cmd) > 120:
-                        logger.info( cmdlog )
-                        subprocess.Popen(cmd, shell=True)
+                            cmd.append(str(pinnumber + 501) + "=" + dhtvalue[pinnumber].replace("DHT:", ""))
+                            cmdlog += ":" + str(pinnumber + 501) + "=" + dhtvalue[pinnumber].replace("DHT:", "")
+                    logger.debug( cmdlog )
+                    options.jeedom.send(cmd)
 
-            if line.find(">>") > -1 and line.find("<<") > -1:
-                    if ARDUINO_CPOK > 0:
-                        psplit = line.rsplit('>>')
-                        pinnumber = int(psplit[0])
-                        psplit2 = psplit[1].rsplit('<<')
-                        pinvalue[pinnumber] = psplit2[0]
+            elif line.find(">>") > -1 and line.find("<<") > -1:
+                    psplit = line.rsplit('>>')
+                    pinnumber = int(psplit[0])
+                    psplit2 = psplit[1].rsplit('<<')
+                    #pinvalue[pinnumber] = psplit2[0]
+                    cmdlog = 'PHP=> '
+                    cmd = []
+                    cmd.append('arduid=' + str(options.arduino_id))
+                    cmd.append(str(pinnumber) + "=" + psplit2[0])
+                    cmdlog += ":" + str(pinnumber) + "=" + psplit2[0]
+                    logger.debug( cmdlog )
+                    options.jeedom.send(cmd)
+            else:
+               logger.info("NON READABLE Arduino >> [" + line + "]")
 
-                        if options.externalip != "":
-                            cmd = 'http://' + options.externalip + '/plugins/arduidom/core/php/jeeArduidom.php?'
-                            _Separateur = "&"
-                        else:
-                            cmd = 'nice -n 19 /usr/bin/php '
-                            cmd += '/usr/share/nginx/www/jeedom/plugins/arduidom/core/php/jeeArduidom.php '
-                            _Separateur = " "
-                        cmdlog = 'PHP=> '
-                        #cmd = 'nice -n 19 /usr/bin/php '
-                        #cmd += '/usr/share/nginx/www/jeedom/plugins/arduidom/core/php/jeeArduidom.php '
-                        cmd += 'api=' + options.apikey + _Separateur
-                        cmd += 'arduid=' + str(options.arduino_id) + _Separateur
-                        cmd += str(pinnumber)
-                        cmdlog += str(pinnumber)
-                        cmd += "="
-                        cmdlog += "="
-                        cmd += pinvalue[pinnumber]
-                        cmdlog += pinvalue[pinnumber]
-                        cmd += _Separateur
-                        cmdlog += " "
-                        if len(cmd) > 120:
-                            logger.info( cmdlog )
-                            subprocess.Popen(cmd, shell=True)
-
-
+def COMServer(options,threadName):
+    global to_arduino
+    logger.debug( "Thread " + threadName + " Started.")
+    logger.info("Opening Arduino USB Port...")
+    options.ArduinoPort = serial.Serial(options.deviceport, 115200, timeout=0.1)
+    time.sleep(1)
+    logger.debug("En attente de l'arduino (HELLO)")
+    logger.debug("[" + "PING" + "] >> Arduino" )
+    options.ArduinoPort.write("PING\n")
+    time.sleep(0.5)
+    while re.search("^PING_OK",options.ArduinoPort.readline()):
+        logger.debug("[" + "PING" + "] >> Arduino" )
+        options.ArduinoPort.write("PING\n")
+        time.sleep(0.1)
+    options.ArduinoPort.flush()
+    logger.debug("Arduino est pret")
+    while True:
+        line = options.ArduinoPort.readline()
+        if line != '':
+             parse_adrduino_answer(options,line)
+             next
+        if not to_arduino.empty():
+            logger.debug("process Queue")
+            command = to_arduino.get()
+            request = command.start_processing()
+            logger.debug("IN check_queue doing " + request)
+            if len(request)>=64:
+               options.ArduinoPort.write(request[0:64])
+               time.sleep(0.5)  # TODO WHY !!!
+               options.ArduinoPort.write(request[64:127] + '\n')
+            else:
+               options.ArduinoPort.write(request + '\n')
+            line = options.ArduinoPort.readline()
+            while not re.search(command.confirm,line):
+                 parse_adrduino_answer(options,line)
+                 if command.status() == "TIMEOUT":
+                     logger.error("TIMEOUT : " + request) 
+                     to_arduino.task_done()
+                     break
+                 line = options.ArduinoPort.readline()
+            else:         
+                 #bonne reponse (on sort du while correctment)
+                 line = line.replace('\n', '')
+                 line = line.replace('\r', '')
+                 logger.debug("IN check_queue answer = " + line)
+                 command.result(line)
+                 to_arduino.task_done()
+    logger.error( "Thread END.")
 
 def main(argv=None):
     global logger
+    pinvalue = []
     pyfolder = os.path.dirname(os.path.realpath(__file__)) + "/"
     nbprocesses = 0
-    lastradiosend = datetime.now()
     for x in range(0,102):
         pinvalue.append("z")
 
     (options, args) = cli_parser(argv)
+    options.jeedom = Jeedom("PHP","","",options.apikey)
     LOG_FILENAME = pyfolder + '../../../log/arduidom_daemon_' + str(options.arduino_id)
-    formatter = logging.Formatter('%(asctime)s - %(threadName)s - %(module)s:%(lineno)d - %(levelname)s - %(message)s')
-    if (options.loglevel == 1):
-        loglevel = "DEBUG" 
-    else: 
+    formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(threadName)s - %(module)s:%(lineno)d - %(message)s')
+    if (options.loglevel == "1"):
+        loglevel = "DEBUG"
+    else:
         loglevel = "INFO"
     if options.nodaemon != "no":
         loglevel = "DEBUG"
         handler = logging.StreamHandler()
     else:
-        handler = logging.FileHandler(LOG_FILENAME+"_logger")
+        handler = logging.FileHandler(LOG_FILENAME)
     handler.setFormatter(formatter)
     logger = logging.getLogger("arduidom"+str(options.arduino_id))
     logger.setLevel(logging.getLevelName(loglevel))
@@ -315,9 +290,9 @@ def main(argv=None):
     logger.info("# ArduiDom - Arduino Link for jeeDom #")
     logger.info("# v1.03                  by Bobox 59 #")
     logger.info("######################################")
+    logger.info("LogLevel = " + loglevel + " option.logvevel = " + str(options.loglevel))
     logger.debug("Python version: %s.%s.%s" % sys.version_info[:3])
 
-#    sys.stdout = open(LOG_FILENAME, 'a', 1)
     sys.stderr = open(LOG_FILENAME+"_stderr", 'a', 1)
 
 
@@ -362,34 +337,16 @@ def main(argv=None):
 
     if os.path.isfile(PID_FILENAME):
         logger.debug("fichier PID trouvé au démarrage, suppression...")
-        #os.kill(PID_FILENAME, signal.SIGKILL)
         os.remove(PID_FILENAME)
-
-    file(PID_FILENAME, 'w').write(str(os.getpid()))
-    logger.info("Opening Arduino USB Port...")
-    options.ArduinoPort = serial.Serial(options.deviceport, 115200, timeout=0.1)
-    logger.debug(options.ArduinoPort)
-    time.sleep(1)
-    logger.debug("En attente de l'arduino (HELLO)")
-    logger.debug("[" + "PING" + "] >> Arduino" )
-    options.ArduinoPort.write("PING\n")
-
-    time.sleep(0.5)
-    arduino_rx = options.ArduinoPort.readline()
-    while arduino_rx.find("PING_OK") == -1:
-        logger.debug("[" + "PING" + "] >> Arduino" )
-        options.ArduinoPort.write("PING\n")
-        arduino_rx = options.ArduinoPort.readline()
-        logger.debug(arduino_rx)
-
-    arduino_rx = ""
-    time.sleep(0.1)
-    options.ArduinoPort.flush()
+    file(PID_FILENAME,"w").write(str(os.getpid()))
 
     logger.info("Launch USB Thread...")
     # noinspection PyBroadException
     try:
-        thread.start_new_thread(COMServer, (options,"TH-COMServer",))
+        worker_usb = Thread(target=COMServer, args=(options, "TH-COMServer",))
+        worker_usb.setDaemon(True)
+        worker_usb.start()
+        #thread.start_new_thread(COMServer, (options,"TH-COMServer",))
     except ImportError, e:
         logger.error("Error with Thread TH-COMServer :"+str(e))
         quit()
@@ -398,7 +355,10 @@ def main(argv=None):
     logger.info("Launch TCP Thread on port " + str(options.port) + "...")
     # noinspection PyBroadException
     try:
-        thread.start_new_thread(tcpServerThread, (options,"TH-TcpServer",))
+        worker_usb = Thread(target=tcpServerThread, args=(options, "TH-TcpServer",))
+        worker_usb.setDaemon(True)
+        worker_usb.start()
+        #thread.start_new_thread(tcpServerThread, (options,"TH-TcpServer",))
     except ImportError, e:
         logger.error("Error with Thread TH-TcpServer "+str(e))
         quit()
@@ -416,4 +376,3 @@ def main(argv=None):
 
 if __name__ == '__main__':
     main()
-
