@@ -57,6 +57,11 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                                 echo '<option value="' . "Network" . '">' . "Arduino avec Shield Ethernet" . ' (' . "Network" . ')</option>';
                                 echo '<optgroup label="Manuel (si non détecté)" />';
                                 echo '<option value="' . "/dev/ttyUSB0" . '">' . "Arduino sur USB /dev/ttyUSB0" . ' (' . "/dev/ttyUSB0" . ')</option>';
+                                echo '<option value="' . "/dev/ttyUSB1" . '">' . "Arduino sur USB /dev/ttyUSB1" . ' (' . "/dev/ttyUSB1" . ')</option>';
+                                echo '<option value="' . "/dev/ttyUSB2" . '">' . "Arduino sur USB /dev/ttyUSB2" . ' (' . "/dev/ttyUSB2" . ')</option>';
+                                echo '<option value="' . "/dev/ttyACM0" . '">' . "Arduino sur USB /dev/ttyACM0" . ' (' . "/dev/ttyACM0" . ')</option>';
+                                echo '<option value="' . "/dev/ttyACM1" . '">' . "Arduino sur USB /dev/ttyACM1" . ' (' . "/dev/ttyACM1" . ')</option>';
+                                echo '<option value="' . "/dev/ttyACM2" . '">' . "Arduino sur USB /dev/ttyACM2" . ' (' . "/dev/ttyACM2" . ')</option>';
                                 echo '<option value="' . "/dev/ttyAMA0" . '">' . "Arduino sur port série GPIO Raspberry" . ' (' . "/dev/ttyAMA0" . ')</option>';
                                 ?>
                             </select>
