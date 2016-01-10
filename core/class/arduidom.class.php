@@ -346,7 +346,8 @@ class arduidom extends eqLogic
             log::add('arduidom', 'error', "Une Migration des données Arduidom est necessaire depuis la v1.08 ! vous pouvez l'executer depuis la configuration du Plugin");
         }
 
-        for ($d = 1; $d < 9; $d++) {
+        $arduinoQty = config::byKey('ArduinoQty', 'arduidom', 0);
+        for ($d = 1; $d <= $arduinoQty; $d++) {
             if ($_AID == '' || $_AID == $d) {
                 $DaemonEnabled = config::byKey('A' . $d . "_daemonenable", 'arduidom', 0);
                 if ($DaemonEnabled == 0) {
