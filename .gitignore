@@ -21,4 +21,4 @@ ressources/._avrdude.uno.cmd
 ressources/arduidom.zip
 ressources/*.hex
 ressources/*.kill
-
+ressources/*.pid
