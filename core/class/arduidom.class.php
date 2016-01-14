@@ -244,6 +244,11 @@ class arduidom extends eqLogic
     {
         self::stopdaemon($_AID);
         $retour = self::startdaemon($_AID);
+        for ($d = 1; $d < 9; $d++) {
+            if ($_AID == '' || $_AID == $d) {
+                self::restoreStates($d);
+            }
+        }
         return $retour;
     }
 
@@ -318,6 +323,7 @@ class arduidom extends eqLogic
                         } else {
                             log::add('arduidom', 'debug', 'Le Démon arduidom ' . $d . ' a bien démarré.');
                             self::setPinMapping($d);
+                            //self::restoreStates($d);
                             if ($_AID == $d) return 1;
                         }
                     } else {
@@ -448,6 +454,34 @@ class arduidom extends eqLogic
     }
 
 
+    public static function restoreStates($_AID)
+    {
+        log::add('arduidom', 'debug', 'restoreStates(' . $_AID . ') called');
+        $array[] = "";
+        foreach (eqLogic::byType('arduidom') as $eqLogic) {
+            foreach ($eqLogic->getCmd('action') as $cmd) {
+                $pin_nb = $cmd->getLogicalId();
+                $ArduinoID = intval(substr($pin_nb, 0, 1));
+                if (!in_array($pin_nb, $array) && $_AID == $ArduinoID){
+                    array_push($array, $pin_nb);
+                    $pin_nb_reduce = intval(substr($pin_nb, 1));
+                    //for ($pin_nb_reduce = $pin_nb; $pin_nb_reduce > 1000; $pin_nb_reduce = $pin_nb_reduce - 1000);
+                    $pinmode = config::byKey('A' . $_AID . '_pin::' . $pin_nb_reduce, 'arduidom');
+                    if ($pinmode == "out" || $pinmode == "pout" || $pinmode == "custout") {
+                        $cachekey = 'arduidom::lastSetPin' . $pin_nb;
+                        $cache1 = cache::byKey($cachekey, "");
+                        $pin_last_value = $cache1->getValue();
+                        if (($pin_last_value != 0 && $pin_last_value != "0")) {
+                            self::setPinValue($pin_nb, $pin_last_value);
+                        }
+                    }
+                }
+            }
+        }
+        return ("OK");
+    }
+
+
     public static function setPinValue($_logicalId, $_value)
     {
         $arduid = 0;
@@ -455,10 +489,13 @@ class arduidom extends eqLogic
             $arduid = $_logicalId[0];
             $_logicalId = intval(substr($_logicalId, 1));
         }
+        $cachekey = "arduidom::lastSetPin" . (intval($arduid) * 1000 + intval($_logicalId));
+        cache::set($cachekey, $_value, 0);
+        log::add('arduidom','debug', '   cache::set(' . $cachekey . ',' . $_value . ')');
         $tcpmsg = "";
         log::add('arduidom', 'debug', 'setPinValue(' . $_logicalId . ',' . $_value . ') for arduino ' . $arduid);
         $config = config::byKey('A' . $arduid . '_pin::' . $_logicalId, 'arduidom');
-        //log::add('arduidom','debug', '   $config=' . $config);
+        log::add('arduidom','debug', '   $config=' . $config);
         if ($config == 'disable') {
             $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
         }
@@ -475,8 +512,10 @@ class arduidom extends eqLogic
             $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . sprintf("%010s", $_value);
         }
         $tcpcheck = arduidom::sendtoArduino($tcpmsg, $arduid);
-        if ($tcpcheck != $tcpmsg . "_OK") {
-            throw new Exception(__("Erreur setPinValue " . $tcpcheck, __FILE__));
+        if ($tcpcheck != "SP_OK") {
+        // if ($tcpcheck != $tcpmsg . "_OK") {
+            log::add('arduidom','error', "Erreur setPinValue " . $tcpcheck . " (Recu : " . $tcpmsg . ")");
+            throw new Exception(__("Erreur setPinValue " . $tcpcheck . " (Recu : " . $tcpmsg . ")", __FILE__));
         }
         return $tcpcheck;
     }
