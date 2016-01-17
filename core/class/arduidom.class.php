@@ -229,6 +229,20 @@ class arduidom extends eqLogic
         return $usbMapping;
     }
 
+    public static function dependancy_install() {
+        log::remove('arduidom_update');
+        $cmd = 'sudo /bin/bash ' . dirname(__FILE__) . '/../../ressources/install.sh';
+        $cmd .= ' >> ' . log::getPathToLog('arduidom_update') . ' 2>&1 &';
+        exec($cmd);
+    }
+
+    public static function updateArduidom() {
+        log::remove('arduidom_update');
+        $cmd = 'sudo /bin/bash ' . dirname(__FILE__) . '/../../ressources/install.sh';
+        $cmd .= ' >> ' . log::getPathToLog('arduidom_update') . ' 2>&1 &';
+        exec($cmd);
+    }
+
 
     public static function start()
     {

@@ -26,6 +26,13 @@ try {
         throw new Exception(__('401 - Accès non autorisé', __FILE__));
     }
 
+
+
+    if (init('action') == 'updateArduidom') {
+        arduidom::updateArduidom();
+        ajax::success();
+    }
+
     for ($i=1; $i < 9; $i++) {
         if (init('action') == 'restartDaemon' . $i) {
             //arduidom::restoreStates(1);

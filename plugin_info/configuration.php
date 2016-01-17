@@ -141,6 +141,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                 <a class="btn btn-default btn-sm tooltips expertModeVisible" id="bt_ArduinologDaemon" title="{{Log du demon Arduino}}" style="width : 100%;display: inline-block;"><i class="fa fa-file-o"></i> {{Log des démons}}</a>
                 <a class="btn btn-danger btn-xs" id="bt_MigrateArduidom"><i class='fa fa-exclamation-triangle'></i> FORCER Migration des données</a>
                 <a href="plugins/arduidom/ressources/Sketch.zip" class="btn btn-info" id="bt_Download"><i class='fa fa-download'></i> Télécharger les Sketchs (USB+Network)</a>
+                <a class="btn btn-warning bt_installDeps"><i class="fa fa-check"></i> Installer/Mettre à jour les dépendances</a>
             </div>
         </div>
         <hr>
@@ -158,6 +159,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                     <option value="8" id="ArduinoQty">8</option>
                 </select>
             </div>
+            bt_installDeps
             Actualiser la page après la Sauvegarde d'un changement.
         </div>
 
@@ -417,6 +419,17 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
         });
 </script>
 
+<script>
+    $('.bt_installDeps').on('click',function(){
+        bootbox.confirm('{{Etes-vous sûr de vouloir installer/mettre à jour les dépendances pour Arduidom ? }}', function (result) {
+            if (result) {
+                $('#md_modal').dialog({title: "{{Installation / Mise à jour}}"});
+                $('#md_modal').load('index.php?v=d&plugin=arduidom&modal=update.arduidom').dialog('open');
+            }
+        });
+    });
+
+</script>
 <script>
     //$(document).ready(function(){
     setTimeout(function() {
