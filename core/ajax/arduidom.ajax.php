@@ -28,6 +28,7 @@ try {
 
     for ($i=1; $i < 9; $i++) {
         if (init('action') == 'restartDaemon' . $i) {
+            //arduidom::restoreStates(1);
             arduidom::restartdaemon($i);
             if (arduidom::checkdaemon($i) == 1) {
                 ajax::success();

@@ -17,7 +17,7 @@
 //
 //
 //--------------------------------------------------------------------------------------------------------------------------------------------------
-//#define FOR_BOBOX59_ONLY  // LIGNE A RETIRER POUR DESACTIVER DES FONCTIONS QUI ME SONT PERSONELLES $$
+#define FOR_BOBOX59_ONLY  // LIGNE A RETIRER POUR DESACTIVER DES FONCTIONS QUI ME SONT PERSONELLES $$
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 //
 //
@@ -598,7 +598,7 @@ void loop() {
 
   if((millis() - tempsLOOP) > 1000){ //Si rien non actualisé depuis 45 Secondes
   
-  CustomValue[0] = CustomValue[1] - 0.1;
+  CustomValue[0] += 0.1;
 
 }
   
