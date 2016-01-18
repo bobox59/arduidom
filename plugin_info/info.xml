@@ -6,7 +6,7 @@
     <icon>fa fa-bug</icon>
     <licence>AGPL</licence>
     <author>Benoit Masquelier</author>
-    <installation>Installer avrdude en SSH (apt-get install avrdude arduino-core) et (sudo pip install ino) puis Téléverser via la page Configurer sur arduino. Pour utiliser des sondes DHT, Utilisez Arduino IDE 1.57 mini, charger le sketch fourni dans /jeedom/plugins/arduidom/ressources, l'adapter a votre cas puis téléverser avec Arduino IDE.  Surtout bien reconfigurer le plugin apres une mise a jour d'une version inférieure a V1.00</installation>
+    <installation>Installer les dépendances. Téléverser via la page Configurer sur arduino. Pour utiliser des sondes DHT, Utilisez Arduino IDE 1.57 mini, charger le sketch téléchargable ci-dessous, l'adapter a votre cas puis téléverser avec Arduino IDE.  Surtout bien reconfigurer le plugin apres une mise a jour d'une version inférieure a V2.00</installation>
     <require>2</require>
     <version>2.0</version>
     <category>automation protocol</category>

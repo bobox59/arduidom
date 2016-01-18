@@ -233,7 +233,7 @@ class arduidom extends eqLogic
         $return = array();
         $return['log'] = 'arduidom_update';
         $return['progress_file'] = '/tmp/dependancy_arduidom_in_progress';
-        if (exec('which smbclient | wc -l') != 0) {
+        if (file_exists("/usr/bin/arduino") && file_exists("/usr/local/bin/ino")) {
             $return['state'] = 'ok';
         } else {
             $return['state'] = 'nok';
@@ -290,9 +290,9 @@ class arduidom extends eqLogic
                 $pid_file = $daemon_path . "/arduidom" . $d . ".pid";
                 if (file_exists($pid_file)) {
                     $pid = intval(trim(file_get_contents($pid_file)));
-                    //system::kill($pid);
+                    system::kill($pid);
                 }
-                //system::fuserk(config::byKey('socketport', 'sms', intval((58200 + $d))));
+                system::fuserk(config::byKey('socketport', 'sms', intval((58200 + $d))));
                 unlink($daemon_path . "/arduidom" . $d . ".pid");
             }
 
