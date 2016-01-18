@@ -136,12 +136,11 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
     <fieldset>
         <div class="form-group">
             <div class="col-lg-10">
-                <a class="btn btn-danger btn-xs" id="bt_FullDebugEnable"><i class='fa fa-exclamation-triangle'></i> Activer les Debugs dans le log</a>
-                <a class="btn btn-danger btn-xs" id="bt_FullDebugDisable"><i class='fa fa-exclamation-triangle'></i> Désactiver les Debugs</a>
-                <a class="btn btn-default btn-sm tooltips expertModeVisible" id="bt_ArduinologDaemon" title="{{Log du demon Arduino}}" style="width : 100%;display: inline-block;"><i class="fa fa-file-o"></i> {{Log des démons}}</a>
+                <!-- <a class="btn btn-danger btn-xs" id="bt_FullDebugEnable"><i class='fa fa-exclamation-triangle'></i> Activer les Debugs dans le log</a> -->
+                <!-- <a class="btn btn-danger btn-xs" id="bt_FullDebugDisable"><i class='fa fa-exclamation-triangle'></i> Désactiver les Debugs</a> -->
+                <!-- <a class="btn btn-default btn-sm tooltips expertModeVisible" id="bt_ArduinologDaemon" title="{{Log du demon Arduino}}" style="width : 100%;display: inline-block;"><i class="fa fa-file-o"></i> {{Log des démons}}</a> -->
                 <a class="btn btn-danger btn-xs" id="bt_MigrateArduidom"><i class='fa fa-exclamation-triangle'></i> FORCER Migration des données</a>
                 <a href="plugins/arduidom/ressources/Sketch.zip" class="btn btn-info" id="bt_Download"><i class='fa fa-download'></i> Télécharger les Sketchs (USB+Network)</a>
-                <a class="btn btn-warning bt_installDeps"><i class="fa fa-check"></i> Installer/Mettre à jour les dépendances</a>
             </div>
         </div>
         <hr>
