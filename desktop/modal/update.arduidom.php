@@ -23,7 +23,7 @@ if (!isConnect('admin')) {
 <a class="btn btn-warning pull-right" data-state="1" id="bt_arduidomLogStopStart"><i class="fa fa-pause"></i> {{Pause}}</a>
 <input class="form-control pull-right" id="in_arduidomLogSearch" style="width : 300px;" placeholder="{{Rechercher}}" />
 <br/><br/><br/>
-<pre id='pre_arduidomupdate' style='overflow: auto; height: 90%;with:90%;'></pre>
+<pre id='pre_arduidomupdate' style='overflow: auto; height: 90%;width:90%;'></pre>
 
 
 <script>
