@@ -268,6 +268,7 @@ class arduidom extends eqLogic
 
     public static function restartdaemon($_AID = '')
     {
+        log::add('arduidom', 'debug', 'restartdaemon(' . $_AID . ") called");
         self::stopdaemon($_AID);
         $retour = self::startdaemon($_AID);
         for ($d = 1; $d < 9; $d++) {
@@ -281,6 +282,7 @@ class arduidom extends eqLogic
 
     public static function stopdaemon($_AID = '')
     {
+        log::add('arduidom', 'debug', 'stopdaemon(' . $_AID . ") called");
         $General_Debug = (file_exists("/tmp/arduidom_debug_mode_on"));
         for ($d = 1; $d < 9; $d++) {
             if ($_AID == '' || $_AID == $d) {
@@ -290,9 +292,12 @@ class arduidom extends eqLogic
                 $pid_file = $daemon_path . "/arduidom" . $d . ".pid";
                 if (file_exists($pid_file)) {
                     $pid = intval(trim(file_get_contents($pid_file)));
+                    log::add('arduidom', 'debug', 'system::kill(' . $pid . ") called");
                     system::kill($pid);
                 }
-                system::fuserk(config::byKey('socketport', 'sms', intval((58200 + $d))));
+                log::add('arduidom', 'debug', "system::fuserk(intval((58200 + " . $d . ")))) called");
+                log::add('arduidom', 'debug', "system::fuserk(" . intval((58200 + $d)) . ") called");
+                system::fuserk(intval((58200 + $d)));
                 unlink($daemon_path . "/arduidom" . $d . ".pid");
             }
 
@@ -301,7 +306,6 @@ class arduidom extends eqLogic
             if ($result != "") log::add('arduidom', 'debug', 'PIDs encore démarrés : ' . $result);
 
             if ($General_Debug) log::add('arduidom', 'debug', 'Desactivation du démon ' . $d . '...');
-            config::save('A' . $d . "_daemonenable", 0, 'arduidom');
 
         }
     return ("OK");
@@ -312,7 +316,7 @@ public static function startdaemon($_AID = '')
     $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
     $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
 
-    log::add('arduidom', 'debug', 'startdaemon(' . $_AID . ').');
+    log::add('arduidom', 'debug', 'startdaemon(' . $_AID . ') called');
     for ($d = 1; $d < 9; $d++) {
         if ($_AID == '' || $_AID == $d) {
             $model = config::byKey('A' . $d . '_model', 'arduidom', '');
@@ -364,7 +368,7 @@ public static function startdaemon($_AID = '')
     public static function checkdaemon($_AID)
 {
     $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
-    if ($General_Debug) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ")");
+    log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ")");
 
     $MigrationCheck = config::byKey('db_version', 'arduidom', 0);
     if ($MigrationCheck < 108) {
@@ -378,6 +382,7 @@ public static function startdaemon($_AID = '')
             $DaemonEnabled = config::byKey('A' . $d . "_daemonenable", 'arduidom', 0);
             if ($DaemonEnabled == 0) {
                 if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' ne sera pas verifié car il a été stoppé manuellement ou Désactivé');
+                if ($_AID == $d) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 0");
                 if ($_AID == $d) return 0;
             } else {
                 $tcpcheck = arduidom::sendtoArduino("PING", $d);
@@ -394,6 +399,7 @@ public static function startdaemon($_AID = '')
                 } else {
                     if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' fonctionne correctement.');
                     self::sendtoArduino("RF",$d);
+                    if ($_AID == $d) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 1");
                     if ($_AID == $d) return 1;
                 }
             }

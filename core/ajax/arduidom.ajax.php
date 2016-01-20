@@ -45,6 +45,7 @@ try {
         }
 
         if (init('action') == 'stopDaemon' . $i) {
+            config::save('A' . $i . "_daemonenable", 0, 'arduidom');
             arduidom::stopdaemon($i);
             if (arduidom::checkdaemon($i) == 0) {
                 ajax::success();
