@@ -45,6 +45,7 @@ try {
         }
 
         if (init('action') == 'stopDaemon' . $i) {
+            log::add('arduidom', 'info', 'Desactivation du démon ' . $i . '...');
             config::save('A' . $i . "_daemonenable", 0, 'arduidom');
             arduidom::stopdaemon($i);
             if (arduidom::checkdaemon($i) == 0) {

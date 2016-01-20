@@ -213,7 +213,8 @@ foreach (eqLogic::byType('arduidom') as $eqLogic){
                     //log::add('arduidom', 'debug', '$$$ jeeArduidom before $cmd->event(' . $_GET[$pin_nb] . ")");
                     $cmd->setCollectDate('');
                     $cmd->event($_GET[$pin_nb]);
-                    log::add('arduidom', 'debug', '$$$ jeeArduidom after $cmd->event(' . $_GET[$pin_nb] . ")");
+                    log::add('arduidom', 'debug', '$$$ jeeArduidom after $cmd->event(' . $_GET[$pin_nb] . ") on pin " . $pin_nb);
+                    log::add('arduidom', 'event', 'Arduino n°' . $id . ' Mise à jour de ' . "???" . ' terminée (pin' . $pin_nb . ' = ' . $_GET[$pin_nb] . ')');
                     log::add('arduidom', 'event', 'Arduino n°' . $id . ' Mise à jour de ' . $eqLogic->getHumanName() . ' terminée (pin' . $pin_nb . ' = ' . $_GET[$pin_nb] . ')');
                 } else {
                     //log::add('arduidom', 'debug', "$$$ jeeArduidom Compare [" . $cmd . "] :: Is NOT an object :(");

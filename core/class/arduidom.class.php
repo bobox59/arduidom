@@ -292,21 +292,18 @@ class arduidom extends eqLogic
                 $pid_file = $daemon_path . "/arduidom" . $d . ".pid";
                 if (file_exists($pid_file)) {
                     $pid = intval(trim(file_get_contents($pid_file)));
-                    log::add('arduidom', 'debug', 'system::kill(' . $pid . ") called");
-                    system::kill($pid);
+                    $killresult = system::kill($pid);
+                    log::add('arduidom', 'debug', 'system::kill(' . $pid . ") = " . $killresult);
                 }
-                log::add('arduidom', 'debug', "system::fuserk(intval((58200 + " . $d . ")))) called");
-                log::add('arduidom', 'debug', "system::fuserk(" . intval((58200 + $d)) . ") called");
-                system::fuserk(intval((58200 + $d)));
+                $fuserk_result = system::fuserk(intval((58200 + $d)));
+                log::add('arduidom', 'debug', "system::fuserk(" . intval((58200 + $d)) . ") = " . $fuserk_result);
+                log::add('arduidom', 'debug', "removing file " . $daemon_path . "/arduidom" . $d . ".pid");
                 unlink($daemon_path . "/arduidom" . $d . ".pid");
             }
 
             // Ancienne methode a supprimer, conservée quelques temps pour compatibilité avec version avant 30 déc 2015
             $result = exec("ps aux | grep arduidom" . $d . ".py | grep -v grep | awk '{print $2}'");
             if ($result != "") log::add('arduidom', 'debug', 'PIDs encore démarrés : ' . $result);
-
-            if ($General_Debug) log::add('arduidom', 'debug', 'Desactivation du démon ' . $d . '...');
-
         }
     return ("OK");
 }
@@ -398,7 +395,7 @@ public static function startdaemon($_AID = '')
                     }
                 } else {
                     if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' fonctionne correctement.');
-                    self::sendtoArduino("RF",$d);
+                    //self::sendtoArduino("RF",$d); // RETIRE CAR INUTILE DEPUIS MISE EN PLACE DU CRON
                     if ($_AID == $d) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 1");
                     if ($_AID == $d) return 1;
                 }

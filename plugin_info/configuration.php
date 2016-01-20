@@ -21,7 +21,6 @@ if (!isConnect()) {
     include_file('desktop', '404', 'php');
     die();
 }
-//$daemonRunning = arduidom::checkdaemon();
 
 $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
 
@@ -33,7 +32,8 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
         } else {
             echo '<li>';
         }
-        echo '<a data-toggle="tab" href="#tab_' . $i . '">{{Arduino ' . $i . ' <span class="label label-' . ((arduidom::checkdaemon($i) == 1) ? 'success' : 'danger') . ' ">' . ((arduidom::checkdaemon($i) == 1) ? 'OK' : 'NOK') . '</span>' . '}}</a></li>';
+        $daemonstate = arduidom::checkdaemon($i);
+        echo '<a data-toggle="tab" href="#tab_' . $i . '">{{Arduino ' . $i . ' <span class="label label-' . (($daemonstate == 1) ? 'success' : 'danger') . ' ">' . (($daemonstate == 1) ? 'OK' : 'NOK') . '</span>' . '}}</a></li>';
     } ?>
 </ul>
 
