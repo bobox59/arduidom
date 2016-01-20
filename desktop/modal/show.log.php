@@ -27,14 +27,14 @@ if (!isConnect('admin')) {
 
 
 <ul class="nav nav-pills" id="tab_arid">
-    <li class="active"><a data-toggle="tab" href="#tab_1">{{Démon <span class="badge">1</span> <?php if (arduidom::checkdaemon(1) != 1) echo ' (NOK)' ?>}}</a></li>
-    <li<?php if (arduidom::checkdaemon(2) != 1) echo ' class="disabled"' ?> ><a data-toggle="tab" href="#tab_2">{{Démon <span class="badge">2</span><?php if (arduidom::checkdaemon(2) != 1) echo ' (Offline)' ?>}}</a></li>
-    <li<?php if (arduidom::checkdaemon(3) != 1) echo ' class="disabled"' ?> ><a data-toggle="tab" href="#tab_3">{{Démon <span class="badge">3</span><?php if (arduidom::checkdaemon(3) != 1) echo ' (Offline)' ?>}}</a></li>
-    <li<?php if (arduidom::checkdaemon(4) != 1) echo ' class="disabled"' ?> ><a data-toggle="tab" href="#tab_4">{{Démon <span class="badge">4</span><?php if (arduidom::checkdaemon(4) != 1) echo ' (Offline)' ?>}}</a></li>
-    <li<?php if (arduidom::checkdaemon(5) != 1) echo ' class="disabled"' ?> ><a data-toggle="tab" href="#tab_5">{{Démon <span class="badge">5</span><?php if (arduidom::checkdaemon(5) != 1) echo ' (Offline)' ?>}}</a></li>
-    <li<?php if (arduidom::checkdaemon(6) != 1) echo ' class="disabled"' ?> ><a data-toggle="tab" href="#tab_6">{{Démon <span class="badge">6</span><?php if (arduidom::checkdaemon(6) != 1) echo ' (Offline)' ?>}}</a></li>
-    <li<?php if (arduidom::checkdaemon(7) != 1) echo ' class="disabled"' ?> ><a data-toggle="tab" href="#tab_7">{{Démon <span class="badge">7</span><?php if (arduidom::checkdaemon(7) != 1) echo ' (Offline)' ?>}}</a></li>
-    <li<?php if (arduidom::checkdaemon(8) != 1) echo ' class="disabled"' ?> ><a data-toggle="tab" href="#tab_8">{{Démon <span class="badge">8</span><?php if (arduidom::checkdaemon(8) != 1) echo ' (Offline)' ?>}}</a></li>
+    <li class="active"><a data-toggle="tab" href="#tab_1">{{Démon <span class="badge">1</span> <?php if (arduidom::checkdaemon(1,false) != 1) echo ' (NOK)' ?>}}</a></li>
+    <li<?php if (arduidom::checkdaemon(2,false) != 1) echo ' class="disabled"' ?> ><a data-toggle="tab" href="#tab_2">{{Démon <span class="badge">2</span><?php if (arduidom::checkdaemon(2,false) != 1) echo ' (Offline)' ?>}}</a></li>
+    <li<?php if (arduidom::checkdaemon(3,false) != 1) echo ' class="disabled"' ?> ><a data-toggle="tab" href="#tab_3">{{Démon <span class="badge">3</span><?php if (arduidom::checkdaemon(3,false) != 1) echo ' (Offline)' ?>}}</a></li>
+    <li<?php if (arduidom::checkdaemon(4,false) != 1) echo ' class="disabled"' ?> ><a data-toggle="tab" href="#tab_4">{{Démon <span class="badge">4</span><?php if (arduidom::checkdaemon(4,false) != 1) echo ' (Offline)' ?>}}</a></li>
+    <li<?php if (arduidom::checkdaemon(5,false) != 1) echo ' class="disabled"' ?> ><a data-toggle="tab" href="#tab_5">{{Démon <span class="badge">5</span><?php if (arduidom::checkdaemon(5,false) != 1) echo ' (Offline)' ?>}}</a></li>
+    <li<?php if (arduidom::checkdaemon(6,false) != 1) echo ' class="disabled"' ?> ><a data-toggle="tab" href="#tab_6">{{Démon <span class="badge">6</span><?php if (arduidom::checkdaemon(6,false) != 1) echo ' (Offline)' ?>}}</a></li>
+    <li<?php if (arduidom::checkdaemon(7,false) != 1) echo ' class="disabled"' ?> ><a data-toggle="tab" href="#tab_7">{{Démon <span class="badge">7</span><?php if (arduidom::checkdaemon(7,false) != 1) echo ' (Offline)' ?>}}</a></li>
+    <li<?php if (arduidom::checkdaemon(8,false) != 1) echo ' class="disabled"' ?> ><a data-toggle="tab" href="#tab_8">{{Démon <span class="badge">8</span><?php if (arduidom::checkdaemon(8,false) != 1) echo ' (Offline)' ?>}}</a></li>
 </ul>
 
 <div class="tab-content">

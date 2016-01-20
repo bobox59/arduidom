@@ -23,7 +23,7 @@ if (!isConnect('admin')) {
 //    echo '<div class="alert alert-danger">{{Vous n\'avez pas activé l\'enregistrement de tous les messages : allez dans Générale -> Plugin puis rfxcom et coché la case correspondante}}</div>';
 //}
 $_AID = init('arduid');
-$daemonRunning = arduidom::checkdaemon($_AID);
+$daemonRunning = arduidom::checkdaemon($_AID,false);
 if ($daemonRunning != 1) {
     throw new Exception(__("Action Impossible : Le démon Arduidom " . $_AID . " ne fonctionne pas !", __FILE__));
 }

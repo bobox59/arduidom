@@ -229,7 +229,8 @@ class arduidom extends eqLogic
         return $usbMapping;
     }
 
-    public static function dependancy_info() {
+    public static function dependancy_info()
+    {
         $return = array();
         $return['log'] = 'arduidom_update';
         $return['progress_file'] = '/tmp/dependancy_arduidom_in_progress';
@@ -241,14 +242,16 @@ class arduidom extends eqLogic
         return $return;
     }
 
-    public static function dependancy_install() {
+    public static function dependancy_install()
+    {
         log::remove('arduidom_update');
         $cmd = 'sudo /bin/bash ' . dirname(__FILE__) . '/../../ressources/install.sh';
         $cmd .= ' >> ' . log::getPathToLog('arduidom_update') . ' 2>&1 &';
         exec($cmd);
     }
 
-    public static function updateArduidom() {
+    public static function updateArduidom()
+    {
         log::remove('arduidom_update');
         $cmd = 'sudo /bin/bash ' . dirname(__FILE__) . '/../../ressources/install.sh';
         $cmd .= ' >> ' . log::getPathToLog('arduidom_update') . ' 2>&1 &';
@@ -305,106 +308,105 @@ class arduidom extends eqLogic
             $result = exec("ps aux | grep arduidom" . $d . ".py | grep -v grep | awk '{print $2}'");
             if ($result != "") log::add('arduidom', 'debug', 'PIDs encore démarrés : ' . $result);
         }
-    return ("OK");
-}
+        return ("OK");
+    }
 
-public static function startdaemon($_AID = '')
-{
-    $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
-    $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
+    public static function startdaemon($_AID = '')
+    {
+        $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
+        $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
 
-    log::add('arduidom', 'debug', 'startdaemon(' . $_AID . ') called');
-    for ($d = 1; $d < 9; $d++) {
-        if ($_AID == '' || $_AID == $d) {
-            $model = config::byKey('A' . $d . '_model', 'arduidom', '');
-            $port = config::byKey('A' . $d . '_port', 'arduidom', '');
-            if ($port != 'none' && $model != 'none' && $port != '' && $model != '') {
-                config::save('A' . $d . "_daemonenable", 1, 'arduidom');
-                if (file_exists($port) || $port == "Network") {
+        log::add('arduidom', 'debug', 'startdaemon(' . $_AID . ') called');
+        for ($d = 1; $d < 9; $d++) {
+            if ($_AID == '' || $_AID == $d) {
+                $model = config::byKey('A' . $d . '_model', 'arduidom', '');
+                $port = config::byKey('A' . $d . '_port', 'arduidom', '');
+                if ($port != 'none' && $model != 'none' && $port != '' && $model != '') {
+                    config::save('A' . $d . "_daemonenable", 1, 'arduidom');
+                    if (file_exists($port) || $port == "Network") {
 
-                    if ($General_Debug) log::add('arduidom', 'debug', 'Tentative de démarrage du Démon arduidom ' . $d . '...');
+                        if ($General_Debug) log::add('arduidom', 'debug', 'Tentative de démarrage du Démon arduidom ' . $d . '...');
 
-                    if ($port != 'Network') {
-                        unlink($daemon_path . '/arduidom' . $d . '.kill');
-                        $cmd = 'nice -n 19 /usr/bin/python ' . $daemon_path . '/arduidomx.py' . " -p " . (58200 + $d) . " -d " . $port . " -l " . config::byKey('A' . $d . '_daemonlog', 'arduidom') . " -i " . $d . " -a " . config::byKey('api') . " -e " . config::byKey('A' . $d . '_daemonip', 'arduidom', "127.0.0.1");
-                        log::add('arduidom', 'info', 'Lancement démon ' . $d . ' : ' . $cmd);
-                        $result = exec($cmd . ' >> ' . log::getPathToLog('arduidom') . ' 2>&1 &');
-                        log::add('arduidom', 'info', 'Lancement démon ' . $d . ' : result : ' . $result);
-                        if (strpos(strtolower($result), 'error') !== false || strpos(strtolower($result), 'traceback') !== false) {
-                            //log::add('arduidom', 'error', $result);
-                            if ($_AID == $d) return 0;
+                        if ($port != 'Network') {
+                            unlink($daemon_path . '/arduidom' . $d . '.kill');
+                            $cmd = 'nice -n 19 /usr/bin/python ' . $daemon_path . '/arduidomx.py' . " -p " . (58200 + $d) . " -d " . $port . " -l " . config::byKey('A' . $d . '_daemonlog', 'arduidom') . " -i " . $d . " -a " . config::byKey('api') . " -e " . config::byKey('A' . $d . '_daemonip', 'arduidom', "127.0.0.1");
+                            log::add('arduidom', 'info', 'Lancement démon ' . $d . ' : ' . $cmd);
+                            $result = exec($cmd . ' >> ' . log::getPathToLog('arduidom') . ' 2>&1 &');
+                            log::add('arduidom', 'info', 'Lancement démon ' . $d . ' : result : ' . $result);
+                            if (strpos(strtolower($result), 'error') !== false || strpos(strtolower($result), 'traceback') !== false) {
+                                //log::add('arduidom', 'error', $result);
+                                if ($_AID == $d) return 0;
+                            }
+                            sleep(4);
                         }
-                        sleep(4);
-                    }
 
-                    $resp = self::sendtoArduino("PING", $d);
-                    if (strpos($resp, '_OK') == false) {
-                        log::add('arduidom', 'error', 'Erreur: Réponse du démon ' . $d . " = [" . $resp . "] au lieu de [PING_OK] (startdaemon)");
-                        if ($_AID == $d) return 0;
+                        $resp = self::sendtoArduino("PING", $d);
+                        if (strpos($resp, '_OK') == false) {
+                            log::add('arduidom', 'error', 'Erreur: Réponse du démon ' . $d . " = [" . $resp . "] au lieu de [PING_OK] (startdaemon)");
+                            if ($_AID == $d) return 0;
+                        } else {
+                            log::add('arduidom', 'debug', 'Le Démon arduidom ' . $d . ' a bien démarré.');
+                            self::setPinMapping($d);
+                            //self::restoreStates($d);
+                            if ($_AID == $d) return 1;
+                        }
                     } else {
-                        log::add('arduidom', 'debug', 'Le Démon arduidom ' . $d . ' a bien démarré.');
-                        self::setPinMapping($d);
-                        //self::restoreStates($d);
-                        if ($_AID == $d) return 1;
+                        log::add('arduidom', 'error', __("Le port ou modèle de l'Arduino " . $d . " n'est pas configuré", __FILE__), 'noArduinoComPort');
+                        if ($_AID == $d) return 0;
                     }
+                    message::removeAll('arduidom', 'noArduinoComPort');
                 } else {
-                    log::add('arduidom', 'error', __("Le port ou modèle de l'Arduino " . $d . " n'est pas configuré", __FILE__), 'noArduinoComPort');
+                    log::add('arduidom', 'error', __("Verifier que l'arduino " . $d . " est bien branché et reconnu", __FILE__), 'noArduinoComPort');
                     if ($_AID == $d) return 0;
                 }
-                message::removeAll('arduidom', 'noArduinoComPort');
-            } else {
-                log::add('arduidom', 'error', __("Verifier que l'arduino " . $d . " est bien branché et reconnu", __FILE__), 'noArduinoComPort');
-                if ($_AID == $d) return 0;
             }
         }
-    }
-    return 1;
-}
-
-
-    public static function checkdaemon($_AID)
-{
-    $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
-    log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ")");
-
-    $MigrationCheck = config::byKey('db_version', 'arduidom', 0);
-    if ($MigrationCheck < 108) {
-        if ($General_Debug) log::add('arduidom', 'info', "La version de la base de données Arduidom n'est pas la bonne...");
-        log::add('arduidom', 'error', "Une Migration des données Arduidom est necessaire depuis la v1.08 ! vous pouvez l'executer depuis la configuration du Plugin");
+        return 1;
     }
 
-    $arduinoQty = config::byKey('ArduinoQty', 'arduidom', 0);
-    for ($d = 1; $d <= $arduinoQty; $d++) {
-        if ($_AID == '' || $_AID == $d) {
-            $DaemonEnabled = config::byKey('A' . $d . "_daemonenable", 'arduidom', 0);
-            if ($DaemonEnabled == 0) {
-                if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' ne sera pas verifié car il a été stoppé manuellement ou Désactivé');
-                if ($_AID == $d) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 0");
-                if ($_AID == $d) return 0;
-            } else {
-                $tcpcheck = arduidom::sendtoArduino("PING", $d);
-                if ($tcpcheck != "PING_OK") {
-                    log::add('arduidom', 'error', "Erreur: Réponse du démon " . $d . " = [" . $tcpcheck . "] au lieu de [PING_OK] (checkdaemon)");
-                    log::add('arduidom', 'error', "Redémarrage Automatique du démon " . $d . " (checkdaemon)");
-                    arduidom::stopdaemon($d);
-                    sleep(1);
-                    if ($_AID == $d) {
-                        return arduidom::startdaemon($d);
-                    } else {
-                        arduidom::startdaemon($d);
-                    }
+
+    public static function checkdaemon($_AID, $AutoSendRF = true)
+    {
+        $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
+        if ($General_Debug) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . "," . $AutoSendRF . ")");
+
+        $MigrationCheck = config::byKey('db_version', 'arduidom', 0);
+        if ($MigrationCheck < 108) {
+            if ($General_Debug) log::add('arduidom', 'info', "La version de la base de données Arduidom n'est pas la bonne...");
+            log::add('arduidom', 'error', "Une Migration des données Arduidom est necessaire depuis la v1.08 ! vous pouvez l'executer depuis la configuration du Plugin");
+        }
+
+        $arduinoQty = config::byKey('ArduinoQty', 'arduidom', 0);
+        for ($d = 1; $d <= $arduinoQty; $d++) {
+            if ($_AID == '' || $_AID == $d) {
+                $DaemonEnabled = config::byKey('A' . $d . "_daemonenable", 'arduidom', 0);
+                if ($DaemonEnabled == 0) {
+                    if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' ne sera pas verifié car il a été stoppé manuellement ou Désactivé');
+                    if ($_AID == $d) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 0");
+                    if ($_AID == $d) return 0;
                 } else {
-                    if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' fonctionne correctement.');
-                    //self::sendtoArduino("RF",$d); // RETIRE CAR INUTILE DEPUIS MISE EN PLACE DU CRON
-                    if ($_AID == $d) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 1");
-                    if ($_AID == $d) return 1;
+                    $tcpcheck = arduidom::sendtoArduino("PING", $d);
+                    if ($tcpcheck != "PING_OK") {
+                        log::add('arduidom', 'error', "Erreur: Réponse du démon " . $d . " = [" . $tcpcheck . "] au lieu de [PING_OK] (checkdaemon)");
+                        log::add('arduidom', 'error', "Redémarrage Automatique du démon " . $d . " (checkdaemon)");
+                        arduidom::stopdaemon($d);
+                        sleep(1);
+                        if ($_AID == $d) {
+                            return arduidom::startdaemon($d);
+                        } else {
+                            arduidom::startdaemon($d);
+                        }
+                    } else {
+                        if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' fonctionne correctement.');
+                        if ($AutoSendRF) self::sendtoArduino("RF",$d);
+                        if ($_AID == $d) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 1");
+                        if ($_AID == $d) return 1;
+                    }
                 }
             }
         }
+        return 1;
     }
-    return 1;
-}
-
 
     public static function setPinMapping($_AID)
 {

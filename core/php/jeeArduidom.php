@@ -21,7 +21,6 @@ require_once dirname(__FILE__) . "/../../../../core/php/core.inc.php";
 
 $ardulogfile = dirname(__FILE__) . "/../../../../log/arduidom.message";
 $arduid = 0;
-$id = "";
 $time_before = microtime(true) ;
 //$bench_id = 0;
 //$bench_id++; $elapsed_time = microtime(true) - $time_before; log::add('arduidom','debug', '                                                                                   benchmark b(' . $bench_id . '): ' . ($elapsed_time * 1000) . " ms ");
@@ -60,32 +59,6 @@ if (!isset($argv)) {
 
 //log::add('arduidom', 'debug', "$$$ jeeArduidom Check API");
 
-/*
-if (config::byKey('api') != '') {
-    try {
-        if($_GET["api"] != config::byKey('api')){
-            if (php_sapi_name() != 'cli' || isset($_SERVER['REQUEST_METHOD']) || !isset($_SERVER['argc'])) {
-                if (config::byKey('api') != init('apikey')) {
-                    connection::failed();
-                    echo 'Clef API non valide, vous n\'etes pas autorisé à effectuer cette action (jeeApi)';
-                    log::add('arduidom', 'error', 'Problème avec la clé API, modifiez la puis redémarrez le plugin');
-                    die();
-                }
-            }
-        }
-        if($_GET["arduid"] < 1){
-            echo 'ID Arduidom Non fourni, vous devez mettre a jour votre version d Arduidom';
-            log::add('arduidom', 'error', 'ID Arduidom Non fourni, vous devez mettre a jour votre version d Arduidom');
-            die();
-        } else {
-            $id = $_GET["arduid"];
-        }
-    } catch (Exception $e) {
-        echo $e->getMessage();
-        log::add('arduidom', 'error', $e->getMessage());
-    }
-}
-*/
 if (!jeedom::apiAccess(init('api'))) {
     connection::failed();
     echo 'Clef API non valide, vous n\'etes pas autorisé à effectuer cette action (arduidom)';
@@ -93,7 +66,7 @@ if (!jeedom::apiAccess(init('api'))) {
     die();
 }
 
-//log::add('arduidom', 'debug', "$$$ jeeArduidom API OK, ID=" . $id);
+//log::add('arduidom', 'debug', "$$$ jeeArduidom API OK, ID=" . $arduid);
 
 if (file_exists($ardulogfile) == false) {
     log::add('arduidom', 'info', "Creation de arduidom.message");
@@ -159,7 +132,7 @@ foreach ($_GET as $key => $value){ // DECODAGE RADIO DE LA TABLE $_GET => AFFICH
 
 
 }
-//log::add('arduidom','debug','========jee========ID:' . $id . "  " . $jeedebugkeys);
+//log::add('arduidom','debug','========jee========ID:' . $arduid . "  " . $jeedebugkeys);
 
 
 $ApprentissageRadio = cache::byKey('arduidom_radio_learn');
@@ -194,7 +167,7 @@ foreach (eqLogic::byType('arduidom') as $eqLogic){
             log::add('arduidom','debug', '===============TEST============== compare ' . $valueToCheck . ' & ' . $code_radio);
             if ($valueToCheck == $code_radio) {
                 if (is_object($cmd)) {
-                    log::add('arduidom','debug', 'Arduino n°' . $id . ' Action (Reception Radio) sur ' . $cmd->getHumanName());
+                    log::add('arduidom','debug', 'Arduino n°' . $arduid . ' Action (Reception Radio) sur ' . $cmd->getHumanName());
                     $daemon_path = realpath(dirname(__FILE__) . '/../../core/php');
                     $command = 'nice -n 19 php ' . $daemon_path . '/jeeRadio.php api=' . config::byKey('api') . " code=" . $code_radio . " time=" . "5" ;
                     log::add('arduidom', 'info', 'Lancement radio : ' . $command);
@@ -214,8 +187,8 @@ foreach (eqLogic::byType('arduidom') as $eqLogic){
                     $cmd->setCollectDate('');
                     $cmd->event($_GET[$pin_nb]);
                     log::add('arduidom', 'debug', '$$$ jeeArduidom after $cmd->event(' . $_GET[$pin_nb] . ") on pin " . $pin_nb);
-                    log::add('arduidom', 'event', 'Arduino n°' . $id . ' Mise à jour de ' . "???" . ' terminée (pin' . $pin_nb . ' = ' . $_GET[$pin_nb] . ')');
-                    log::add('arduidom', 'event', 'Arduino n°' . $id . ' Mise à jour de ' . $eqLogic->getHumanName() . ' terminée (pin' . $pin_nb . ' = ' . $_GET[$pin_nb] . ')');
+                    log::add('arduidom', 'debug', 'Arduino n°' . $arduid . ' Mise à jour de ' . $eqLogic->getHumanName() . ' terminée (pin' . $pin_nb . ' = ' . $_GET[$pin_nb] . ')');
+                    log::add('arduidom', 'event', 'Arduino n°' . $arduid . ' Mise à jour de ' . $eqLogic->getHumanName() . ' terminée (pin' . $pin_nb . ' = ' . $_GET[$pin_nb] . ')');
                 } else {
                     //log::add('arduidom', 'debug', "$$$ jeeArduidom Compare [" . $cmd . "] :: Is NOT an object :(");
                 }

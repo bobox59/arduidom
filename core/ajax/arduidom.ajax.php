@@ -37,7 +37,7 @@ try {
         if (init('action') == 'restartDaemon' . $i) {
             //arduidom::restoreStates(1);
             arduidom::restartdaemon($i);
-            if (arduidom::checkdaemon($i) == 1) {
+            if (arduidom::checkdaemon($i,false) == 1) {
                 ajax::success();
             } else {
                 ajax::error("Le démon " . $i . " n'a pas démarré");
@@ -48,7 +48,7 @@ try {
             log::add('arduidom', 'info', 'Desactivation du démon ' . $i . '...');
             config::save('A' . $i . "_daemonenable", 0, 'arduidom');
             arduidom::stopdaemon($i);
-            if (arduidom::checkdaemon($i) == 0) {
+            if (arduidom::checkdaemon($i,false) == 0) {
                 ajax::success();
             } else {
                 ajax::error("Le démon " . $i . " ne s'est pas arreté");
@@ -56,7 +56,7 @@ try {
         }
 
         if (init('action') == 'checkDaemon' . $i) {
-            if (arduidom::checkdaemon($i) == 1) {
+            if (arduidom::checkdaemon($i,false) == 1) {
                 ajax::success();
             } else {
                 ajax::error("Le démon " . $i . " ne fonctionne pas !");

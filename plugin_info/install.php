@@ -20,7 +20,7 @@ require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
 function arduidom_install() {
     arduidom::start();
-    $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
+    $cron = cron::byClassAndFunction('arduidom', 'croncheckdaemon');
     if (!is_object($cron)) {
         $cron = new cron();
         $cron->setClass('arduidom');
@@ -55,7 +55,7 @@ function arduidom_update() {
         arduidom::start();
     }
     arduidom::startdaemon();
-    $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
+    $cron = cron::byClassAndFunction('arduidom', 'croncheckdaemon');
     if (!is_object($cron)) {
         $cron = new cron();
         $cron->setClass('arduidom');
@@ -70,7 +70,7 @@ function arduidom_update() {
 }
 
 function arduidom_remove() {
-    $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
+    $cron = cron::byClassAndFunction('arduidom', 'croncheckdaemon');
     if (is_object($cron)) {
         $cron->remove();
     }
