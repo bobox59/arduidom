@@ -17,7 +17,7 @@
 //
 //
 //--------------------------------------------------------------------------------------------------------------------------------------------------
-#define FOR_BOBOX59_ONLY  // LIGNE A RETIRER POUR DESACTIVER DES FONCTIONS QUI ME SONT PERSONELLES $$
+//#define FOR_BOBOX59_ONLY  // LIGNE A RETIRER POUR DESACTIVER DES FONCTIONS QUI ME SONT PERSONELLES $$
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 //
 //
@@ -25,7 +25,7 @@
 // --------------------------CONFIGURATIONS DES SONDES DHT11/22 ------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 //                                                                                           
-#define CNF_DHT_1_PIN 0 //pin pour la Premiere Sonde DHT (0 si aucune)                         
+#define CNF_DHT_1_PIN 7 //pin pour la Premiere Sonde DHT (0 si aucune)                         
 #define CNF_DHT_2_PIN 0 //pin pour la Sonde DHT 2 (0 si aucune)                         
 #define CNF_DHT_3_PIN 0 //pin pour la Sonde DHT 3 (0 si aucune)                         
 #define CNF_DHT_4_PIN 0 //pin pour la Sonde DHT 4 (0 si aucune)                         

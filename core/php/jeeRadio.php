@@ -61,9 +61,11 @@ log::add('arduidom','info','jeeRadio Called with params:' . $code_radio . ',' . 
                 if ($valueToCheck == $code_radio) {
                     if (is_object($cmd)) {
                         log::add('arduidom','debug', 'Action (Reception Radio) sur ' . $cmd->getHumanName());
+                        $cmd->setCollectDate('');
                         $cmd->event(1);
                         if ($time_reset != 0 && $time_reset < 99) {
                             sleep($time_reset);
+                            $cmd->setCollectDate('');
                             $cmd->event(0);
                         }
                     }

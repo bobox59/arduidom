@@ -455,7 +455,7 @@ public static function startdaemon($_AID = '')
     $tcp_check = self::sendtoArduino($CP, $_AID);
     if (config::byKey('A' . $_AID . '_port', 'arduidom', 'none') == "Network") { // Envoi de la clé API aux arduino ethernet
         if ($tcp_check != "CP_OK") {
-            log::add('arduidom', 'error', "Erreur lors de l'envoi de du CP a l'arduino (" . $tcp_check . ")");
+            log::add('arduidom', 'error', "Erreur lors de l'envoi du CP a l'arduino [" . $tcp_check . "] != [CP_OK]");
             return ("BAD");
         }
         sleep(2);
@@ -465,8 +465,9 @@ public static function startdaemon($_AID = '')
             return ("BAD");
         }
     } else {
-        if ($tcp_check != $CP . "_OK") {
-            log::add('arduidom', 'error', "Erreur lors de l'envoi de du CP a l'arduino (" . $tcp_check . ")");
+        //if ($tcp_check != $CP . "_OK") {
+        if ($tcp_check != "CP_OK") {
+            log::add('arduidom', 'error', "Erreur lors de l'envoi du CP a l'arduino [" . $tcp_check . "] != [CP_OK]");
             return ("BAD");
         }
     }

@@ -16,6 +16,9 @@
  * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
  */
 require_once dirname(__FILE__) . "/../../../../core/php/core.inc.php";
+
+//log::add('arduidom', 'debug', "$$$ jeeArduidom Start");
+
 $ardulogfile = dirname(__FILE__) . "/../../../../log/arduidom.message";
 $arduid = 0;
 $id = "";
@@ -55,6 +58,9 @@ if (!isset($argv)) {
     }
 }
 
+//log::add('arduidom', 'debug', "$$$ jeeArduidom Check API");
+
+/*
 if (config::byKey('api') != '') {
     try {
         if($_GET["api"] != config::byKey('api')){
@@ -79,6 +85,15 @@ if (config::byKey('api') != '') {
         log::add('arduidom', 'error', $e->getMessage());
     }
 }
+*/
+if (!jeedom::apiAccess(init('api'))) {
+    connection::failed();
+    echo 'Clef API non valide, vous n\'etes pas autorisé à effectuer cette action (arduidom)';
+    log::add('arduidom', 'error', "Clef API non valide, vous n\'etes pas autorisé à effectuer cette action");
+    die();
+}
+
+//log::add('arduidom', 'debug', "$$$ jeeArduidom API OK, ID=" . $id);
 
 if (file_exists($ardulogfile) == false) {
     log::add('arduidom', 'info', "Creation de arduidom.message");
@@ -169,33 +184,46 @@ if ($ApprentissageRadio == "1" && $code_radio != '') {
 }
 
 // **** ACTIONS SUR LES DONNEES **** //
+//log::add('arduidom', 'debug', "$$$ jeeArduidom actions sur les données");
 
 foreach (eqLogic::byType('arduidom') as $eqLogic){
     foreach ($eqLogic->getCmd('info') as $cmd) {
         $pin_nb = $cmd->getLogicalId();
         if ($pin_nb == 999 && $code_radio != '' && $ApprentissageRadio != "1") { // Cherche les cmd Arduidom avec la pin 999 (RADIO VIRTUEL)
             $valueToCheck = $cmd->getConfiguration('value');
-            //log::add('arduidom','debug', '===============TEST============== compare ' . $valueToCheck . ' & ' . $code_radio);
+            log::add('arduidom','debug', '===============TEST============== compare ' . $valueToCheck . ' & ' . $code_radio);
             if ($valueToCheck == $code_radio) {
                 if (is_object($cmd)) {
                     log::add('arduidom','debug', 'Arduino n°' . $id . ' Action (Reception Radio) sur ' . $cmd->getHumanName());
                     $daemon_path = realpath(dirname(__FILE__) . '/../../core/php');
-                    $cmd = 'nice -n 19 php ' . $daemon_path . '/jeeRadio.php api=' . config::byKey('api') . " code=" . $code_radio . " time=" . "5" ;
-                    //log::add('arduidom', 'info', 'Lancement radio : ' . $cmd);
-                    exec($cmd . ' > /dev/null&');
-                    //log::add('arduidom', 'info', 'Fin du lancement radio : ' . $cmd);
+                    $command = 'nice -n 19 php ' . $daemon_path . '/jeeRadio.php api=' . config::byKey('api') . " code=" . $code_radio . " time=" . "5" ;
+                    log::add('arduidom', 'info', 'Lancement radio : ' . $command);
+                    exec($command . ' > /dev/null&');
+                    log::add('arduidom', 'info', 'Fin du lancement radio : ' . $command);
                 }
             }
 
         } else {
 
+            //log::add('arduidom', 'debug', "$$$ jeeArduidom Compare [" . $pin_nb . "]");
             if (array_key_exists($pin_nb, $_GET)) {
+                //log::add('arduidom', 'debug', "$$$ jeeArduidom Compare [" . $pin_nb . "] : It Exists 1 :)");
                 if (is_object($cmd)) {
+                    //log::add('arduidom', 'debug', "$$$ jeeArduidom Compare [" . $pin_nb . "] : Is an object :)");
+                    //log::add('arduidom', 'debug', '$$$ jeeArduidom before $cmd->event(' . $_GET[$pin_nb] . ")");
+                    $cmd->setCollectDate('');
                     $cmd->event($_GET[$pin_nb]);
+                    log::add('arduidom', 'debug', '$$$ jeeArduidom after $cmd->event(' . $_GET[$pin_nb] . ")");
+                    log::add('arduidom', 'event', 'Arduino n°' . $id . ' Mise à jour de ' . $eqLogic->getHumanName() . ' terminée (pin' . $pin_nb . ' = ' . $_GET[$pin_nb] . ')');
+                } else {
+                    //log::add('arduidom', 'debug', "$$$ jeeArduidom Compare [" . $cmd . "] :: Is NOT an object :(");
                 }
-                log::add('arduidom', 'event', 'Arduino n°' . $id . ' Mise à jour de ' . $eqLogic->getHumanName() . ' terminée (pin' . $pin_nb . ' = '. $_GET[$pin_nb] . ')');
+            } else {
+                //log::add('arduidom', 'debug', "$$$ jeeArduidom Compare [" . $pin_nb . "] : Not in Array :(");
             }
         }
     }
 }
+//log::add('arduidom', 'debug', "$$$ jeeArduidom END !!!!!!!!!!!!!!");
+
 //$bench_id++; $elapsed_time = microtime(true) - $time_before; log::add('arduidom','debug', '                                                    ------------------        LAST benchmark(' . $bench_id . '): ' . ($elapsed_time * 1000) . " ms ");
