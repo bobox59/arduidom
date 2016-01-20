@@ -364,6 +364,10 @@ class arduidom extends eqLogic
         return 1;
     }
 
+    public static function checkandrfdaemon()
+    {
+        self::checkdaemon('',true);
+    }
 
     public static function checkdaemon($_AID, $AutoSendRF = true)
     {
@@ -375,7 +379,6 @@ class arduidom extends eqLogic
             if ($General_Debug) log::add('arduidom', 'info', "La version de la base de données Arduidom n'est pas la bonne...");
             log::add('arduidom', 'error', "Une Migration des données Arduidom est necessaire depuis la v1.08 ! vous pouvez l'executer depuis la configuration du Plugin");
         }
-
         $arduinoQty = config::byKey('ArduinoQty', 'arduidom', 0);
         for ($d = 1; $d <= $arduinoQty; $d++) {
             if ($_AID == '' || $_AID == $d) {

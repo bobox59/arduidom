@@ -10,6 +10,8 @@ echo 50 > /tmp/dependancy_arduidom_in_progress
 sudo easy_install ino
 echo 70 > /tmp/dependancy_arduidom_in_progress
 apt-get install -y avr-dude
+echo 80 > /tmp/dependancy_arduidom_in_progress
+sudo usermod -G dialout www-data
 echo 100 > /tmp/dependancy_arduidom_in_progress
 echo "Everything is successfully installed!"
 rm /tmp/dependancy_arduidom_in_progress
