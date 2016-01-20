@@ -72,7 +72,7 @@ class Jeedom:
         cmd_line = self.prefix
         for cmd in cmds:
             cmd_line += self._Separateur + cmd
-        logger.debug("CLASS_JEEDOM->send" + cmd_line)
+        logger.debug("CLASS_JEEDOM->send [" + cmd_line + "]")
         subprocess.Popen(cmd_line, shell=True)
 
 
@@ -188,7 +188,7 @@ def parse_adrduino_answer(options, line):
             dhtvalue = line.rsplit(';')
             cmd = []
             cmd.append('arduid=' + str(options.arduino_id))
-            cmdlog = "PHP(DTH)->"
+            cmdlog = "PHP(DHT)->"
             for pinnumber in range(0, len(dhtvalue)):
                 if dhtvalue[pinnumber].find("nan") == -1:
                     cmd.append(str(pinnumber + 501) + "=" + dhtvalue[pinnumber].replace("DHT:", ""))
@@ -237,10 +237,10 @@ def COMServer(options, threadName):
             logger.debug("process Queue")
             command = to_arduino.get()
             request = command.start_processing()
-            logger.debug("IN check_queue doing " + request)
+            logger.debug("IN check_queue doing [" + request + "]")
             if len(request) >= 64:
                 options.ArduinoPort.write(request[0:64])
-                time.sleep(0.5)  # TODO WHY : Laisse le temps a l'arduino de traiter la 1e part des données, peut etre surement réduit.
+                time.sleep(0.1)  # TODO WHY : Laisse le temps a l'arduino de traiter la 1e part des données, 0.5 avant modif pour tests
                 options.ArduinoPort.write(request[64:127] + '\n')
             else:
                 options.ArduinoPort.write(request + '\n')
@@ -256,7 +256,7 @@ def COMServer(options, threadName):
                 # bonne reponse (on sort du while correctment)
                 line = line.replace('\n', '')
                 line = line.replace('\r', '')
-                logger.debug("IN check_queue answer = " + line)
+                logger.debug("IN check_queue answer = [" + line + "]")
                 command.result(line)
                 to_arduino.task_done()
     logger.error("Thread END.")
