@@ -776,7 +776,8 @@ class arduidomCmd extends cmd
     public function execute($_options = null)
     {
         //file_put_contents("/tmp/arduidom2", time() . " :  arduidom_execute" . "\n", FILE_APPEND);
-        //log::add('arduidom', 'debug', 'execute(' . $_options['slider'] . ') called');
+        $results = print_r($_options, true);
+        log::add('arduidom', 'debug', 'execute(' . $results . ') called');
         //exec('echo "execute 2" >> /tmp/arduidom');
         if ($this->getType() == 'action') {
             try {

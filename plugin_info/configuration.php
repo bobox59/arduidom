@@ -93,7 +93,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                         <div class="col-lg-2">
                             <input type="checkbox" id="bt_actiautodemon<?php echo $i ?>" class="configKey form-control bootstrapSwitch" data-l1key="A<?php echo $i ?>_daemonenable" />
                         </div>
-                        <label class="col-lg-2 control-label">Mode Debug du Démon</label>
+                        <label class="col-lg-2 control-label">Activer le Debug du Démon</label>
                         <div class="col-lg-2">
                             <input type="checkbox" class="configKey form-control bootstrapSwitch" data-l1key="A<?php echo $i ?>_daemonlog" />
                         </div>
