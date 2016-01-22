@@ -19,6 +19,7 @@
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
 function arduidom_install() {
+    config::save("ArduinoRequiredVersion","105","arduidom");
     arduidom::start();
     $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
     if (is_object($cron)) {
@@ -38,6 +39,7 @@ function arduidom_install() {
 }
 
 function arduidom_update() {
+    config::save("ArduinoRequiredVersion","105","arduidom");
     $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
     if (is_object($cron)) {
         $cron->remove();

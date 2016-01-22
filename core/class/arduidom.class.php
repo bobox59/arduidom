@@ -244,6 +244,7 @@ class arduidom extends eqLogic
 
     public static function dependancy_install()
     {
+        config::save("ArduinoRequiredVersion","105","arduidom");
         log::remove('arduidom_update');
         $cmd = 'sudo /bin/bash ' . dirname(__FILE__) . '/../../ressources/install.sh';
         $cmd .= ' >> ' . log::getPathToLog('arduidom_update') . ' 2>&1 &';
@@ -286,7 +287,6 @@ class arduidom extends eqLogic
     public static function stopdaemon($_AID = '')
     {
         log::add('arduidom', 'debug', 'stopdaemon(' . $_AID . ") called");
-        $General_Debug = (file_exists("/tmp/arduidom_debug_mode_on"));
         for ($d = 1; $d < 9; $d++) {
             if ($_AID == '' || $_AID == $d) {
                 log::add('arduidom', 'info', 'Stop Daemon ' . $d);
@@ -298,8 +298,8 @@ class arduidom extends eqLogic
                     $killresult = system::kill($pid);
                     log::add('arduidom', 'debug', 'system::kill(' . $pid . ") = " . $killresult);
                 }
-                $fuserk_result = system::fuserk(intval((58200 + $d)));
-                log::add('arduidom', 'debug', "system::fuserk(" . intval((58200 + $d)) . ") = " . $fuserk_result);
+                system::fuserk(intval((58200 + $d)));
+                log::add('arduidom', 'debug', "system::fuserk(" . intval((58200 + $d)));
                 log::add('arduidom', 'debug', "removing file " . $daemon_path . "/arduidom" . $d . ".pid");
                 unlink($daemon_path . "/arduidom" . $d . ".pid");
             }
@@ -341,9 +341,19 @@ class arduidom extends eqLogic
                         }
 
                         $resp = self::sendtoArduino("PING", $d);
-                        if (strpos($resp, '_OK') == false) {
-                            log::add('arduidom', 'error', 'Erreur: Réponse du démon ' . $d . " = [" . $resp . "] au lieu de [PING_OK] (startdaemon)");
+                        $ArduinoRequiredVersion = config::byKey("ArduinoRequiredVersion","arduidom");
+                        if (strpos($resp, '_OK_V:' . $ArduinoRequiredVersion) == false) {
+                            if (strpos($resp, 'Connection refused') == true) {
+                                event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur: Réponse du démon " . $d . " = [" . $resp . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (startdaemon), Redémarrage du démon...", __FILE__),));
+                                log::add('arduidom', 'error', 'Erreur: Réponse du démon ' . $d . " = [" . $resp . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (startdaemon)");
+                            }
+                            if (strpos($resp, '_OK') == true) {
+                                event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur: Réponse du démon " . $d . " = [" . $resp . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (startdaemon)" . 'Vérifiez votre version du Sketch Arduino !!!', __FILE__),));
+                                log::add('arduidom', 'error', "Vérifiez votre version du Sketch Arduino !!!");
+                                log::add('arduidom', 'error', 'Erreur: Réponse du démon ' . $d . " = [" . $resp . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (startdaemon)");
+                            }
                             if ($_AID == $d) return 0;
+
                         } else {
                             log::add('arduidom', 'debug', 'Le Démon arduidom ' . $d . ' a bien démarré.');
                             self::setPinMapping($d);
@@ -389,15 +399,16 @@ class arduidom extends eqLogic
                     if ($_AID == $d) return 0;
                 } else {
                     $tcpcheck = arduidom::sendtoArduino("PING", $d);
-                    if ($tcpcheck != "PING_OK") {
-                        log::add('arduidom', 'error', "Erreur: Réponse du démon " . $d . " = [" . $tcpcheck . "] au lieu de [PING_OK] (checkdaemon)");
+                    $ArduinoRequiredVersion = config::byKey("ArduinoRequiredVersion","arduidom");
+                    if ($tcpcheck != "PING_OK_V:" . $ArduinoRequiredVersion) {
+                        log::add('arduidom', 'error', "Erreur: Réponse du démon " . $d . " = [" . $tcpcheck . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (checkdaemon)");
                         log::add('arduidom', 'error', "Redémarrage Automatique du démon " . $d . " (checkdaemon)");
-                        arduidom::stopdaemon($d);
-                        sleep(1);
+                        //arduidom::stopdaemon($d);
+                        //sleep(1);
                         if ($_AID == $d) {
-                            return arduidom::startdaemon($d);
+                            return arduidom::restartdaemon($d);
                         } else {
-                            arduidom::startdaemon($d);
+                            arduidom::restartdaemon($d);
                         }
                     } else {
                         if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' fonctionne correctement.');

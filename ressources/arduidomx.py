@@ -130,7 +130,7 @@ def handler(options, clientsocket, clientaddr):
                 clientsocket.send(answer)
 
             elif jeedata[0:2] == 'RF':  # *** Refresh Datas
-                rf_request = from_jeedom(jeedata, "DBG_Data to do:RF")
+                rf_request = from_jeedom(jeedata, "DATA:")
                 to_arduino.put(rf_request)
                 while not rf_request.finished():
                     time.sleep(0.1)
