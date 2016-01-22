@@ -37,7 +37,7 @@ try {
         if (init('action') == 'restartDaemon' . $i) {
             //arduidom::restoreStates(1);
             arduidom::restartdaemon($i);
-            if (arduidom::checkdaemon($i,false) == 1) {
+            if (arduidom::checkdaemon($i,false,true) == 1) {
                 ajax::success();
             } else {
                 ajax::error("Le démon " . $i . " n'a pas démarré");
@@ -48,7 +48,7 @@ try {
             log::add('arduidom', 'info', 'Desactivation du démon ' . $i . '...');
             config::save('A' . $i . "_daemonenable", 0, 'arduidom');
             arduidom::stopdaemon($i);
-            if (arduidom::checkdaemon($i,false) == 0) {
+            if (arduidom::checkdaemon($i,false,true) == 0) {
                 ajax::success();
             } else {
                 ajax::error("Le démon " . $i . " ne s'est pas arreté");
@@ -68,7 +68,7 @@ try {
             log::add('arduidom', 'info', 'FlashArduino STEP 2: avrdude finished.' . $chk);
             sleep(1);
             log::add('arduidom', 'info', 'FlashArduino STEP 3: Start  Daemon ' . $i);
-            $chk = arduidom::startdaemon($i);
+            if (config::byKey('A' . $i . "_daemonenable","arduidom",0) == 1) $chk = arduidom::startdaemon($i);
             if ($chk == 1) {
                 log::add('arduidom', 'info', 'FlashArduino STEP 4: Daemon ' . $i . ' started' . $chk);
                 ajax::success("Le démon " . $i . " a correctement démarré apres le televersement de l'arduino !");

@@ -234,7 +234,7 @@ class arduidom extends eqLogic
         $return = array();
         $return['log'] = 'arduidom_update';
         $return['progress_file'] = '/tmp/dependancy_arduidom_in_progress';
-        if (file_exists("/usr/bin/arduino") && file_exists("/usr/local/bin/ino")) {
+        if (file_exists("/usr/bin/arduino") && file_exists("/usr/bin/avrdude")) {
             $return['state'] = 'ok';
         } else {
             $return['state'] = 'nok';
@@ -344,7 +344,7 @@ class arduidom extends eqLogic
                         $ArduinoRequiredVersion = config::byKey("ArduinoRequiredVersion","arduidom");
                         if (strpos($resp, '_OK_V:' . $ArduinoRequiredVersion) == false) {
                             if (strpos($resp, 'Connection refused') == true) {
-                                event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur: Réponse du démon " . $d . " = [" . $resp . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (startdaemon), Redémarrage du démon...", __FILE__),));
+                                //event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur: Réponse du démon " . $d . " = [" . $resp . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (startdaemon), Redémarrage du démon...", __FILE__),));
                                 log::add('arduidom', 'error', 'Erreur: Réponse du démon ' . $d . " = [" . $resp . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (startdaemon)");
                             }
                             if (strpos($resp, '_OK') == true) {
@@ -374,12 +374,7 @@ class arduidom extends eqLogic
         return 1;
     }
 
-    public static function checkandrfdaemon()
-    {
-        self::checkdaemon('',true);
-    }
-
-    public static function checkdaemon($_AID, $AutoSendRF = true)
+    public static function checkdaemon($_AID, $AutoSendRF = true, $SimpleCheckOnly = false)
     {
         $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
         if ($General_Debug) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . "," . $AutoSendRF . ")");
@@ -406,13 +401,21 @@ class arduidom extends eqLogic
                         //arduidom::stopdaemon($d);
                         //sleep(1);
                         if ($_AID == $d) {
-                            return arduidom::restartdaemon($d);
+                            if ($SimpleCheckOnly) {
+                                return arduidom::restartdaemon($d);
+                            } else {
+                                return 0;
+                            }
                         } else {
-                            arduidom::restartdaemon($d);
+                            if ($SimpleCheckOnly) {
+                                return arduidom::restartdaemon($d);
+                            } else {
+                                return 0;
+                            }
                         }
                     } else {
                         if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' fonctionne correctement.');
-                        if ($AutoSendRF) self::sendtoArduino("RF",$d);
+                        if ($AutoSendRF && !$SimpleCheckOnly) self::sendtoArduino("RF",$d);
                         if ($_AID == $d) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 1");
                         if ($_AID == $d) return 1;
                     }
@@ -703,7 +706,10 @@ class arduidom extends eqLogic
 {
     $result = 0;
     log::add('arduidom', 'info', '#############################flasharduino(' . $_AID . ') called');
+    $isDaemonEnabled = config::byKey('A' . $_AID . "_daemonenable", 'arduidom', 0);
+    config::save("A" . $_AID . "_daemonenable", 0, "arduidom");
     self::stopdaemon($_AID);
+    sleep(1);
     if (!file_exists("/usr/bin/avrdude")) {
         throw new Exception(__("le programme avrdude n'est pas installé ! (installer avec apt-get install avrdude)", __FILE__));
     }
@@ -712,32 +718,32 @@ class arduidom extends eqLogic
     $port = config::byKey('A' . $_AID . '_port', 'arduidom', 'none');
     switch ($model) {
         case "bobox59":
-            $cmd_model = "atmega328p";
+            $cmd_model = "-patmega328p -carduino";
             $cmd_speed = "115200";
             $cmd_hexfile = "bobox59";
             break;
         case "uno":
-            $cmd_model = "atmega328p";
+            $cmd_model = "-patmega328p -carduino";
             $cmd_speed = "115200";
             $cmd_hexfile = "uno";
             break;
         case "duemilanove328":
-            $cmd_model = "atmega328p";
+            $cmd_model = "-patmega328p -carduino";
             $cmd_speed = "57600";
             $cmd_hexfile = "duemilanove328";
             break;
         case "nano328":
-            $cmd_model = "atmega328p";
+            $cmd_model = "-patmega328p -carduino";
             $cmd_speed = "57600";
             $cmd_hexfile = "nano328";
             break;
         case "mega2560":
-            $cmd_model = "atmega2560";
+            $cmd_model = "-patmega2560 -cwiring";
             $cmd_speed = "115200";
             $cmd_hexfile = "mega2560";
             break;
         case "mega1280":
-            $cmd_model = "atmega1280";
+            $cmd_model = "-patmega1280 -cwiring";
             $cmd_speed = "57600";
             $cmd_hexfile = "mega1280";
             break;
@@ -745,17 +751,22 @@ class arduidom extends eqLogic
             throw new Exception(__("Modele Arduino " . $model . " n'est pas supporté par la fonction !", __FILE__));
             break;
     }
-    $cmd = 'avrdude -C/etc/avrdude.conf -v -v -v -p' . $cmd_model . ' -carduino -P' . $port . ' -b' . $cmd_speed . ' -D -Uflash:w:' . $daemon_path . '/' . $cmd_hexfile . '.hex:i' . " >> " . $daemon_path . "/../../../log/arduidom_log" . $_AID;
+
+    $cmd = 'sudo /usr/bin/avrdude -C/etc/avrdude.conf -v -v -v ' . $cmd_model . ' -P' . $port . ' -b' . $cmd_speed . ' -D -Uflash:w:' . $daemon_path . '/' . $cmd_hexfile . '.hex:i';
+    $cmd .= ' >> ' . log::getPathToLog("arduidom_daemon_" . $_AID) . ' 2>&1';
     log::add('arduidom', 'info', 'Flashing arduino ' . $_AID . ': ' . $cmd);
 
     //$result = exec("sudo " . $cmd . " 2>&1");
     //@exec("sudo /path/to/osascript myscript.scpt ");
-    log::add('arduidom', 'info', '############################# Launch popen...');
-    popen($cmd, 'r');
+    log::add('arduidom', 'info', '############################# Launching : ' . $cmd);
+    exec($cmd);
+    sleep(1);
+    //popen($cmd, 'r');
     //log::add('arduidom', 'info', '############################# startdaemon(' . $_AID . ')');
     //self::startdaemon($_AID);
     log::add('arduidom', 'info', '#############################return ' . $result);
 
+    config::save("A" . $_AID . "_daemonenable", $isDaemonEnabled, "arduidom");
     return $result;
 }
 

@@ -32,7 +32,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
         } else {
             echo '<li>';
         }
-        $daemonstate = arduidom::checkdaemon($i,false);
+        $daemonstate = arduidom::checkdaemon($i, false, true);
         echo '<a data-toggle="tab" href="#tab_' . $i . '">{{Arduino ' . $i . ' <span class="label label-' . (($daemonstate == 1) ? 'success' : 'danger') . ' ">' . (($daemonstate == 1) ? 'OK' : 'NOK') . '</span>' . '}}</a></li>';
     } ?>
 </ul>
@@ -158,7 +158,6 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                     <option value="8" id="ArduinoQty">8</option>
                 </select>
             </div>
-            bt_installDeps
             Actualiser la page après la Sauvegarde d'un changement.
         </div>
 

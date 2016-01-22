@@ -38,7 +38,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', '1');
 
 <ul class="nav nav-pills" id="tab_arid">
     <?php for ($_AID=1; $_AID <= $ArduinoQty; $_AID++) { ?>
-    <li<?php if ($_AID == 1) echo ' class="active"'; ?><?php if (arduidom::checkdaemon($_AID,false) != 1) echo ' class="disabled"'; ?>><a data-toggle="tab" href="#tab_<?php echo $_AID; ?>">{{Arduino <?php echo '<span class="badge">' . $_AID . '</span>';?> <?php if (arduidom::checkdaemon($_AID,false) != 1) echo ' (NOK)'; ?>}}</a></li>
+    <li<?php $DaemonOK = arduidom::checkdaemon($_AID,false,true); if ($_AID == 1) echo ' class="active"'; ?><?php if ($DaemonOK != 1) echo ' class="disabled"'; ?>><a data-toggle="tab" href="#tab_<?php echo $_AID; ?>">{{Arduino <?php echo '<span class="badge">' . $_AID . '</span>';?> <?php if ($DaemonOK != 1) echo ' (NOK)'; ?>}}</a></li>
 
     <?php } ?>
 </ul>
