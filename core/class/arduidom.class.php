@@ -395,8 +395,6 @@ class arduidom extends eqLogic
                     if ($tcpcheck != "PING_OK_V:" . $ArduinoRequiredVersion) {
                         log::add('arduidom', 'error', "Erreur: Réponse du démon " . $d . " = [" . $tcpcheck . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (checkdaemon)");
                         log::add('arduidom', 'error', "Redémarrage Automatique du démon " . $d . " (checkdaemon)");
-                        //arduidom::stopdaemon($d);
-                        //sleep(1);
                         if ($_AID == $d) {
                             if ($SimpleCheckOnly) {
                                 return arduidom::restartdaemon($d);
@@ -552,8 +550,8 @@ class arduidom extends eqLogic
         $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . sprintf("%010s", $_value);
     }
     $tcpcheck = arduidom::sendtoArduino($tcpmsg, $arduid);
+    // if ($tcpcheck != $tcpmsg . "_OK") {
     if ($tcpcheck != "SP_OK") {
-        // if ($tcpcheck != $tcpmsg . "_OK") {
         log::add('arduidom','error', "Erreur setPinValue " . $tcpcheck . " (Recu : " . $tcpmsg . ")");
         event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur setPinValue " . $tcpcheck . " (Recu : " . $tcpmsg . ")", __FILE__),));
     }
@@ -587,8 +585,6 @@ class arduidom extends eqLogic
                 stream_set_timeout($fp, 2);
 
                 if (!$fp) {
-                    //if ($General_Debug) log::add('arduidom', 'error', "Le démon ArduiDom " . $_AID . " n'est pas connecté ! (connection impossible)");
-                    //if ($General_Debug) log::add('arduidom', 'error', "Le démon ArduiDom " . $_AID . " n'est pas connecté ! (errno:)" . $errno);
                     log::add('arduidom', 'error', "Le démon ArduiDom " . $_AID . " n'est pas connecté ! (errstr:)" . $errstr);
                     return $errstr;
 
@@ -683,25 +679,11 @@ class arduidom extends eqLogic
     $('#md_modal').load('index.php?v=d&plugin=arduidom&modal=show.log').dialog('open');
 </script><?php
 
-    //exec("sudo echo '' > " . $daemon_path . "/../../../log/arduidom_log" . $_AID); // Clear log file
     $cmd = 'cd ' . $daemon_path . '/arduidomTest && sudo ino clean && sudo ino build -m ' . $cmd_model . " >> " . $daemon_path . "/../../../log/arduidom_log" . $_AID . " 2>&1 &";
     log::add('arduidom', 'info', 'Compiling arduino ' . $_AID . ': ' . $cmd);
     //while (@ ob_end_flush()); // end all output buffers if any
 
     popen($cmd, 'r');
-    /*
-
-    echo '<pre>';
-    while (!feof($proc))
-    {
-        echo fread($proc, 4096);
-        @ flush();
-    }
-    echo '</pre>';
-
-    */
-    //$result = passthru($cmd); // . ' >> ' . log::getPathToLog('arduidom')
-
     return $result;
 }
 
