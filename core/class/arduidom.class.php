@@ -304,9 +304,6 @@ class arduidom extends eqLogic
                 unlink($daemon_path . "/arduidom" . $d . ".pid");
             }
 
-            // Ancienne methode a supprimer, conservée quelques temps pour compatibilité avec version avant 30 déc 2015
-            $result = exec("ps aux | grep arduidom" . $d . ".py | grep -v grep | awk '{print $2}'");
-            if ($result != "") log::add('arduidom', 'debug', 'PIDs encore démarrés : ' . $result);
         }
         return ("OK");
     }
