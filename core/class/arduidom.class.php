@@ -277,7 +277,7 @@ class arduidom extends eqLogic
         $retour = self::startdaemon($_AID);
         for ($d = 1; $d < 9; $d++) {
             if ($_AID == '' || $_AID == $d) {
-                self::restoreStates($d);
+                if ($retour == 1) self::restoreStates($d);
             }
         }
         return $retour;
@@ -558,7 +558,7 @@ class arduidom extends eqLogic
     if ($tcpcheck != "SP_OK") {
         // if ($tcpcheck != $tcpmsg . "_OK") {
         log::add('arduidom','error', "Erreur setPinValue " . $tcpcheck . " (Recu : " . $tcpmsg . ")");
-        throw new Exception(__("Erreur setPinValue " . $tcpcheck . " (Recu : " . $tcpmsg . ")", __FILE__));
+        event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur setPinValue " . $tcpcheck . " (Recu : " . $tcpmsg . ")", __FILE__),));
     }
     return $tcpcheck;
 }
@@ -587,7 +587,7 @@ class arduidom extends eqLogic
                     $fp = fsockopen($ip, (58174), $errno, $errstr, 1);
                 }
 
-                stream_set_timeout($fp, 7);
+                stream_set_timeout($fp, 2);
 
                 if (!$fp) {
                     //if ($General_Debug) log::add('arduidom', 'error', "Le démon ArduiDom " . $_AID . " n'est pas connecté ! (connection impossible)");
@@ -680,7 +680,13 @@ class arduidom extends eqLogic
             throw new Exception(__("Modele Arduino " . $model . " n'est pas supporté par la fonction !", __FILE__));
             break;
     }
-    exec("sudo echo '' > " . $daemon_path . "/../../../log/arduidom_log" . $_AID); // Clear log file
+
+?><script>
+    $('#md_modal').dialog({title: "{{Flash Arduino}}"});
+    $('#md_modal').load('index.php?v=d&plugin=arduidom&modal=show.log').dialog('open');
+</script><?php
+
+    //exec("sudo echo '' > " . $daemon_path . "/../../../log/arduidom_log" . $_AID); // Clear log file
     $cmd = 'cd ' . $daemon_path . '/arduidomTest && sudo ino clean && sudo ino build -m ' . $cmd_model . " >> " . $daemon_path . "/../../../log/arduidom_log" . $_AID . " 2>&1 &";
     log::add('arduidom', 'info', 'Compiling arduino ' . $_AID . ': ' . $cmd);
     //while (@ ob_end_flush()); // end all output buffers if any
@@ -756,14 +762,9 @@ class arduidom extends eqLogic
     $cmd .= ' >> ' . log::getPathToLog("arduidom_daemon_" . $_AID) . ' 2>&1';
     log::add('arduidom', 'info', 'Flashing arduino ' . $_AID . ': ' . $cmd);
 
-    //$result = exec("sudo " . $cmd . " 2>&1");
-    //@exec("sudo /path/to/osascript myscript.scpt ");
     log::add('arduidom', 'info', '############################# Launching : ' . $cmd);
     exec($cmd);
     sleep(1);
-    //popen($cmd, 'r');
-    //log::add('arduidom', 'info', '############################# startdaemon(' . $_AID . ')');
-    //self::startdaemon($_AID);
     log::add('arduidom', 'info', '#############################return ' . $result);
 
     config::save("A" . $_AID . "_daemonenable", $isDaemonEnabled, "arduidom");
@@ -774,7 +775,6 @@ class arduidom extends eqLogic
     public function event()
 {
     log::add('arduidom', 'debug', 'arduidom event() called');
-    //self::pull();
 }
     /*     * *********************Methode d'instance************************* */
 
