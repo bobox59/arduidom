@@ -259,14 +259,140 @@ class arduidom extends eqLogic
         exec($cmd);
     }
 
+    public static function deamon_info() { // Nouvelle methode de gestion des démons
+        $return = array();
+        $return['log'] = 'arduidom';
+        $return['state'] = 'nok';
+        $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
+        //$pid_file = $daemon_path . "/arduidom" . "1" . ".pid";
+        //if (file_exists($pid_file)) {
+        //    if (posix_getsid(trim(file_get_contents($pid_file)))) {
+        //        $return['state'] = 'ok';
+        //    } else {
+        //        unlink($pid_file);
+        //    }
+        //}
+        if (self::checkdaemon("", false, true)) $return['state'] = 'ok';
+
+        $return['launchable'] = 'ok';
+        $d = 1; // SE BASE UNIQUEMENT SUR LE 1er ARDUINO ! a voir par la suite...
+        $model = config::byKey('A' . $d . '_model', 'arduidom', '');
+        $port = config::byKey('A' . $d . '_port', 'arduidom', '');
+        if ($port != 'none' && $model != 'none' && $port != '' && $model != '') {
+            if (file_exists($port) || $port == "Network") {
+                if ($port != 'Network') {
+                    //$port = jeedom::getUsbMapping($port);
+                    if (@!file_exists($port)) {
+                        $return['launchable'] = 'nok';
+                        $return['launchable_message'] = __('Le port n\'est pas configuré', __FILE__);
+                    }
+                }
+            } else {
+                $return['launchable'] = 'nok';
+                $return['launchable_message'] = __('Le port n\'est pas configuré', __FILE__);
+            }
+        } else {
+            $return['launchable'] = 'nok';
+            $return['launchable_message'] = __('Le port ou modèle n\'est pas configuré', __FILE__);
+        }
+
+
+        return $return;
+    }
+
+    public static function deamon_start($_debug = false) {
+        self::deamon_stop();
+        $deamon_info = self::deamon_info();
+        if ($deamon_info['launchable'] != 'ok') {
+            throw new Exception(__('Veuillez vérifier la configuration', __FILE__));
+        }
+        /*
+                                                                                                    PARTIE A ETUDIER...
+        $replace_config = array(
+            '#device#' => $port,
+            '#text_mode#' => (config::byKey('text_mode', 'sms') == 1) ? 'yes' : 'no',
+            '#socketport#' => config::byKey('socketport', 'sms', 55002),
+            '#pin#' => config::byKey('pin', 'sms', 'None'),
+            '#smsc#' => config::byKey('smsc', 'sms', 'None'),
+            '#log_path#' => log::getPathToLog('sms'),
+            '#pid_path#' => '/tmp/sms.pid',
+            '#serial_rate#' => config::byKey('serial_rate', 'sms', 115200),
+        );
+        if (config::byKey('jeeNetwork::mode') == 'slave') {
+            $replace_config['#sockethost#'] = network::getNetworkAccess('internal', 'ip', '127.0.0.1');
+            $replace_config['#trigger_url#'] = config::byKey('jeeNetwork::master::ip') . '/plugins/sms/core/php/jeeSMS.php';
+            $replace_config['#apikey#'] = config::byKey('jeeNetwork::master::apikey');
+        } else {
+            $replace_config['#sockethost#'] = '127.0.0.1';
+            $replace_config['#trigger_url#'] = network::getNetworkAccess('internal', 'proto:127.0.0.1:port:comp') . '/plugins/sms/core/php/jeeSMS.php';
+            $replace_config['#apikey#'] = config::byKey('api');
+        }
+        $config = file_get_contents($sms_path . '/config_tmpl.xml');
+        $config = template_replace($replace_config, $config);
+        file_put_contents('/tmp/config_sms.xml', $config);
+        chmod('/tmp/config_sms.xml', 0777);
+        $cmd = '/usr/bin/python ' . $sms_path . '/smscmd.py -l -o /tmp/config_sms.xml';
+        if ($_debug) {
+            $cmd .= ' -D';
+        }
+        */
+        if ($_debug) {
+            file_put_contents("/tmp/arduidom_debug_mode_on","DEBUG");
+            for ($d = 1; $d <= 8; $d++) {
+                config::save("A" . $d . "_daemonlog", 1, "arduidom");
+            }
+        } else {
+            unlink("/tmp/arduidom_debug_mode_on");
+            for ($d = 1; $d <= 8; $d++) {
+                config::save("A" . $d . "_daemonlog", 0, "arduidom");
+            }
+            //log::remove('arduidom'); A REMETTRE APRES TESTS
+        }
+        log::add('arduidom', 'info', 'Lancement démon arduidom...');
+        self::startdaemon();
+        /*
+        $result = exec('nohup ' . $cmd . ' >> ' . log::getPathToLog('smscmd') . ' 2>&1 &');
+        if (strpos(strtolower($result), 'error') !== false || strpos(strtolower($result), 'traceback') !== false) {
+            log::add('smscmd', 'error', $result);
+            return false;
+        }
+        */
+        $i = 0;
+        while ($i < 30) {
+            $deamon_info = self::deamon_info();
+            if ($deamon_info['state'] == 'ok') {
+                break;
+            }
+            sleep(1);
+            $i++;
+        }
+        if ($i >= 30) {
+            log::add('arduidom', 'error', 'Impossible de lancer le démon arduidom, vérifiez le port', 'unableStartDeamon');
+            return false;
+        }
+        message::removeAll('arduidom', 'unableStartDeamon');
+        log::add('arduidom', 'info', 'Démon arduidom lancé');
+        return true;
+    }
+
+    public static function deamon_stop() {
+            $deamon_info = self::deamon_info();
+            if ($deamon_info['state'] == 'ok') {
+                self::stopdaemon();
+            }
+            $deamon_info = self::deamon_info();
+            if ($deamon_info['state'] == 'ok') {
+                self::stopdaemon();
+            }
+    }
 
     public static function start()
     {
-        log::add('arduidom', 'debug', 'start() called');
-        $port = config::byKey('A1_port', 'arduidom', 'none');
-        if ($port != 'none') {
-            self::startdaemon();
-        }
+        log::add('arduidom', 'debug', 'start() called but disabled since Jeedom V2');
+        //$port = config::byKey('A1_port', 'arduidom', 'none');
+        //if ($port != 'none') {
+        //    self::startdaemon();
+        //}
     }
 
 
@@ -275,7 +401,8 @@ class arduidom extends eqLogic
         log::add('arduidom', 'debug', 'restartdaemon(' . $_AID . ") called");
         self::stopdaemon($_AID);
         $retour = self::startdaemon($_AID);
-        for ($d = 1; $d < 9; $d++) {
+        $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1));
+        for ($d = 1; $d <= $nbArduinos; $d++) {
             if ($_AID == '' || $_AID == $d) {
                 if ($retour == 1) self::restoreStates($d);
             }
@@ -287,8 +414,10 @@ class arduidom extends eqLogic
     public static function stopdaemon($_AID = '')
     {
         log::add('arduidom', 'debug', 'stopdaemon(' . $_AID . ") called");
-        for ($d = 1; $d < 9; $d++) {
+        $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1));
+        for ($d = 1; $d <= $nbArduinos; $d++) {
             if ($_AID == '' || $_AID == $d) {
+                config::save('A' . $d . "_daemonenable", 0, 'arduidom');
                 log::add('arduidom', 'info', 'Stop Daemon ' . $d);
                 $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
 
@@ -299,7 +428,7 @@ class arduidom extends eqLogic
                     log::add('arduidom', 'debug', 'system::kill(' . $pid . ") = " . $killresult);
                 }
                 system::fuserk(intval((58200 + $d)));
-                log::add('arduidom', 'debug', "system::fuserk(" . intval((58200 + $d)));
+                log::add('arduidom', 'debug', "system::fuserk(" . intval(58200 + $d) . ")");
                 log::add('arduidom', 'debug', "removing file " . $daemon_path . "/arduidom" . $d . ".pid");
                 unlink($daemon_path . "/arduidom" . $d . ".pid");
             }
@@ -314,7 +443,9 @@ class arduidom extends eqLogic
         $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
 
         log::add('arduidom', 'debug', 'startdaemon(' . $_AID . ') called');
-        for ($d = 1; $d < 9; $d++) {
+
+        $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1));
+        for ($d = 1; $d <= $nbArduinos; $d++) {
             if ($_AID == '' || $_AID == $d) {
                 $model = config::byKey('A' . $d . '_model', 'arduidom', '');
                 $port = config::byKey('A' . $d . '_port', 'arduidom', '');
@@ -371,8 +502,9 @@ class arduidom extends eqLogic
         return 1;
     }
 
-    public static function checkdaemon($_AID, $AutoSendRF = true, $SimpleCheckOnly = false)
+    public static function checkdaemon($_AID = '', $AutoSendRF = true, $SimpleCheckOnly = false)
     {
+        $NoDaemonEnabled = 1;
         $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
         if ($General_Debug) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . "," . $AutoSendRF . ")");
 
@@ -386,30 +518,23 @@ class arduidom extends eqLogic
             if ($_AID == '' || $_AID == $d) {
                 $DaemonEnabled = config::byKey('A' . $d . "_daemonenable", 'arduidom', 0);
                 if ($DaemonEnabled == 0) {
-                    if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' ne sera pas verifié car il a été stoppé manuellement ou Désactivé');
+                    if ($General_Debug) log::add('arduidom', 'debug', "L'arduino N°" . $d . ' ne sera pas verifié car il a été stoppé manuellement ou Désactivé');
                     if ($_AID == $d) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 0");
                     if ($_AID == $d) return 0;
                 } else {
+                    $NoDaemonEnabled = 0;
                     $tcpcheck = arduidom::sendtoArduino("PING", $d);
                     $ArduinoRequiredVersion = config::byKey("ArduinoRequiredVersion","arduidom");
                     if ($tcpcheck != "PING_OK_V:" . $ArduinoRequiredVersion) {
-                        log::add('arduidom', 'error', "Erreur: Réponse du démon " . $d . " = [" . $tcpcheck . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (checkdaemon)");
-                        log::add('arduidom', 'error', "Redémarrage Automatique du démon " . $d . " (checkdaemon)");
-                        if ($_AID == $d) {
-                            if ($SimpleCheckOnly) {
-                                return arduidom::restartdaemon($d);
-                            } else {
-                                return 0;
-                            }
+                        log::add('arduidom', 'error', "Erreur: Réponse de l'arduino " . $d . " = [" . $tcpcheck . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (checkdaemon)");
+                        if (!$SimpleCheckOnly) {
+                            log::add('arduidom', 'error', "Redémarrage Automatique de l'arduino n°" . $d . " (checkdaemon)");
+                            return arduidom::restartdaemon($d);
                         } else {
-                            if ($SimpleCheckOnly) {
-                                return arduidom::restartdaemon($d);
-                            } else {
-                                return 0;
-                            }
+                            return 0;
                         }
                     } else {
-                        if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $d . ' fonctionne correctement.');
+                        if ($General_Debug) log::add('arduidom', 'debug', "La liaison avec l'arduino n°" . $d . ' fonctionne correctement.');
                         if ($AutoSendRF && !$SimpleCheckOnly) self::sendtoArduino("RF",$d);
                         if ($_AID == $d) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 1");
                         if ($_AID == $d) return 1;
@@ -417,7 +542,13 @@ class arduidom extends eqLogic
                 }
             }
         }
-        return 1;
+        if ($NoDaemonEnabled == 1) {
+            log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 0 because no daemon enabled");
+            return 0;
+        } else {
+            log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 1");
+            return 1;
+        }
     }
 
     public static function setPinMapping($_AID)
@@ -636,8 +767,23 @@ class arduidom extends eqLogic
     }
 }
 
+    public function CompileArduino($_AID = '') {
+        $arduidomRadioCmd = $this->getCmd(null, 'arduidom');
+        if (!is_object($arduidomRadioCmd)) {
+            $arduidomRadioCmd = new Cmd();
+        }
+        $arduidomRadioCmd->setName(__('Test', __FILE__));
+        $arduidomRadioCmd->setLogicalId('arduidom');
+        $arduidomRadioCmd->setEqLogic_id($this->getId());
+        $arduidomRadioCmd->setUnite('DATS');
+        $arduidomRadioCmd->setType('info');
+        $arduidomRadioCmd->setEventOnly(1);
+        $arduidomRadioCmd->setSubType('numeric');
+        $arduidomRadioCmd->save();
+    }
 
-    public static function CompileArduino($_AID = '')
+
+    public static function CompileArduino_OLD_FOR_TEST($_AID = '')
 {
     $result = 0;
     log::add('arduidom', 'info', 'compilearduino(' . $_AID . ') called');
@@ -769,6 +915,26 @@ class arduidomCmd extends cmd
     /*     * ***********************Methode static*************************** */
 
     /*     * *********************Methode d'instance************************* */
+
+    /*
+
+    preInsert ⇒ Méthode appellé avant la création de votre objet
+
+    postInsert ⇒ Méthode appellé après la création de votre objet
+
+    preUpdate ⇒ Méthode appellé avant la mise à jour de votre objet
+
+    postUpdate ⇒ Méthode appellé après la mise à jour de votre objet
+
+    preSave ⇒ Méthode appellé avant la sauvegarde (creation et mise à jour donc) de votre objet
+
+    postSave ⇒ Méthode appellé après la sauvegarde de votre objet
+
+    preRemove ⇒ Méthode appellé avant la supression de votre objet
+
+    postRemove ⇒ Méthode appellé après la supression de votre objet
+
+    */
 
     public function preSave()
     {

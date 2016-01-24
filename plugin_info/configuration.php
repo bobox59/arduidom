@@ -33,7 +33,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
             echo '<li>';
         }
         $daemonstate = arduidom::checkdaemon($i, false, true);
-        echo '<a data-toggle="tab" href="#tab_' . $i . '">{{Arduino ' . $i . ' <span class="label label-' . (($daemonstate == 1) ? 'success' : 'danger') . ' ">' . (($daemonstate == 1) ? 'OK' : 'NOK') . '</span>' . '}}</a></li>';
+        echo '<a data-toggle="tab" href="#tab_' . $i . '">{{Arduino ' . $i . ' <span class="label label-' . (($daemonstate == 1) ? 'success' : 'danger') . ' "> PING:' . (($daemonstate == 1) ? 'OK' : 'NOK') . '</span>' . '}}</a></li>';
     } ?>
 </ul>
 
@@ -88,23 +88,13 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                             <input class="configKey form-control" data-l1key="A<?php echo $i ?>_daemonip" />
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="col-lg-3 control-label">Activation AUTO du démon</label>
-                        <div class="col-lg-2">
-                            <input type="checkbox" id="bt_actiautodemon<?php echo $i ?>" class="configKey form-control bootstrapSwitch" data-l1key="A<?php echo $i ?>_daemonenable" />
-                        </div>
-                        <label class="col-lg-2 control-label">Activer le Debug du Démon</label>
-                        <div class="col-lg-2">
-                            <input type="checkbox" class="configKey form-control bootstrapSwitch" data-l1key="A<?php echo $i ?>_daemonlog" />
-                        </div>
-                    </div>
 
                     <div class="panel panel-default">
-                        <label class="col-lg-3 control-label">{{Contrôle du démon <?php echo $i ?>}}</label>
+                        <label class="col-lg-3 control-label">{{Contrôle de l'arduino n°<?php echo $i ?>}}</label>
                         <div class="panel-body">
-                                <a class="btn btn-success" id="bt_CheckArduidomDeamon<?php echo $i ?>"><i class='fa fa-check-square-o'></i>{{ Vérifier le démon <?php echo $i ?>}}</a>&nbsp;
-                                <a class="btn btn-warning" id="bt_RestartArduidomDeamon<?php echo $i ?>"><i class='fa fa-refresh'></i>{{ (Re)Démarrer le démon <?php echo $i ?>}}</a>&nbsp;
-                                <a class="btn btn-danger" id="bt_StopArduidomDeamon<?php echo $i ?>"><i class='fa fa-stop'></i>{{ Stopper le démon <?php echo $i ?>}}</a>
+                                <a class="btn btn-success" id="bt_CheckArduidomDeamon<?php echo $i ?>"><i class='fa fa-check-square-o'></i>{{ Vérifier la liaison avec le N°<?php echo $i ?>}}</a>&nbsp;
+                                <a class="btn btn-warning" id="bt_RestartArduidomDeamon<?php echo $i ?>"><i class='fa fa-refresh'></i>{{ (Ré)Activer le N°<?php echo $i ?>}}</a>&nbsp;
+                                <a class="btn btn-danger" id="bt_StopArduidomDeamon<?php echo $i ?>"><i class='fa fa-stop'></i>{{ Désactiver le N°<?php echo $i ?>}}</a>
                         </div>
                     </div>
 
