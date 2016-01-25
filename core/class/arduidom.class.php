@@ -31,10 +31,10 @@ class arduidom extends eqLogic
         log::add('arduidom', 'info', "*************************************************************************");
         log::add('arduidom', 'info', "* Début de la migration des données arduidom pour la mise a jour > 1.07 *");
         log::add('arduidom', 'info', "*************************************************************************");
-        self::stopdaemon();
+        self::deamon_stop();
 
         $model = config::byKey('model', 'arduidom');
-        if ($model == "bobox59" || $model == "uno" || $model == "duemilanove328" || $model == "leo" || $model == "nano168" || $model == "nano328") {
+        if ($model == "uno" || $model == "duemilanove328" || $model == "leo" || $model == "nano168" || $model == "nano328") {
             for ($i = 0; $i < 100; $i++) { // Migration des configs de pins DIGI et ANA
                 $tomigrate = 'pin::' . $i;
                 $DataToMigrate = config::byKey($tomigrate, 'arduidom', '');
@@ -142,7 +142,8 @@ class arduidom extends eqLogic
         $oldlogfile = realpath(dirname(__FILE__)) . '/../../../../log/arduidom_daemon';
         log::add('arduidom', 'info', "Delete old log file " . $oldlogfile . " => " . unlink($oldlogfile));
         config::save('db_version', 108, 'arduidom'); // Inscrit la version de migration dans la config
-        log::add('arduidom', 'error', "Migration des données pour v1.08 Terminée.");
+        log::add('arduidom', 'info', "Migration des données pour v1.08 Terminée.");
+        log::add('arduidom', 'debug', "startdaemon() [from MigrateDatas]");
         self::startdaemon();
         return 1;
     }
@@ -260,10 +261,13 @@ class arduidom extends eqLogic
     }
 
     public static function deamon_info() { // Nouvelle methode de gestion des démons
+        $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
+        if ($General_Debug) log::add('arduidom', 'debug', "--------------------------------------------------------------------------------------");
+        if ($General_Debug) log::add('arduidom', 'debug', "daemon_info() called.");
         $return = array();
         $return['log'] = 'arduidom';
         $return['state'] = 'nok';
-        $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
+        //$daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
         //$pid_file = $daemon_path . "/arduidom" . "1" . ".pid";
         //if (file_exists($pid_file)) {
         //    if (posix_getsid(trim(file_get_contents($pid_file)))) {
@@ -301,6 +305,9 @@ class arduidom extends eqLogic
     }
 
     public static function deamon_start($_debug = false) {
+        $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
+        if ($General_Debug) log::add('arduidom', 'debug', "--------------------------------------------------------------------------------------");
+        if ($General_Debug) log::add('arduidom', 'debug', "daemon_start(debug=$_debug)");
         self::deamon_stop();
         $deamon_info = self::deamon_info();
         if ($deamon_info['launchable'] != 'ok') {
@@ -349,7 +356,8 @@ class arduidom extends eqLogic
             //log::remove('arduidom'); A REMETTRE APRES TESTS
         }
         log::add('arduidom', 'info', 'Lancement démon arduidom...');
-        self::startdaemon();
+        log::add('arduidom', 'debug', "startdaemon() [from daemon_start()]");
+        $daemonOK = self::startdaemon();
         /*
         $result = exec('nohup ' . $cmd . ' >> ' . log::getPathToLog('smscmd') . ' 2>&1 &');
         if (strpos(strtolower($result), 'error') !== false || strpos(strtolower($result), 'traceback') !== false) {
@@ -357,17 +365,17 @@ class arduidom extends eqLogic
             return false;
         }
         */
-        $i = 0;
-        while ($i < 30) {
-            $deamon_info = self::deamon_info();
-            if ($deamon_info['state'] == 'ok') {
-                break;
-            }
-            sleep(1);
-            $i++;
-        }
-        if ($i >= 30) {
-            log::add('arduidom', 'error', 'Impossible de lancer le démon arduidom, vérifiez le port', 'unableStartDeamon');
+        //$i = 0;
+        //while ($i < 3) {
+        //    $deamon_info = self::deamon_info();
+        //    if ($deamon_info['state'] == 'ok') {
+        //        break;
+        //    }
+        //    sleep(10);
+        //    $i++;
+        //}
+        if ($daemonOK == 0) {
+            log::add('arduidom', 'error', 'Impossible de lancer le démon arduidom, vérifiez le sketch et le port', 'unableStartDeamon');
             return false;
         }
         message::removeAll('arduidom', 'unableStartDeamon');
@@ -376,43 +384,39 @@ class arduidom extends eqLogic
     }
 
     public static function deamon_stop() {
-            $deamon_info = self::deamon_info();
-            if ($deamon_info['state'] == 'ok') {
-                self::stopdaemon();
-            }
-            $deamon_info = self::deamon_info();
-            if ($deamon_info['state'] == 'ok') {
-                self::stopdaemon();
-            }
-    }
-
-    public static function start()
-    {
-        log::add('arduidom', 'debug', 'start() called but disabled since Jeedom V2');
-        //$port = config::byKey('A1_port', 'arduidom', 'none');
-        //if ($port != 'none') {
-        //    self::startdaemon();
-        //}
-    }
-
-
-    public static function restartdaemon($_AID = '')
-    {
-        log::add('arduidom', 'debug', 'restartdaemon(' . $_AID . ") called");
-        self::stopdaemon($_AID);
-        $retour = self::startdaemon($_AID);
+        $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
+        if ($General_Debug) log::add('arduidom', 'debug', "--------------------------------------------------------------------------------------");
+        if ($General_Debug) log::add('arduidom', 'debug', "daemon_stop() called.");
+        //$deamon_info = self::deamon_info();
         $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1));
+        $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
         for ($d = 1; $d <= $nbArduinos; $d++) {
-            if ($_AID == '' || $_AID == $d) {
-                if ($retour == 1) self::restoreStates($d);
-            }
+            config::save('A' . $d . "_daemonenable", 0, 'arduidom');
+            touch($daemon_path . "/arduidom" . $d . ".kill");
         }
-        return $retour;
+        sleep(0.5);
+        for ($d = 1; $d <= $nbArduinos; $d++) {
+            config::save("A" . $d . "_daemonenable", 0, "arduidom");
+            log::add('arduidom', 'info', 'Stop Daemon ' . $d);
+            $pid_file = $daemon_path . "/arduidom" . $d . ".pid";
+            if (file_exists($pid_file)) {
+                $pid = intval(trim(file_get_contents($pid_file)));
+                $killresult = system::kill($pid);
+                log::add('arduidom', 'debug', 'system::kill(' . $pid . ") = " . $killresult);
+                log::add('arduidom', 'debug', "removing file " . $daemon_path . "/arduidom" . $d . ".pid");
+                unlink($daemon_path . "/arduidom" . $d . ".pid");
+            }
+            log::add('arduidom', 'debug', "system::fuserk(" . intval(58200 + $d) . ")");
+            system::fuserk(intval((58200 + $d)));
+        }
+        return ("OK");
     }
 
 
     public static function stopdaemon($_AID = '')
     {
+        $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
+        if ($General_Debug) log::add('arduidom', 'debug', "--------------------------------------------------------------------------------------");
         log::add('arduidom', 'debug', 'stopdaemon(' . $_AID . ") called");
         $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1));
         for ($d = 1; $d <= $nbArduinos; $d++) {
@@ -420,15 +424,16 @@ class arduidom extends eqLogic
                 config::save('A' . $d . "_daemonenable", 0, 'arduidom');
                 log::add('arduidom', 'info', 'Stop Daemon ' . $d);
                 $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
-
+                touch($daemon_path . "/arduidom" . $_AID . ".kill");
+                sleep(0.5);
                 $pid_file = $daemon_path . "/arduidom" . $d . ".pid";
                 if (file_exists($pid_file)) {
                     $pid = intval(trim(file_get_contents($pid_file)));
                     $killresult = system::kill($pid);
                     log::add('arduidom', 'debug', 'system::kill(' . $pid . ") = " . $killresult);
                 }
-                system::fuserk(intval((58200 + $d)));
                 log::add('arduidom', 'debug', "system::fuserk(" . intval(58200 + $d) . ")");
+                system::fuserk(intval((58200 + $d)));
                 log::add('arduidom', 'debug', "removing file " . $daemon_path . "/arduidom" . $d . ".pid");
                 unlink($daemon_path . "/arduidom" . $d . ".pid");
             }
@@ -441,7 +446,7 @@ class arduidom extends eqLogic
     {
         $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
         $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
-
+        if ($General_Debug) log::add('arduidom', 'debug', "--------------------------------------------------------------------------------------");
         log::add('arduidom', 'debug', 'startdaemon(' . $_AID . ') called');
 
         $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1));
@@ -504,49 +509,51 @@ class arduidom extends eqLogic
 
     public static function checkdaemon($_AID = '', $AutoSendRF = true, $SimpleCheckOnly = false)
     {
+        $randomNb = rand(10,99) . "::";
         $NoDaemonEnabled = 1;
         $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
-        if ($General_Debug) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . "," . $AutoSendRF . ")");
+        if ($General_Debug) log::add('arduidom', 'debug', "--------------------------------------------------------------------------------------");
+        if ($General_Debug) log::add('arduidom', 'debug', $randomNb . "checkdaemon( aid=" . $_AID . ", autosendrf=" . $AutoSendRF . ", simplecheckonly=" . $SimpleCheckOnly . ")");
 
         $MigrationCheck = config::byKey('db_version', 'arduidom', 0);
         if ($MigrationCheck < 108) {
-            if ($General_Debug) log::add('arduidom', 'info', "La version de la base de données Arduidom n'est pas la bonne...");
-            log::add('arduidom', 'error', "Une Migration des données Arduidom est necessaire depuis la v1.08 ! vous pouvez l'executer depuis la configuration du Plugin");
+            if ($General_Debug) log::add('arduidom', 'info', $randomNb . "La version de la base de données Arduidom n'est pas la bonne...");
+            log::add('arduidom', 'error', $randomNb . "Une Migration des données Arduidom est necessaire depuis la v1.08 ! vous pouvez l'executer depuis la configuration du Plugin");
         }
         $arduinoQty = config::byKey('ArduinoQty', 'arduidom', 0);
         for ($d = 1; $d <= $arduinoQty; $d++) {
             if ($_AID == '' || $_AID == $d) {
                 $DaemonEnabled = config::byKey('A' . $d . "_daemonenable", 'arduidom', 0);
                 if ($DaemonEnabled == 0) {
-                    if ($General_Debug) log::add('arduidom', 'debug', "L'arduino N°" . $d . ' ne sera pas verifié car il a été stoppé manuellement ou Désactivé');
-                    if ($_AID == $d) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 0");
+                    if ($General_Debug) log::add('arduidom', 'debug', $randomNb . "L'arduino N°" . $d . ' ne sera pas verifié car il a été stoppé manuellement ou Désactivé');
+                    if ($_AID == $d) log::add('arduidom', 'debug', $randomNb . "checkdaemon(" . $_AID . ") returns 0");
                     if ($_AID == $d) return 0;
                 } else {
                     $NoDaemonEnabled = 0;
                     $tcpcheck = arduidom::sendtoArduino("PING", $d);
                     $ArduinoRequiredVersion = config::byKey("ArduinoRequiredVersion","arduidom");
                     if ($tcpcheck != "PING_OK_V:" . $ArduinoRequiredVersion) {
-                        log::add('arduidom', 'error', "Erreur: Réponse de l'arduino " . $d . " = [" . $tcpcheck . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (checkdaemon)");
+                        log::add('arduidom', 'error', $randomNb . "Erreur: Réponse de l'arduino " . $d . " = [" . $tcpcheck . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (checkdaemon)");
                         if (!$SimpleCheckOnly) {
-                            log::add('arduidom', 'error', "Redémarrage Automatique de l'arduino n°" . $d . " (checkdaemon)");
-                            return arduidom::restartdaemon($d);
+                            return 0;
+                            //log::add('arduidom', 'error', "Redémarrage Automatique de l'arduino n°" . $d . " (checkdaemon)"); // JEEDOM GERE LE REDEMARRAGE AUTO DEPUIS V2
                         } else {
                             return 0;
                         }
                     } else {
-                        if ($General_Debug) log::add('arduidom', 'debug', "La liaison avec l'arduino n°" . $d . ' fonctionne correctement.');
+                        if ($General_Debug) log::add('arduidom', 'debug', $randomNb . "La liaison avec l'arduino n°" . $d . ' fonctionne correctement.');
                         if ($AutoSendRF && !$SimpleCheckOnly) self::sendtoArduino("RF",$d);
-                        if ($_AID == $d) log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 1");
+                        if ($_AID == $d) log::add('arduidom', 'debug', $randomNb . "checkdaemon(" . $_AID . ") returns 1");
                         if ($_AID == $d) return 1;
                     }
                 }
             }
         }
         if ($NoDaemonEnabled == 1) {
-            log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 0 because no daemon enabled");
+            log::add('arduidom', 'debug', $randomNb . "checkdaemon(" . $_AID . ") returns 0 because no daemon enabled");
             return 0;
         } else {
-            log::add('arduidom', 'debug', "checkdaemon(" . $_AID . ") returns 1");
+            log::add('arduidom', 'debug', $randomNb . "checkdaemon(" . $_AID . ") returns 1");
             return 1;
         }
     }
@@ -560,7 +567,7 @@ class arduidom extends eqLogic
     $CP = "CPzz";
     $modelPinMap = config::byKey('A' . $_AID . '_model', 'arduidom', 'none');
     $ARDUPINMAP = '';
-    if ($modelPinMap == "bobox59" || $modelPinMap == "uno" || $modelPinMap == "duemilanove328" || $modelPinMap == "leo" || $modelPinMap == "nano168" || $modelPinMap == "nano328") $ARDUPINMAP = $ARDUPINMAP_A;
+    if ($modelPinMap == "uno" || $modelPinMap == "duemilanove328" || $modelPinMap == "leo" || $modelPinMap == "nano168" || $modelPinMap == "nano328") $ARDUPINMAP = $ARDUPINMAP_A;
     if ($modelPinMap == "mega1280" || $modelPinMap == "mega2560") $ARDUPINMAP = $ARDUPINMAP_B;
     if ($modelPinMap == "due") $ARDUPINMAP = $ARDUPINMAP_C;
     foreach ($ARDUPINMAP as $logicalId => $pin) {
@@ -625,6 +632,8 @@ class arduidom extends eqLogic
 
     public static function restoreStates($_AID)
 {
+    $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
+    if ($General_Debug) log::add('arduidom', 'debug', "--------------------------------------------------------------------------------------");
     log::add('arduidom', 'debug', 'restoreStates(' . $_AID . ') called');
     $array[] = "";
     foreach (eqLogic::byType('arduidom') as $eqLogic) {
@@ -693,14 +702,14 @@ class arduidom extends eqLogic
     public static function sendtoArduino($_tcpmsg, $_AID)
 {
     $General_Debug = (file_exists("/tmp/arduidom_debug_mode_on"));
+    if ($General_Debug) log::add('arduidom', 'debug', "--------------------------------------------------------------------------------------");
     if ($General_Debug) log::add('arduidom', 'debug', 'sendtoArduino(' . $_tcpmsg . ',' . $_AID . ') called');
 
     $DaemonEnabled = config::byKey('A' . $_AID . "_daemonenable", 'arduidom', 0);
     if ($DaemonEnabled == 0) {
         log::add('arduidom', 'debug', 'sendtoArduino(' . $_tcpmsg . ',' . $_AID . ') IMPOSSIBLE, Le démon ' . $_AID . ' est stoppé ou Désactivé');
+        return "DAEMON_DISABLED";
     } else {
-
-
         $port = config::byKey('A' . $_AID . '_port', 'arduidom', 'none');
         $ip = config::byKey('A' . $_AID . '_daemonip', 'arduidom', '127.0.0.1');
         if ($port != 'none' && $port != "") {
@@ -713,15 +722,15 @@ class arduidom extends eqLogic
                     $fp = fsockopen($ip, (58174), $errno, $errstr, 1);
                 }
 
-                stream_set_timeout($fp, 2);
+                stream_set_timeout($fp, 1);
 
                 if (!$fp) {
-                    log::add('arduidom', 'error', "Le démon ArduiDom " . $_AID . " n'est pas connecté ! (errstr:)" . $errstr);
+                    log::add('arduidom', 'error', "Le démon " . $_AID . " n'est pas connecté ! (errstr:)" . $errstr);
                     return $errstr;
 
                 } else {
 
-                    if ($General_Debug) log::add('arduidom', 'debug', "Le démon ArduiDom " . $_AID . " est connecté, envoi...");
+                    if ($General_Debug) log::add('arduidom', 'debug', "Le démon " . $_AID . " est connecté, envoi...");
 
                     if ($port == "Network") $_tcpmsg = $_tcpmsg . "\n"; // ajout d'une fin de ligne pour shield ethernet
                     fwrite($fp, $_tcpmsg);
@@ -736,7 +745,7 @@ class arduidom extends eqLogic
                         $resp = str_replace("\r", '', $resp);
                         $resp = str_replace("\n", '', $resp);
                         if ($General_Debug) log::add('arduidom', 'debug', 'Réponse TCP recue  $_tcpmsg=' . $resp);
-                        if ((time() - $start_time) > 7) { // Time out de 7 secondes pour le check du démon
+                        if ((time() - $start_time) > 2) { // Time out de 2 secondes pour le check du démon
                             log::add('arduidom', 'error', 'Erreur: TIMEOUT sur Réponse du démon ' . $_AID);
                             return "TIMEOUT";
                         }
@@ -747,9 +756,9 @@ class arduidom extends eqLogic
                         while (!feof($fp)) {
                             $resp = fgets($fp);
                             $_tcpmsg = str_replace("\n", '', $_tcpmsg);
-                            if ($General_Debug) log::add('arduidom', 'debug', 'Debug: $_tcpmsg=' . $_tcpmsg);
+                            if ($General_Debug) log::add('arduidom', 'debug', '$_tcpmsg=' . $_tcpmsg);
 
-                            if ((time() - $start_time) > 7) { // Time out de 7 secondes pour le check du démon
+                            if ((time() - $start_time) > 2) { // Time out de 2 secondes pour le check du démon
                                 log::add('arduidom', 'error', 'Erreur: TIMEOUT sur Réponse du démon ' . $_AID);
                                 return "TIMEOUT";
                             }
@@ -762,6 +771,7 @@ class arduidom extends eqLogic
 
             } else {
                 log::add('arduidom', 'error', __('Le port Arduino (' . $port . ')est vide ou n\'existe pas', __FILE__), 'noArduinoComPort');
+                return "BAD_CONFIG";
             }
         }
     }
@@ -795,11 +805,8 @@ class arduidom extends eqLogic
     }
     $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
     $model = config::byKey('A' . $_AID . '_model', 'arduidom', 'none');
-    $port = config::byKey('A' . $_AID . '_port', 'arduidom', 'none');
+    //$port = config::byKey('A' . $_AID . '_port', 'arduidom', 'none');
     switch ($model) {
-        case "bobox59":
-            $cmd_model = "uno";
-            break;
         case "uno":
             $cmd_model = "uno";
             break;
@@ -820,10 +827,10 @@ class arduidom extends eqLogic
             break;
     }
 
-?><script>
-    $('#md_modal').dialog({title: "{{Flash Arduino}}"});
-    $('#md_modal').load('index.php?v=d&plugin=arduidom&modal=show.log').dialog('open');
-</script><?php
+    ?><script>
+        $('#md_modal').dialog({title: "{{Flash Arduino}}"});
+        $('#md_modal').load('index.php?v=d&plugin=arduidom&modal=show.log').dialog('open');
+    </script><?php
 
     $cmd = 'cd ' . $daemon_path . '/arduidomTest && sudo ino clean && sudo ino build -m ' . $cmd_model . " >> " . $daemon_path . "/../../../log/arduidom_log" . $_AID . " 2>&1 &";
     log::add('arduidom', 'info', 'Compiling arduino ' . $_AID . ': ' . $cmd);
@@ -837,9 +844,8 @@ class arduidom extends eqLogic
 {
     $result = 0;
     log::add('arduidom', 'info', '#############################flasharduino(' . $_AID . ') called');
-    $isDaemonEnabled = config::byKey('A' . $_AID . "_daemonenable", 'arduidom', 0);
-    config::save("A" . $_AID . "_daemonenable", 0, "arduidom");
-    self::stopdaemon($_AID);
+    self::deamon_stop();
+    //self::stopdaemon($_AID);
     sleep(1);
     if (!file_exists("/usr/bin/avrdude")) {
         throw new Exception(__("le programme avrdude n'est pas installé ! (installer avec apt-get install avrdude)", __FILE__));
@@ -848,11 +854,6 @@ class arduidom extends eqLogic
     $model = config::byKey('A' . $_AID . '_model', 'arduidom', 'none');
     $port = config::byKey('A' . $_AID . '_port', 'arduidom', 'none');
     switch ($model) {
-        case "bobox59":
-            $cmd_model = "-patmega328p -carduino";
-            $cmd_speed = "115200";
-            $cmd_hexfile = "bobox59";
-            break;
         case "uno":
             $cmd_model = "-patmega328p -carduino";
             $cmd_speed = "115200";
@@ -884,7 +885,7 @@ class arduidom extends eqLogic
     }
 
     $cmd = 'sudo /usr/bin/avrdude -C/etc/avrdude.conf -v -v -v ' . $cmd_model . ' -P' . $port . ' -b' . $cmd_speed . ' -D -Uflash:w:' . $daemon_path . '/' . $cmd_hexfile . '.hex:i';
-    $cmd .= ' >> ' . log::getPathToLog("arduidom_daemon_" . $_AID) . ' 2>&1';
+    $cmd .= ' >> ' . log::getPathToLog("arduidom") . ' 2>&1';
     log::add('arduidom', 'info', 'Flashing arduino ' . $_AID . ': ' . $cmd);
 
     log::add('arduidom', 'info', '############################# Launching : ' . $cmd);
@@ -892,7 +893,6 @@ class arduidom extends eqLogic
     sleep(1);
     log::add('arduidom', 'info', '#############################return ' . $result);
 
-    config::save("A" . $_AID . "_daemonenable", $isDaemonEnabled, "arduidom");
     return $result;
 }
 

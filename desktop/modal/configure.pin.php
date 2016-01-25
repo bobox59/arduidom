@@ -79,7 +79,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', '1');
                 }
                 $modelPinMap = config::byKey('A' . $_AID . '_model', 'arduidom', 'none');
                 $ARDUPINMAP = '';
-                if ($modelPinMap == "bobox59" || $modelPinMap == "uno" || $modelPinMap == "duemilanove328" || $modelPinMap == "leo" || $modelPinMap == "nano168" || $modelPinMap == "nano328") $ARDUPINMAP = $ARDUPINMAP_A;
+                if ($modelPinMap == "uno" || $modelPinMap == "duemilanove328" || $modelPinMap == "leo" || $modelPinMap == "nano168" || $modelPinMap == "nano328") $ARDUPINMAP = $ARDUPINMAP_A;
                 if ($modelPinMap == "mega1280" || $modelPinMap == "mega2560") $ARDUPINMAP = $ARDUPINMAP_B;
                 if ($modelPinMap == "due") $ARDUPINMAP = $ARDUPINMAP_C;
 
@@ -123,7 +123,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', '1');
                     }
 
                     //Uno, Nano, Duemi et Leo
-                    if ($model == "bobox59" || $model == "uno" || $model == "duemilanove168" || $model == "duemilanove328" || $model == "leo" || $model == "nano168" || $model == "nano328") {
+                    if ($model == "uno" || $model == "duemilanove168" || $model == "duemilanove328" || $model == "leo" || $model == "nano168" || $model == "nano328") {
                         $pinDIG = 14;
                         $pinANA = 6;
                         if ($logicalId == 3 || $logicalId == 5 || $logicalId == 6 || $logicalId == 9 || $logicalId == 10 || $logicalId == 11) {

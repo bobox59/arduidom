@@ -36,7 +36,8 @@ try {
     for ($i=1; $i < 9; $i++) {
         if (init('action') == 'restartDaemon' . $i) {
             //arduidom::restoreStates(1);
-            arduidom::restartdaemon($i);
+            arduidom::stopdaemon($i);
+            arduidom::startdaemon($i);
             if (arduidom::checkdaemon($i,false,true) == 1) {
                 ajax::success();
             } else {
@@ -110,7 +111,7 @@ try {
 
             $modelPinMap = config::byKey('A' . $k . '_model', 'arduidom', 'none');
             $ARDUPINMAP = '';
-            if ($modelPinMap == "bobox59" || $modelPinMap == "uno" || $modelPinMap == "duemilanove328" || $modelPinMap == "leo" || $modelPinMap == "nano168" || $modelPinMap == "nano328") $ARDUPINMAP = $ARDUPINMAP_A;
+            if ($modelPinMap == "uno" || $modelPinMap == "duemilanove328" || $modelPinMap == "leo" || $modelPinMap == "nano168" || $modelPinMap == "nano328") $ARDUPINMAP = $ARDUPINMAP_A;
             if ($modelPinMap == "mega1280" || $modelPinMap == "mega2560") $ARDUPINMAP = $ARDUPINMAP_B;
             if ($modelPinMap == "due") $ARDUPINMAP = $ARDUPINMAP_C;
 

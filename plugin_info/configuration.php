@@ -25,6 +25,23 @@ if (!isConnect()) {
 $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
 
 ?>
+<div class="form-group">
+    <label class="col-lg-3 control-label">Nombre d'arduino(s) utilisés</label>
+    <div class="col-sm-3">
+        <select id="Arduinoqty" class="configKey form-control" data-l1key="ArduinoQty">
+            <option value="1" id="ArduinoQty">1</option>
+            <option value="2" id="ArduinoQty">2</option>
+            <option value="3" id="ArduinoQty">3</option>
+            <option value="4" id="ArduinoQty">4</option>
+            <option value="5" id="ArduinoQty">5</option>
+            <option value="6" id="ArduinoQty">6</option>
+            <option value="7" id="ArduinoQty">7</option>
+            <option value="8" id="ArduinoQty">8</option>
+        </select>
+    </div>
+    Actualiser la page après la Sauvegarde d'un changement.
+</div>
+<hr>
 <ul class="nav nav-pills nav-justified" id="tab_arid">
     <?php for ($i=1; $i <= $ArduinoQty; $i++) {
         if ($i == 1) {
@@ -72,7 +89,6 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                         <div class="col-lg-4">
                             <select class="configKey form-control" data-l1key="A<?php echo $i ?>_model">
                                 <option value="" id="arduinomodelselect">Aucun - Désactivé</option>
-                                <option value="bobox59" id="arduinomodelselect">Arduino BOBOX59 (pour debug)</option>
                                 <option value="uno" id="arduinomodelselect">Arduino UNO</option>
                                 <option value="nano328" id="arduinomodelselect">Arduino NANO (ATMega 328)</option>
                                 <option value="mega1280" id="arduinomodelselect">Arduino MEGA 1280</option>
@@ -96,24 +112,10 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                                 <a class="btn btn-warning" id="bt_RestartArduidomDeamon<?php echo $i ?>"><i class='fa fa-refresh'></i>{{ (Ré)Activer le N°<?php echo $i ?>}}</a>&nbsp;
                                 <a class="btn btn-danger" id="bt_StopArduidomDeamon<?php echo $i ?>"><i class='fa fa-stop'></i>{{ Désactiver le N°<?php echo $i ?>}}</a>
                         </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="col-lg-3 control-label">Sketch</label>
-                        <div class="col-lg-9">
+                        <label class="col-lg-3 control-label">Gestion des Sketchs</label>
+                        <div class="panel-body">
                             <a class="btn btn-primary" id="bt_CompileArduino<?php echo $i ?>"><i class="fa fa-check-circle"></i>{{ Compiler le Sketch (nouvelle fonction en test...)}}</a>&nbsp;
-                            <a class="btn btn-danger" id="bt_FlashArduino<?php echo $i ?>"><i class="fa fa-arrow-circle-right"></i>{{ Téléverser le Sketch sur l arduino}}</a>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="col-lg-12">
-                            <legend>{{Informations Arduino <?php echo $i ?>:}}</legend>
-                            <div class="col-lg-9" id='div_compileDebug<?php echo $i ?>' style="display: none;"></div>
-                            <a class="btn btn-warning pull-right" data-state="1" id="bt_compileLogStopStart<?php echo $i ?>"><i class="fa fa-pause"></i> {{Pause}}</a>
-                            <input class="form-control pull-right" id="in_compileLogSearch<?php echo $i ?>" style="width : 300px;" placeholder="{{Rechercher}}" />
-                        </div>
-                        <div class="col-lg-12">
-                            <pre id='pre_compilelog<?php echo $i ?>' style='overflow: auto; height: 50%;width:90%;'></pre>
+                            <a class="btn btn-danger" id="bt_FlashArduino<?php echo $i ?>"><i class="fa fa-arrow-circle-right"></i>{{ Téléverser le Sketch sur l arduino}}</a>&nbsp;
                         </div>
                     </div>
                 </fieldset>
@@ -121,7 +123,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
         </div>
     <?php } ?>  <!-- FIN DU For PHP -->
 </div>
-<hr>
+<hr size="10">
 <form class="form-horizontal">
     <fieldset>
         <div class="form-group">
@@ -129,26 +131,11 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                 <!-- <a class="btn btn-danger btn-xs" id="bt_FullDebugEnable"><i class='fa fa-exclamation-triangle'></i> Activer les Debugs dans le log</a> -->
                 <!-- <a class="btn btn-danger btn-xs" id="bt_FullDebugDisable"><i class='fa fa-exclamation-triangle'></i> Désactiver les Debugs</a> -->
                 <!-- <a class="btn btn-default btn-sm tooltips expertModeVisible" id="bt_ArduinologDaemon" title="{{Log du demon Arduino}}" style="width : 100%;display: inline-block;"><i class="fa fa-file-o"></i> {{Log des démons}}</a> -->
-                <a class="btn btn-danger btn-xs" id="bt_MigrateArduidom"><i class='fa fa-exclamation-triangle'></i> FORCER Migration des données</a>
-                <a href="plugins/arduidom/ressources/Archive.zip" class="btn btn-info" id="bt_Download"><i class='fa fa-download'></i> Télécharger les Sketchs (USB & Shield Ethernet)</a>
+                &nbsp;
+                <a href="plugins/arduidom/ressources/Archive.zip" class="btn btn-info" id="bt_Download"><i class='fa fa-download'></i> Télécharger les Sketchs (USB & Shield Ethernet)</a>&nbsp;&nbsp;&nbsp;
+                <a class="btn btn-danger" id="bt_MigrateArduidom"><i class='fa fa-exclamation-triangle'></i> FORCER la Migration des données</a>
+                <hr>
             </div>
-        </div>
-        <hr>
-        <div class="form-group">
-            <label class="col-lg-2 control-label">Quantité d'arduino(s)</label>
-            <div class="col-sm-2">
-                <select id="Arduinoqty" class="configKey form-control" data-l1key="ArduinoQty">
-                    <option value="1" id="ArduinoQty">1</option>
-                    <option value="2" id="ArduinoQty">2</option>
-                    <option value="3" id="ArduinoQty">3</option>
-                    <option value="4" id="ArduinoQty">4</option>
-                    <option value="5" id="ArduinoQty">5</option>
-                    <option value="6" id="ArduinoQty">6</option>
-                    <option value="7" id="ArduinoQty">7</option>
-                    <option value="8" id="ArduinoQty">8</option>
-                </select>
-            </div>
-            Actualiser la page après la Sauvegarde d'un changement.
         </div>
 
     </fieldset>

@@ -20,7 +20,6 @@ require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
 function arduidom_install() {
     config::save("ArduinoRequiredVersion","105","arduidom");
-    arduidom::start();
     $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
     if (is_object($cron)) {
         $cron->remove();
@@ -36,6 +35,7 @@ function arduidom_install() {
         $cron->setSchedule('* * * * *');
         $cron->save();
     }
+    arduidom::deamon_start();
 }
 
 function arduidom_update() {
@@ -44,14 +44,14 @@ function arduidom_update() {
     if (is_object($cron)) {
         $cron->remove();
     }
-    arduidom::stopdaemon();
+    arduidom::deamon_stop();
     $MigrationCheck = config::byKey('db_version', 'arduidom', 0);
     if ($MigrationCheck < 108) {
         arduidom::MigrateDatas();
         config::save('db_version', 144, 'arduidom'); // Inscrit la version de migration dans la config
     }
     if ($MigrationCheck < 145) {
-        arduidom::stopdaemon();
+        arduidom::deamon_stop();
         $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
         log::add('arduidom', 'info', "Suppression de arduidom1.py devenu inutile => " . unlink($daemon_path . "/arduidom1.py"));
         log::add('arduidom', 'info', "Suppression de arduidom2.py devenu inutile => " . unlink($daemon_path . "/arduidom2.py"));
@@ -63,7 +63,7 @@ function arduidom_update() {
         log::add('arduidom', 'info', "Suppression de arduidom8.py devenu inutile => " . unlink($daemon_path . "/arduidom8.py"));
         config::save('db_version', 145, 'arduidom'); // Inscrit la version de migration dans la config
     }
-    arduidom::start();
+    arduidom::deamon_start();
     $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
     if (!is_object($cron)) {
         $cron = new cron();
@@ -82,14 +82,7 @@ function arduidom_remove() {
     if (is_object($cron)) {
         $cron->remove();
     }
-    arduidom::stopdaemon(1);
-    arduidom::stopdaemon(2);
-    arduidom::stopdaemon(3);
-    arduidom::stopdaemon(4);
-    arduidom::stopdaemon(5);
-    arduidom::stopdaemon(6);
-    arduidom::stopdaemon(7);
-    arduidom::stopdaemon(8);
+    arduidom::deamon_stop();
 }
 
 ?>
