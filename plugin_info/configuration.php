@@ -105,6 +105,27 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                         </div>
                     </div>
 
+
+
+
+
+
+                    <div class="form-group">
+                        <label class="col-lg-3 control-label">Activation AUTO du démon</label>
+                        <div class="col-lg-2">
+                            <input type="checkbox" id="bt_actiautodemon<?php echo $i ?>" class="configKey form-control bootstrapSwitch" data-l1key="A<?php echo $i ?>_daemonenable" />
+                        </div>
+                    </div>
+
+
+
+
+
+
+
+
+
+
                     <div class="panel panel-default">
                         <label class="col-lg-3 control-label">{{Contrôle de l'arduino n°<?php echo $i ?>}}</label>
                         <div class="panel-body">
@@ -128,9 +149,6 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
     <fieldset>
         <div class="form-group">
             <div class="col-lg-10">
-                <!-- <a class="btn btn-danger btn-xs" id="bt_FullDebugEnable"><i class='fa fa-exclamation-triangle'></i> Activer les Debugs dans le log</a> -->
-                <!-- <a class="btn btn-danger btn-xs" id="bt_FullDebugDisable"><i class='fa fa-exclamation-triangle'></i> Désactiver les Debugs</a> -->
-                <!-- <a class="btn btn-default btn-sm tooltips expertModeVisible" id="bt_ArduinologDaemon" title="{{Log du demon Arduino}}" style="width : 100%;display: inline-block;"><i class="fa fa-file-o"></i> {{Log des démons}}</a> -->
                 &nbsp;
                 <a href="plugins/arduidom/ressources/Archive.zip" class="btn btn-info" id="bt_Download"><i class='fa fa-download'></i> Télécharger les Sketchs (USB & Shield Ethernet)</a>&nbsp;&nbsp;&nbsp;
                 <a class="btn btn-danger" id="bt_MigrateArduidom"><i class='fa fa-exclamation-triangle'></i> FORCER la Migration des données</a>
@@ -335,56 +353,6 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
 </script>
 
 <script>
-    $('#bt_FullDebugEnable').on('click', function () {
-        bootbox.confirm('{{<center>Attention !</center><br><br>Le fait d activer le Debug fourni enormément le fichier log !<br>Cette fonction est automatiquement désactivée au redémarrage du serveur}}', function (result) {
-            if (result) {
-                $.ajax({// fonction permettant de faire de l'ajax
-                    type: "POST", // methode de transmission des données au fichier php
-                    url: "plugins/arduidom/core/ajax/arduidom.ajax.php", // url du fichier php
-                    data: {
-                        action: "FullDebugEnable"
-                    },
-                    dataType: 'json',
-                    error: function (request, status, error) {
-                        handleAjaxError(request, status, error);
-                    },
-                    success: function (data) { // si l'appel a bien fonctionné
-                        if (data.state != 'ok') {
-                            $('#div_alert').showAlert({message: data.result, level: 'danger'});
-                            return;
-                        }
-                        $('#div_alert').showAlert({message: 'Debug Level Activé.', level: 'success'});
-                    }
-                });
-            }
-        });
-        //history.go(0);
-    });
-
-    $('#bt_FullDebugDisable').on('click', function () {
-        $.ajax({// fonction permettant de faire de l'ajax
-            type: "POST", // methode de transmission des données au fichier php
-            url: "plugins/arduidom/core/ajax/arduidom.ajax.php", // url du fichier php
-            data: {
-                action: "FullDebugDisable"
-            },
-            dataType: 'json',
-            error: function (request, status, error) {
-                handleAjaxError(request, status, error);
-            },
-            success: function (data) { // si l'appel a bien fonctionné
-                if (data.state != 'ok') {
-                    $('#div_alert').showAlert({message: data.result, level: 'danger'});
-                    return;
-                }
-                $('#div_alert').showAlert({message: 'Debug Level Désactivé.', level: 'success'});
-            }
-        });
-    });
-
-</script>
-
-<script>
         $('#Arduinoqty').change(function() {
         if (jsinitok) {
             console.log("Qty Changed ! Saving...");
@@ -394,17 +362,6 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
         });
 </script>
 
-<script>
-    $('.bt_installDeps').on('click',function(){
-        bootbox.confirm('{{Etes-vous sûr de vouloir installer/mettre à jour les dépendances pour Arduidom ? }}', function (result) {
-            if (result) {
-                $('#md_modal').dialog({title: "{{Installation / Mise à jour}}"});
-                $('#md_modal').load('index.php?v=d&plugin=arduidom&modal=update.arduidom').dialog('open');
-            }
-        });
-    });
-
-</script>
 <script>
     //$(document).ready(function(){
     setTimeout(function() {

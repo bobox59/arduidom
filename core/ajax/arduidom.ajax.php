@@ -27,12 +27,6 @@ try {
     }
 
 
-
-    if (init('action') == 'updateArduidom') {
-        arduidom::updateArduidom();
-        ajax::success();
-    }
-
     for ($i=1; $i < 9; $i++) {
         if (init('action') == 'restartDaemon' . $i) {
             //arduidom::restoreStates(1);
@@ -69,13 +63,11 @@ try {
             log::add('arduidom', 'info', 'FlashArduino STEP 2: avrdude finished.' . $chk);
             sleep(1);
             log::add('arduidom', 'info', 'FlashArduino STEP 3: Start  Daemon ' . $i);
-            if (config::byKey('A' . $i . "_daemonenable","arduidom",0) == 1) $chk = arduidom::startdaemon($i);
-            if ($chk == 1) {
-                log::add('arduidom', 'info', 'FlashArduino STEP 4: Daemon ' . $i . ' started' . $chk);
-                ajax::success("Le démon " . $i . " a correctement démarré apres le televersement de l'arduino !");
+            if (config::byKey('A' . $i . "_daemonenable","arduidom",0) == 1) $chk = arduidom::deamon_start();
+            if ($chk == true) {
+                ajax::success("Le démon a correctement démarré apres le televersement de l'arduino !");
             } else {
-                log::add('arduidom', 'info', 'FlashArduino STEP 4: Daemon ' . $i . ' NOT started after flash' . $chk);
-                ajax::error("Le démon " . $i . " n'a pas démarré apres le televersement de l'arduino !");
+                ajax::error("Le démon n'a pas démarré apres le televersement de l'arduino !");
             }
         }
 
@@ -139,22 +131,6 @@ try {
         ajax::success($result);
     }
 
-
-    if (init('action') == 'FullDebugEnable') {
-        if (file_put_contents('/tmp/arduidom_debug_mode_on', "debugON") != false) {
-            ajax::success();
-        } else {
-            ajax::error("Une erreur est survenue pendant l'activation du mode Debug Arduidom ! (Problèmes de droits sur /tmp/arduidom_debug_mode_on ?)");;
-        };
-    }
-
-    if (init('action') == 'FullDebugDisable') {
-        if (unlink("/tmp/arduidom_debug_mode_on") == true) {
-            ajax::success();
-        } else {
-            ajax::error("Une erreur est survenue pendant la désactivation du mode Debug Arduidom ! (Problèmes de droits sur /tmp/arduidom_debug_mode_on ?)");
-        }
-    }
 
     if (init('action') == 'MigrateArduidom') {
         if (arduidom::MigrateDatas() == 1) {
