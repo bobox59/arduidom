@@ -80,6 +80,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                                 echo '<option value="' . "/dev/ttyACM1" . '">' . "Arduino sur USB /dev/ttyACM1" . ' (' . "/dev/ttyACM1" . ')</option>';
                                 echo '<option value="' . "/dev/ttyACM2" . '">' . "Arduino sur USB /dev/ttyACM2" . ' (' . "/dev/ttyACM2" . ')</option>';
                                 echo '<option value="' . "/dev/ttyAMA0" . '">' . "Arduino sur port série GPIO Raspberry" . ' (' . "/dev/ttyAMA0" . ')</option>';
+                                echo '<option value="' . "/dev/ttyS0" . '">' . "Arduino sur USB /dev/ttyS0" . ' (' . "/dev/ttyS0" . ')</option>';
                                 ?>
                             </select>
                         </div>
