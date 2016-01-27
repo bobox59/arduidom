@@ -17,8 +17,22 @@ __author__ = 'bmasquelier cedric02'
 #
 # Python script for Arduidom communication
 #
-to_arduino = Queue()
-from_arduino = Queue()
+to_arduino_1 = Queue()
+to_arduino_2 = Queue()
+to_arduino_3 = Queue()
+to_arduino_4 = Queue()
+to_arduino_5 = Queue()
+to_arduino_6 = Queue()
+to_arduino_7 = Queue()
+to_arduino_8 = Queue()
+from_arduino_1 = Queue()
+from_arduino_2 = Queue()
+from_arduino_3 = Queue()
+from_arduino_4 = Queue()
+from_arduino_5 = Queue()
+from_arduino_6 = Queue()
+from_arduino_7 = Queue()
+from_arduino_8 = Queue()
 
 class cmdarg_data:
 	def __init__(
@@ -46,7 +60,7 @@ class from_jeedom:
 		self.request = command
 		self._answer = ""
 		self._status = "WAITING"  # START|IN_PROGRESS|OK|TIMEOUT
-		self.timeout = 10
+		self.timeout = 5
 		self.confirm = confirm
 		self.start_time = int(time.time())
 
@@ -105,8 +119,8 @@ def cli_parser(argv=None):
 
 
 def handler(options, clientsocket, clientaddr, arduID):
-	global to_arduino
-	logger.debug("Accepted jeedom connection from: " + str(clientaddr))
+	global to_arduino_1, to_arduino_2, to_arduino_3, to_arduino_4, to_arduino_5, to_arduino_6, to_arduino_7, to_arduino_8
+	logger.debug("Accepted jeedom connection from: " + str(clientaddr) + " to arduino " + str(arduID))
 	while 1:
 		jeedata = clientsocket.recv(1024)
 		jeedata = jeedata.replace('\n', '')
@@ -114,11 +128,19 @@ def handler(options, clientsocket, clientaddr, arduID):
 		if not jeedata:
 			break
 		else:
-			logger.debug("JeeDom  >> [" + jeedata + "]")
+			logger.debug("JeeDom  >> [" + jeedata + "] >> Arduino " + str(arduID))
 			if jeedata[0:4] == 'PING':
-				logger.debug("Jeedom PING Received !")
+				logger.debug("Jeedom PING Received for arduino " + str(arduID) + " !")
+				logger.debug("Make Ping Request for arduino " + str(arduID) + " !")
 				ping_request = from_jeedom(jeedata, "PING_OK")
-				to_arduino.put(ping_request)
+				if arduID == 1: to_arduino_1.put(ping_request)
+				if arduID == 2: to_arduino_2.put(ping_request)
+				if arduID == 3: to_arduino_3.put(ping_request)
+				if arduID == 4: to_arduino_4.put(ping_request)
+				if arduID == 5: to_arduino_5.put(ping_request)
+				if arduID == 6: to_arduino_6.put(ping_request)
+				if arduID == 7: to_arduino_7.put(ping_request)
+				if arduID == 8: to_arduino_8.put(ping_request)
 
 				while not ping_request.finished():
 					time.sleep(0.1)
@@ -128,7 +150,14 @@ def handler(options, clientsocket, clientaddr, arduID):
 
 			elif jeedata[0:2] == 'CP':
 				cp_request = from_jeedom(jeedata, "CP_OK")
-				to_arduino.put(cp_request)
+				if arduID == 1: to_arduino_1.put(cp_request)
+				if arduID == 2: to_arduino_2.put(cp_request)
+				if arduID == 3: to_arduino_3.put(cp_request)
+				if arduID == 4: to_arduino_4.put(cp_request)
+				if arduID == 5: to_arduino_5.put(cp_request)
+				if arduID == 6: to_arduino_6.put(cp_request)
+				if arduID == 7: to_arduino_7.put(cp_request)
+				if arduID == 8: to_arduino_8.put(cp_request)
 				while not cp_request.finished():
 					time.sleep(0.1)
 				answer = cp_request.answer()
@@ -137,7 +166,14 @@ def handler(options, clientsocket, clientaddr, arduID):
 
 			elif jeedata[0:2] == 'SP':
 				sp_request = from_jeedom(jeedata, "SP_OK")
-				to_arduino.put(sp_request)
+				if arduID == 1: to_arduino_1.put(sp_request)
+				if arduID == 2: to_arduino_2.put(sp_request)
+				if arduID == 3: to_arduino_3.put(sp_request)
+				if arduID == 4: to_arduino_4.put(sp_request)
+				if arduID == 5: to_arduino_5.put(sp_request)
+				if arduID == 6: to_arduino_6.put(sp_request)
+				if arduID == 7: to_arduino_7.put(sp_request)
+				if arduID == 8: to_arduino_8.put(sp_request)
 				while not sp_request.finished():
 					time.sleep(0.1)
 				answer = sp_request.answer()
@@ -146,7 +182,14 @@ def handler(options, clientsocket, clientaddr, arduID):
 
 			elif jeedata[0:2] == 'RF':  # *** Refresh Datas
 				rf_request = from_jeedom(jeedata, "DATA:")
-				to_arduino.put(rf_request)
+				if arduID == 1: to_arduino_1.put(rf_request)
+				if arduID == 2: to_arduino_2.put(rf_request)
+				if arduID == 3: to_arduino_3.put(rf_request)
+				if arduID == 4: to_arduino_4.put(rf_request)
+				if arduID == 5: to_arduino_5.put(rf_request)
+				if arduID == 6: to_arduino_6.put(rf_request)
+				if arduID == 7: to_arduino_7.put(rf_request)
+				if arduID == 8: to_arduino_8.put(rf_request)
 				while not rf_request.finished():
 					time.sleep(0.1)
 				answer = rf_request.answer()
@@ -158,7 +201,7 @@ def handler(options, clientsocket, clientaddr, arduID):
 
 
 def tcpServerThread(options, threadName, arduID):
-	logger.debug("Thread " + threadName + " Started.")
+	logger.debug("TCP Thread " + threadName + " for Arduino " + str(arduID) + " Started.")
 	addr = (options.sockethost, int(options.socketport) + arduID)
 	serversocket = socket(AF_INET, SOCK_STREAM)
 	serversocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
@@ -180,10 +223,9 @@ def parse_adrduino_answer(options, line, arduID):
 	line = line.replace('\n', '')
 	line = line.replace('\r', '')
 	if line != '':
-		logger.debug("Arduino >> [" + line + "]")
+		logger.debug("Arduino " + str(arduID) + " >> [" + line + "]")
 		if re.search("^DBG", line) or re.search("^SP", line) or re.search("^Pin ", line):
-			logger.debug("Arduino DBG >> [" + line + "]")
-			test = 1
+			logger.debug("Arduino " + str(arduID) + " *DBG* >> [" + line + "]")
 
 		elif line.find("DATA:") > -1:
 			logger.debug("RF values => FOUND")
@@ -223,43 +265,79 @@ def parse_adrduino_answer(options, line, arduID):
 			logger.debug(cmdlog)
 			options.jeedom.send(cmd)
 		else:
-			logger.info("NON READABLE Arduino >> [" + line + "]")
+			logger.info("Arduino " + str(arduID) + " (UNKNOWN ANSWER) >> [" + line + "]")
 
 
 def COMServer(options, threadName, arduID):
-	global to_arduino
-	logger.debug("Thread " + threadName + " Started.")
+	global to_arduino_1, to_arduino_2, to_arduino_3, to_arduino_4, to_arduino_5, to_arduino_6, to_arduino_7, to_arduino_8
+
+	logger.debug("Thread " + threadName + " for arduino " + str(arduID) + " Started.")
 	logger.info("Opening Arduino USB Port...")
 	SerialPort = ""
-	if arduID == 1 : SerialPort = serial.Serial(options.A1_port, 115200, timeout=0.1)
-	if arduID == 2 : SerialPort = serial.Serial(options.A2_port, 115200, timeout=0.1)
-	if arduID == 3 : SerialPort = serial.Serial(options.A3_port, 115200, timeout=0.1)
-	if arduID == 4 : SerialPort = serial.Serial(options.A4_port, 115200, timeout=0.1)
-	if arduID == 5 : SerialPort = serial.Serial(options.A5_port, 115200, timeout=0.1)
-	if arduID == 6 : SerialPort = serial.Serial(options.A6_port, 115200, timeout=0.1)
-	if arduID == 7 : SerialPort = serial.Serial(options.A7_port, 115200, timeout=0.1)
-	if arduID == 8 : SerialPort = serial.Serial(options.A8_port, 115200, timeout=0.1)
-	time.sleep(1)
-	logger.debug("En attente de l'arduino (HELLO)")
-	logger.debug("[" + "PING" + "] >> Arduino")
-	SerialPort.write("PING\n")
-	time.sleep(0.5)
-	while re.search("^PING_OK", SerialPort.readline()):
-		logger.debug("[" + "PING" + "] >> Arduino")
-		SerialPort.write("PING\n")
-		time.sleep(0.1)
+	if arduID == 1 : SerialPort = serial.Serial(options.A1_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
+	if arduID == 2 : SerialPort = serial.Serial(options.A2_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
+	if arduID == 3 : SerialPort = serial.Serial(options.A3_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
+	if arduID == 4 : SerialPort = serial.Serial(options.A4_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
+	if arduID == 5 : SerialPort = serial.Serial(options.A5_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
+	if arduID == 6 : SerialPort = serial.Serial(options.A6_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
+	if arduID == 7 : SerialPort = serial.Serial(options.A7_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
+	if arduID == 8 : SerialPort = serial.Serial(options.A8_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
+
+	logger.debug("Reset Arduino " + str(arduID) + " via USB") # Reset Arduino
+	SerialPort.setDTR(False)
+	SerialPort.setRTS(False)
+	time.sleep(0.1)
+	SerialPort.flushInput()
+	SerialPort.setDTR(True)
+	SerialPort.setRTS(True)
+	time.sleep(0.1)
+	logger.debug("En attente de l'arduino " + str(arduID) + " (HELLO)")
+	while not re.search("^HELLO", SerialPort.readline()):
+		time.sleep(0.5)
+		logger.debug("[" + "@" + "] >> Arduino" + str(arduID))
+		SerialPort.write("@\n")
 	SerialPort.flush()
-	logger.debug("Arduino est pret")
+	logger.debug("Arduino " + str(arduID) + " est pret.")
+	if arduID == 1: options.A1_ready = True
+	if arduID == 2: options.A2_ready = True
+	if arduID == 3: options.A3_ready = True
+	if arduID == 4: options.A4_ready = True
+	if arduID == 5: options.A5_ready = True
+	if arduID == 6: options.A6_ready = True
+	if arduID == 7: options.A7_ready = True
+	if arduID == 8: options.A8_ready = True
 	while True:
 		line = SerialPort.readline()
 		if line != '':
+			logging.debug("Arduino " + str(arduID) + " >> " + str(line))
 			parse_adrduino_answer(options, line, arduID)
-			next # TODO: a quoi sert le next ?
-		if not to_arduino.empty():
-			logger.debug("process Queue")
-			command = to_arduino.get()
+			next  # TODO: a quoi sert le next ?
+
+		queueEmpty = True
+		if arduID == 1: queueEmpty = to_arduino_1.empty()
+		if arduID == 2: queueEmpty = to_arduino_2.empty()
+		if arduID == 3: queueEmpty = to_arduino_3.empty()
+		if arduID == 4: queueEmpty = to_arduino_4.empty()
+		if arduID == 5: queueEmpty = to_arduino_5.empty()
+		if arduID == 6: queueEmpty = to_arduino_6.empty()
+		if arduID == 7: queueEmpty = to_arduino_7.empty()
+		if arduID == 8: queueEmpty = to_arduino_8.empty()
+		#if queueEmpty:
+			#logger.debug("Queue of arduino " + str(arduID) + " is empty")
+
+		if not queueEmpty:
+			logger.debug("process Queue of arduino " + str(arduID))
+			if arduID == 1: command = to_arduino_1.get()
+			if arduID == 2: command = to_arduino_2.get()
+			if arduID == 3: command = to_arduino_3.get()
+			if arduID == 4: command = to_arduino_4.get()
+			if arduID == 5: command = to_arduino_5.get()
+			if arduID == 6: command = to_arduino_6.get()
+			if arduID == 7: command = to_arduino_7.get()
+			if arduID == 8: command = to_arduino_8.get()
 			request = command.start_processing()
 			logger.debug("IN check_queue doing [" + request + "]")
+			logger.debug("[" + request + "] >> Arduino " + str(arduID))
 			if len(request) >= 64:
 				SerialPort.write(request[0:64])
 				time.sleep(0.1)  # TODO WHY : Laisse le temps a l'arduino de traiter la 1e part des données, 0.5 avant modif pour tests
@@ -267,20 +345,36 @@ def COMServer(options, threadName, arduID):
 			else:
 				SerialPort.write(request + '\n')
 			line = SerialPort.readline()
+			logger.debug("1_Arduino " + str(arduID) + " >> " + "[" + line + "]")
 			while not re.search(command.confirm, line):
 				parse_adrduino_answer(options, line, arduID)
 				if command.status() == "TIMEOUT":
 					logger.error("TIMEOUT : " + request)
-					to_arduino.task_done()
+					if arduID == 1: to_arduino_1.task_done()
+					if arduID == 2: to_arduino_2.task_done()
+					if arduID == 3: to_arduino_3.task_done()
+					if arduID == 4: to_arduino_4.task_done()
+					if arduID == 5: to_arduino_5.task_done()
+					if arduID == 6: to_arduino_6.task_done()
+					if arduID == 7: to_arduino_7.task_done()
+					if arduID == 8: to_arduino_8.task_done()
 					break
 				line = SerialPort.readline()
+				logger.debug("2_Arduino " + str(arduID) + " >> " + "[" + line + "]")
 			else:
 				# bonne reponse (on sort du while correctment)
 				line = line.replace('\n', '')
 				line = line.replace('\r', '')
 				logger.debug("IN check_queue answer = [" + line + "]")
 				command.result(line)
-				to_arduino.task_done()
+				if arduID == 1: to_arduino_1.task_done()
+				if arduID == 2: to_arduino_2.task_done()
+				if arduID == 3: to_arduino_3.task_done()
+				if arduID == 4: to_arduino_4.task_done()
+				if arduID == 5: to_arduino_5.task_done()
+				if arduID == 6: to_arduino_6.task_done()
+				if arduID == 7: to_arduino_7.task_done()
+				if arduID == 8: to_arduino_8.task_done()
 	logger.error("Thread END.")
 
 
@@ -357,13 +451,13 @@ def read_config( configFile, configItem):
 			logger.debug('Error in config_arduidom.xml file')
 
 		# Get config item
-		logger.debug('Get the configuration item: ' + configItem)
+		#logger.debug('Get the configuration item: ' + configItem)
 
 		try:
 			xmlTag = dom.getElementsByTagName( configItem )[0].toxml()
-			logger.debug('Found: ' + xmlTag)
+			#logger.debug('Found: ' + xmlTag)
 			xmlData = xmlTag.replace('<' + configItem + '>','').replace('</' + configItem + '>','')
-			logger.debug('--> ' + xmlData)
+			#logger.debug('--> ' + xmlData)
 		except:
 			logger.debug('The item tag not found in the config file')
 			xmlData = ""
@@ -385,7 +479,8 @@ def main(argv=None):
 
 	(options, args) = cli_parser(argv)
 
-	LOG_FILENAME = pyfolder + '../../../log/arduidom_daemon'
+	LOG_FILENAME = "/tmp/arduidom_daemon"
+	#LOG_FILENAME = pyfolder + '../../../log/arduidom_daemon'
 	formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(threadName)s - %(module)s:%(lineno)d - %(message)s')
 
 	if options.loglevel != "INFO":
@@ -408,6 +503,15 @@ def main(argv=None):
 	KILL_FILENAME = pyfolder + 'arduidomx.kill'
 	PID_FILENAME = pyfolder + 'arduidomx.pid'
 
+	options.A1_ready = False
+	options.A2_ready = False
+	options.A3_ready = False
+	options.A4_ready = False
+	options.A5_ready = False
+	options.A6_ready = False
+	options.A7_ready = False
+	options.A8_ready = False
+
 	logger.info(".")
 	logger.info(".")
 	logger.info(".")
@@ -416,6 +520,8 @@ def main(argv=None):
 	logger.info("# ArduiDom - Arduino Link for jeeDom #")
 	logger.info("# v2           by Bobox59 & Cedric02 #")
 	logger.info("######################################")
+	username = os.environ['USER']
+	logger.info("Username = " + str(username))
 	logger.info("LogLevel = " + loglevel + " option.logvevel = " + str(options.loglevel))
 	logger.debug("Python version: %s.%s.%s" % sys.version_info[:3])
 
@@ -426,12 +532,8 @@ def main(argv=None):
 	logger.debug("Read configuration file")
 	read_configFile(options, configFile)
 	logger.debug("End of Read configuration file")
-	logger.debug("1")
 	options.jeedom = Jeedom("PHP", "", "", options.apikey)
-	logger.debug("2")
 	options.externalip = ""  # Sinon, cela ne fonctionne pas !!!!
-	logger.debug("4")
-	logger.debug("5")
 	mypid = os.getpid()
 	logger.debug("Mon PID = " + str(mypid))
 	ps = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE).communicate()[0]
@@ -469,7 +571,8 @@ def main(argv=None):
 	file(PID_FILENAME, "w").write(str(os.getpid()))
 
 	#-------------------------- THREADS USB -------------------------------------------------------------------
-	logger.info("Launch USB Thread...")
+	logger.info(".")
+	logger.info(".")
 	# noinspection PyBroadException
 	try:
 		for nb in range(1,int(options.ArduinoQty)+1) :
@@ -484,17 +587,35 @@ def main(argv=None):
 		quit()
 
 	#-------------------------- THREADS TCP -------------------------------------------------------------------
-	logger.info("Launch TCP Thread on base port " + str(options.socketport) + "...")
+	logger.info(".")
+	logger.info(".")
+	logger.info("Prepare to launch TCP Thread(s) on base port " + str(options.socketport) + "...")
 	# noinspection PyBroadException
-	try:
-		for nb in range(1,int(options.ArduinoQty)+1) :
+	for nb in range(1,int(options.ArduinoQty)+1) :
+		ArduinoReady = False
+		while not ArduinoReady:
+			if nb == 1: ArduinoReady = options.A1_ready
+			if nb == 2: ArduinoReady = options.A2_ready
+			if nb == 3: ArduinoReady = options.A3_ready
+			if nb == 4: ArduinoReady = options.A4_ready
+			if nb == 5: ArduinoReady = options.A5_ready
+			if nb == 6: ArduinoReady = options.A6_ready
+			if nb == 7: ArduinoReady = options.A7_ready
+			if nb == 8: ArduinoReady = options.A8_ready
+			time.sleep(0.5)
+
+		try:
+			logger.info("Launch TCP Thread n°" + str(nb))
 			worker_tcp = Thread(target=tcpServerThread, args=(options, "TH-TcpServer", nb,))
 			worker_tcp.setDaemon(True)
 			worker_tcp.start()
 			## thread.start_new_thread(tcpServerThread, (options,"TH-TcpServer",))
-	except ImportError, e:
-		logger.error("Error with Thread TH-TcpServer " + str(e))
-		quit()
+		except ImportError, e:
+			logger.error("Error with Thread TH-TcpServer " + str(e))
+			quit()
+
+	logger.info("ALL TCP Threads Launched !")
+
 
 	logger.info("Surveille le .kill ...")
 	while 1:
