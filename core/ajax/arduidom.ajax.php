@@ -41,7 +41,7 @@ try {
 
         if (init('action') == 'stopDaemon' . $i) {
             log::add('arduidom', 'info', 'Desactivation du démon ' . $i . '...');
-            config::save('A' . $i . "_daemonenable", 0, 'arduidom');
+            config::save('A' . $i . "_arduinoenable", 0, 'arduidom');
             arduidom::stopdaemon($i);
             if (arduidom::checkdaemon($i,false,true) == 0) {
                 ajax::success();
@@ -60,10 +60,8 @@ try {
         if (init('action') == 'FlashArduino' . $i) {
             log::add('arduidom', 'info', 'FlashArduino STEP 1: Exec avrdude and wait finish...');
             $chk = arduidom::FlashArduino($i);
-            log::add('arduidom', 'info', 'FlashArduino STEP 2: avrdude finished.' . $chk);
-            sleep(1);
-            log::add('arduidom', 'info', 'FlashArduino STEP 3: Start  Daemon ' . $i);
-            if (config::byKey('A' . $i . "_daemonenable","arduidom",0) == 1) $chk = arduidom::deamon_start();
+            log::add('arduidom', 'info', 'FlashArduino STEP 2: avrdude finished for arduino n°' . $i . ' with result ' . $chk);
+            arduidom::set_daemon_mode("KILLED");
             if ($chk == true) {
                 ajax::success("Le démon a correctement démarré apres le televersement de l'arduino !");
             } else {

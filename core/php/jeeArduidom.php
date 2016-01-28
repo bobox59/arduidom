@@ -31,6 +31,9 @@ if (isset($argv)) {
             if ($argList[0] == 'arduid') {
                 $arduid = $argList[1];
             }
+            if ($argList[0] == 'daemonready') {
+                $arduid = $argList[1];
+            }
             if (is_numeric($argList[0])) {
                 $valuetoconvert = $argList[0];
                 $argList[0] = (1000 * intval($arduid)) + $valuetoconvert;
@@ -45,6 +48,9 @@ if (!isset($argv)) {
         $argList = explode('=', $arg);
         if (isset($argList[0]) && isset($argList[1])) {
             if ($argList[0] == 'arduid') {
+                $arduid = $argList[1];
+            }
+            if ($argList[0] == 'daemonready') {
                 $arduid = $argList[1];
             }
             if (is_numeric($argList[0])) {
@@ -65,8 +71,15 @@ if (!jeedom::apiAccess(init('api'))) {
     log::add('arduidom', 'error', "Clef API non valide, vous n\'etes pas autorisé à effectuer cette action");
     die();
 }
-
 //log::add('arduidom', 'debug', "$$$ jeeArduidom API OK, ID=" . $arduid);
+//log::add('arduidom', 'debug', "$$$ jeeArduidom API OK, GET=" . $_GET['daemonready']);
+
+if ($_GET['daemonready'] == 1) { // informe start_daemon() que python est pret.
+    log::add('arduidom', 'info', "Le démon python est pret.");
+    config::save('daemonstarted', 1, 'arduidom');
+    die();
+}
+
 
 if (file_exists($ardulogfile) == false) {
     log::add('arduidom', 'info', "Creation de arduidom.message");

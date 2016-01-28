@@ -294,8 +294,8 @@ def COMServer(options, threadName, arduID):
 	logger.debug("En attente de l'arduino " + str(arduID) + " (HELLO)")
 	while not re.search("^HELLO", SerialPort.readline()):
 		time.sleep(0.5)
-		logger.debug("[" + "@" + "] >> Arduino" + str(arduID))
-		SerialPort.write("@\n")
+		#logger.debug("[" + "@" + "] >> Arduino" + str(arduID))
+		#SerialPort.write("@\n")
 	SerialPort.flush()
 	logger.debug("Arduino " + str(arduID) + " est pret.")
 	if arduID == 1: options.A1_ready = True
@@ -616,6 +616,10 @@ def main(argv=None):
 
 	logger.info("ALL TCP Threads Launched !")
 
+	logger.info("Tell to jeedom Arduinos are OK")
+	cmd = []
+	cmd.append('daemonready=1')
+	options.jeedom.send(cmd)
 
 	logger.info("Surveille le .kill ...")
 	while 1:

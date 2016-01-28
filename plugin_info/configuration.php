@@ -107,22 +107,12 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                     </div>
 
 
-
-
-
-
                     <div class="form-group">
                         <label class="col-lg-3 control-label">Activation AUTO du démon</label>
                         <div class="col-lg-2">
-                            <input type="checkbox" id="bt_actiautodemon<?php echo $i ?>" class="configKey form-control bootstrapSwitch" data-l1key="A<?php echo $i ?>_daemonenable" />
+                            <input type="checkbox" id="bt_actiautodemon<?php echo $i ?>" class="configKey form-control bootstrapSwitch" data-l1key="A<?php echo $i ?>_arduinoenable" />
                         </div>
                     </div>
-
-
-
-
-
-
 
 
 
@@ -235,7 +225,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
         });
 
         $('#bt_FlashArduino<?php echo $i ?>').on('click', function () {
-            bootbox.confirm('{{<center>ATTENTION</center> !<br><br>Assurez vous d avoir sélectionné le BON MODELE et le bon PORT puis avoir SAUVEGARDER avant de continuer.<br> En cas d erreur, votre arduino peut ne plus fonctionner !}}', function (result) {
+            bootbox.confirm('{{<center>ATTENTION</center> !<br><br>Assurez vous d avoir sélectionné le BON MODELE et le bon PORT puis avoir SAUVEGARDER avant de continuer.<br> En cas d erreur, votre arduino peut ne plus fonctionner !<br><br><br>ATTENTION ! Nouvelle procedure depuis Jeedom 2.0 : Le démon va s arreter et couper tous les arduino(s) pendant le flash.<br>Patientez 10 secondes apres la roue crantee pour que le demon se relance de lui meme... }}', function (result) {
                 if (result) {
                     $.ajax({
                         type: 'POST',
