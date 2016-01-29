@@ -17,7 +17,7 @@
  */
 require_once dirname(__FILE__) . "/../../../../core/php/core.inc.php";
 
-log::add('arduidom', 'debug', "$$$ jeeArduidom Start");
+//log::add('arduidom', 'debug', "$$$ jeeArduidom Start");
 
 $ardulogfile = dirname(__FILE__) . "/../../../../log/arduidom.message";
 $arduid = 0;

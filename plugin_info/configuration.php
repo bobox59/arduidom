@@ -49,7 +49,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
         } else {
             echo '<li>';
         }
-        $daemonstate = arduidom::checkdaemon($i, false, true);
+        $daemonstate = arduidom::ping_arduino($i, false, true);
         echo '<a data-toggle="tab" href="#tab_' . $i . '">{{Arduino ' . $i . ' <span class="label label-' . (($daemonstate == 1) ? 'success' : 'danger') . ' "> PING:' . (($daemonstate == 1) ? 'OK' : 'NOK') . '</span>' . '}}</a></li>';
     } ?>
 </ul>

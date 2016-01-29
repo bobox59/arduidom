@@ -28,30 +28,8 @@ try {
 
 
     for ($i=1; $i < 9; $i++) {
-        if (init('action') == 'restartDaemon' . $i) {
-            //arduidom::restoreStates(1);
-            arduidom::stopdaemon($i);
-            arduidom::startdaemon($i);
-            if (arduidom::checkdaemon($i,false,true) == 1) {
-                ajax::success();
-            } else {
-                ajax::error("Le démon " . $i . " n'a pas démarré");
-            }
-        }
-
-        if (init('action') == 'stopDaemon' . $i) {
-            log::add('arduidom', 'info', 'Desactivation du démon ' . $i . '...');
-            config::save('A' . $i . "_arduinoenable", 0, 'arduidom');
-            arduidom::stopdaemon($i);
-            if (arduidom::checkdaemon($i,false,true) == 0) {
-                ajax::success();
-            } else {
-                ajax::error("Le démon " . $i . " ne s'est pas arreté");
-            }
-        }
-
         if (init('action') == 'checkDaemon' . $i) {
-            if (arduidom::checkdaemon($i,false) == 1) {
+            if (arduidom::ping_arduino($i,false) == 1) {
                 ajax::success();
             } else {
                 ajax::error("Le démon " . $i . " ne fonctionne pas !");
@@ -78,22 +56,14 @@ try {
             $chk = arduidom::CompileArduino($i);
             log::add('arduidom', 'info', 'CompileArduino STEP 2: ino build finished.' . $chk);
             sleep(1);
-            //log::add('arduidom', 'info', 'SETP2: Start  Daemon ' . $i);
-            //$chk = arduidom::startdaemon($i);
-            //if ($chk == 1) {
-            //    log::add('arduidom', 'info', 'STEP3: Daemon ' . $i . ' started' . $chk);
             ajax::success();
-            //} else {
-            //    log::add('arduidom', 'info', 'STEP3: Daemon ' . $i . ' NOT started after flash' . $chk);
-            //    ajax::error("Le démon " . $i . " n'a pas démarré apres le televersement de l'arduino !");
-            //}
         }
 
         if (init('action') == 'setPinMapping' . $i) {
             ajax::success(arduidom::setPinMapping($i));
         }
 
-    } // end of For 1 to 9
+    } // end of For 1 to 8
 
     if (init('action') == 'pinMapping' ) {
         global $ARDUPINMAP_A, $ARDUPINMAP_B, $ARDUPINMAP_C ;
