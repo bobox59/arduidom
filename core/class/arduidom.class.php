@@ -311,6 +311,7 @@ class arduidom extends eqLogic
     }
 
     public static function set_daemon_mode($mode = "") { // CREE CAR TROP DE SOUCIS AVEC LE CACHE DE JEEDOM (pendant Beta 2.0)
+        $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
         // * MODE via CONFIG JEEDOM */
         config::save("daemonmode",$mode,"arduidom");
         // * MODE via FICHIER TEMP */
@@ -319,12 +320,13 @@ class arduidom extends eqLogic
         //fclose($cachefile);
         // * MODE via CACHE */
         //$test = cache::set('arduidom_daemon_mode',$mode);
-        log::add('arduidom','DEBUG', "Set daemon mode to " . $mode); // . " => " . $test );
+        if ($General_Debug) log::add('arduidom','DEBUG', "Set daemon mode to " . $mode); // . " => " . $test );
     }
 
     public static function get_daemon_mode() {
+        $General_Debug = file_exists("/tmp/arduidom_debug_mode_on");
         // * MODE via CONFIG JEEDOM */
-        $buffer = config::byKey('daemonmode','arduidom','KILLED');
+        $buffer = config::byKey('daemonmode','arduidom','KILLED', 1);
         // * MODE via FICHIER TEMP */
         //if (!file_exists("/tmp/arduidom.daemon.mode")) touch("/tmp/arduidom.daemon.mode");
         //$cachefile = fopen("/tmp/arduidom.daemon.mode",'r');
@@ -335,7 +337,7 @@ class arduidom extends eqLogic
         //fclose($cachefile);
         // * MODE via CACHE */
         //$test = cache::byKey('arduidom_daemon_mode');
-        //log::add('arduidom','DEBUG', "Get daemon mode : " . $buffer );
+        //if ($General_Debug) log::add('arduidom','DEBUG', "Get daemon mode : " . $buffer );
         return $buffer;
     }
 
@@ -418,7 +420,7 @@ class arduidom extends eqLogic
     public static function deamon_start($_debug = false) {
         $daemonmode = self::get_daemon_mode();
         if ($daemonmode == "STARTING" || $daemonmode == "KILLING" || $daemonmode == "FLASHING") {
-            log::add('arduidom', 'debug', "Another session of starting daemon in progress... wait 1 minute before retry...");
+            //log::add('arduidom', 'debug', "Another session of starting daemon in progress... wait 1 minute before retry...");
             if ($_debug == false) return false;
         }
         self::set_daemon_mode("STARTING");
@@ -489,14 +491,16 @@ class arduidom extends eqLogic
 
 
         $usb_arduinos = 0;
-        if (strpos(config::byKey('A1_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
-        if (strpos(config::byKey('A2_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
-        if (strpos(config::byKey('A3_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
-        if (strpos(config::byKey('A4_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
-        if (strpos(config::byKey('A5_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
-        if (strpos(config::byKey('A6_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
-        if (strpos(config::byKey('A7_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
-        if (strpos(config::byKey('A8_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
+        if ($General_Debug) log::add('arduidom','DEBUG','strpos1:' . strpos(config::byKey('A1_port', 'arduidom', '', 1), "/dev"));
+        if ($General_Debug) log::add('arduidom','DEBUG','strpos2:' . strpos(config::byKey('A2_port', 'arduidom', '', 1), "/dev"));
+        if (strpos(config::byKey('A1_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
+        if (strpos(config::byKey('A2_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
+        if (strpos(config::byKey('A3_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
+        if (strpos(config::byKey('A4_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
+        if (strpos(config::byKey('A5_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
+        if (strpos(config::byKey('A6_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
+        if (strpos(config::byKey('A7_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
+        if (strpos(config::byKey('A8_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
 
         if ($usb_arduinos > 0) {
             $cmd = 'nohup nice -n 19 /usr/bin/python ' . $ressource_path . '/arduidomx.py';
@@ -531,6 +535,8 @@ class arduidom extends eqLogic
                     return false;
                 }
             }
+        } else {
+            if ($General_Debug) log::add('arduidom', 'info', 'Skipping python program, no USB arduino configured.');
         }
         $errorCounter = 0;
         $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1));
@@ -941,15 +947,17 @@ class arduidom extends eqLogic
         if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
         return "DAEMON_DISABLED";
     } else {
-        $port = config::byKey('A' . $_AID . '_port', 'arduidom', 'none');
-        $ip = config::byKey('A' . $_AID . '_daemonip', 'arduidom', '127.0.0.1');
+        $port = config::byKey('A' . $_AID . '_port', 'arduidom', 'none', true);
+        $ip = config::byKey('A' . $_AID . '_daemonip', 'arduidom', '127.0.0.1', true);
         if ($port != 'none' && $port != "") {
             if (file_exists($port) || $port == 'Network') {
                 if ($port != 'Network') {
                     //if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $_AID . ' est un démon python');
+                    log::add('arduidom','debug','IP: ' . $ip . ":" . (58200 + intval($_AID)));
                     $fp = fsockopen($ip, (58200 + intval($_AID)), $errno, $errstr, 1);
                 } else {
                     //if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $_AID . ' est un arduino Réseau (IP:' . $ip . ")");
+                    log::add('arduidom','debug','IP: ' . $ip . ":58174");
                     $fp = fsockopen($ip, (58174), $errno, $errstr, 1);
                 }
 
