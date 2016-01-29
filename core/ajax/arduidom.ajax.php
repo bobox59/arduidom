@@ -59,13 +59,17 @@ try {
         }
         if (init('action') == 'FlashArduino' . $i) {
             log::add('arduidom', 'info', 'FlashArduino STEP 1: Exec avrdude and wait finish...');
+            $port = config::byKey('A' . $i . '_port', 'arduidom', 'none');
+            if ($port == 'Network') {
+                ajax::error("Impossible de téléverser vers un arduino Ethernet !", 1);
+            }
             $chk = arduidom::FlashArduino($i);
             log::add('arduidom', 'info', 'FlashArduino STEP 2: avrdude finished for arduino n°' . $i . ' with result ' . $chk);
             arduidom::set_daemon_mode("KILLED");
             if ($chk == true) {
                 ajax::success("Le démon a correctement démarré apres le televersement de l'arduino !");
             } else {
-                ajax::error("Le démon n'a pas démarré apres le televersement de l'arduino !");
+                ajax::error("Le démon n'a pas démarré apres le televersement de l'arduino !", 1);
             }
         }
 
@@ -114,6 +118,7 @@ try {
                         //log::add("arduidom", "debug", '###### $i=' . $i . '   $k=' . $k);
                         //log::add("arduidom", "debug", '###### A' . $k . '_pin::' . $logicalId);
                         if ($config == 'in') { $conftxt = " => Entrée digitale";}
+                        if ($config == 'inup') { $conftxt = " => Entrée digitale avec Pull-Up";}
                         if ($config == 'out') { $conftxt = " => Sortie digitale";}
                         if ($config == 'rin') { $conftxt = " => Recepteur 433MHz";}
                         if ($config == 'rout') { $conftxt = " => Emetteur 433MHz";}

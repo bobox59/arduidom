@@ -486,39 +486,52 @@ class arduidom extends eqLogic
         file_put_contents($ressource_path . '/config_arduidom.xml', $config);
         chmod($ressource_path . '/config_arduidom.xml', 0777);
 
-        $cmd = 'nohup nice -n 19 /usr/bin/python ' . $ressource_path . '/arduidomx.py';
-        if ($_debug) {
-            $cmd .= ' -lDEBUG';
-            for ($d = 1; $d <= 8; $d++) {
-            }
-        } else {
-            unlink("/tmp/arduidom_debug_mode_on");
-            //log::remove('arduidom'); A REMETTRE APRES TESTS
-        }
-        unlink($ressource_path . '/arduidomx.kill');
-        $cmd .= ' >> ' . log::getPathToLog('arduidom_cmd') . ' 2>&1 &';
-        config::save('daemonstarted', 0, 'arduidom');
-        log::add('arduidom', 'info', 'Lancement démon : ' . $cmd);
-        $result = exec($cmd);
-        if (strpos(strtolower($result), 'error') !== false || strpos(strtolower($result), 'traceback') !== false) {
-            log::add('arduidom', 'error', $result);
-            self::set_daemon_mode("ERROR");
-            return false;
-        }
 
-        log::add('arduidom', 'info', 'Attente du démarrage complet du démon... (15 secondes max.)');
-        $timeout = time();
-        while(config::byKey('daemonstarted', 'arduidom', 0, true) != 1) {
-            //log::add('arduidom', 'info', 'Wait:' . (time() - $timeout));
-            //log::add('arduidom', 'info', 'Attente du démarrage complet du démon...' . config::byKey('daemonstarted', 'arduidom', 0, true));
-            sleep(1);
-            if ((time() - $timeout) >= 15){
+
+        $usb_arduinos = 0;
+        if (strpos(config::byKey('A1_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
+        if (strpos(config::byKey('A2_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
+        if (strpos(config::byKey('A3_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
+        if (strpos(config::byKey('A4_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
+        if (strpos(config::byKey('A5_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
+        if (strpos(config::byKey('A6_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
+        if (strpos(config::byKey('A7_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
+        if (strpos(config::byKey('A8_port', 'arduidom', ''), "/dev") != false) $usb_arduinos += 1;
+
+        if ($usb_arduinos > 0) {
+            $cmd = 'nohup nice -n 19 /usr/bin/python ' . $ressource_path . '/arduidomx.py';
+            if ($_debug) {
+                $cmd .= ' -lDEBUG';
+                for ($d = 1; $d <= 8; $d++) {
+                }
+            } else {
+                unlink("/tmp/arduidom_debug_mode_on");
+                //log::remove('arduidom'); A REMETTRE APRES TESTS
+            }
+            unlink($ressource_path . '/arduidomx.kill');
+            $cmd .= ' >> ' . log::getPathToLog('arduidom_cmd') . ' 2>&1 &';
+            config::save('daemonstarted', 0, 'arduidom');
+            log::add('arduidom', 'info', 'Lancement démon : ' . $cmd);
+            $result = exec($cmd);
+            if (strpos(strtolower($result), 'error') !== false || strpos(strtolower($result), 'traceback') !== false) {
+                log::add('arduidom', 'error', $result);
                 self::set_daemon_mode("ERROR");
-                log::add('arduidom', 'error', ' Dépassement du délai de démarrage du démon...');
                 return false;
             }
-        }
 
+            log::add('arduidom', 'info', 'Attente du démarrage complet du démon... (15 secondes max.)');
+            $timeout = time();
+            while (config::byKey('daemonstarted', 'arduidom', 0, true) != 1) {
+                //log::add('arduidom', 'info', 'Wait:' . (time() - $timeout));
+                //log::add('arduidom', 'info', 'Attente du démarrage complet du démon...' . config::byKey('daemonstarted', 'arduidom', 0, true));
+                sleep(1);
+                if ((time() - $timeout) >= 15) {
+                    self::set_daemon_mode("ERROR");
+                    log::add('arduidom', 'error', ' Dépassement du délai de démarrage du démon...');
+                    return false;
+                }
+            }
+        }
         $errorCounter = 0;
         $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1));
         for ($d = 1; $d <= $nbArduinos; $d++) {
@@ -783,6 +796,9 @@ class arduidom extends eqLogic
             }
             if ($config == 'in') {
                 $CP = $CP . "i";
+            }
+            if ($config == 'inup') {
+                $CP = $CP . "y";
             }
             if ($config == 'out') {
                 $CP = $CP . "o";

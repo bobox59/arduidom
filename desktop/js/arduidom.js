@@ -251,6 +251,12 @@ function handlePin(tr) {
         tr.find('.cmdAttr[data-l1key=subType]').value('binary');
         tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
     }
+    if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'inup') {
+        console.log("data Mode is : inup");
+        tr.find('.cmdAttr[data-l1key=type]').value('info');
+        tr.find('.cmdAttr[data-l1key=subType]').value('binary');
+        tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
+    }
     if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'out') {
         console.log("data Mode is : out");
         console.log("type:" + (tr.find('.cmdAttr[data-l1key=type]').value != ''));

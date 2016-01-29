@@ -576,11 +576,21 @@ def main(argv=None):
 	# noinspection PyBroadException
 	try:
 		for nb in range(1,int(options.ArduinoQty)+1) :
-			logger.info("Launch USB Thread n°" + str(nb))
-			worker_usb = Thread(target=COMServer, args=(options, "TH-COMServer", nb,))
-			worker_usb.setDaemon(True)
-			worker_usb.start()
-			## thread.start_new_thread(COMServer, (options,"TH-COMServer",))
+			portcheck = ''
+			if nb == 1 : portcheck = options.A1_port
+			if nb == 2 : portcheck = options.A2_port
+			if nb == 3 : portcheck = options.A3_port
+			if nb == 4 : portcheck = options.A4_port
+			if nb == 5 : portcheck = options.A5_port
+			if nb == 6 : portcheck = options.A6_port
+			if nb == 7 : portcheck = options.A7_port
+			if nb == 8 : portcheck = options.A8_port
+			if portcheck != 'Network' :
+				logger.info("Launch USB Thread n°" + str(nb))
+				worker_usb = Thread(target=COMServer, args=(options, "TH-COMServer", nb,))
+				worker_usb.setDaemon(True)
+				worker_usb.start()
+				## thread.start_new_thread(COMServer, (options,"TH-COMServer",))
 
 	except ImportError, e:
 		logger.error("Error with Thread TH-COMServer :" + str(e))

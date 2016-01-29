@@ -225,7 +225,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
         });
 
         $('#bt_FlashArduino<?php echo $i ?>').on('click', function () {
-            bootbox.confirm('{{<center>ATTENTION</center> !<br><br>Assurez vous d avoir sélectionné le BON MODELE et le bon PORT puis avoir SAUVEGARDER avant de continuer.<br> En cas d erreur, votre arduino peut ne plus fonctionner !<br><br><br>ATTENTION ! Nouvelle procedure depuis Jeedom 2.0 : Le démon va s arreter et couper tous les arduino(s) pendant le flash.<br>Patientez 10 secondes apres la roue crantee pour que le demon se relance de lui meme... }}', function (result) {
+            bootbox.confirm('{{<center>ATTENTION</center> !<br><br>Assurez vous d avoir sélectionné le BON MODELE et le bon PORT puis avoir SAUVEGARDER avant de continuer.<br> En cas d erreur, votre arduino peut ne plus fonctionner !<br><br><br>ATTENTION ! Nouvelle procedure depuis Jeedom 2.0 : Le démon va s arreter et couper tous les arduino(s) pendant le flash.<br>Patientez 10 secondes apres la roue crantee pour que le demon se relance de lui meme... <br><br><br>}}', function (result) {
                 if (result) {
                     $.ajax({
                         type: 'POST',
@@ -242,7 +242,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                             if (data.state != 'ok') {
                                 $('#div_alert').showAlert({message: data.result, level: 'danger'});
                                 //$('#div_compileDebug<?php echo $i ?>').showAlert({message: data.result, level: 'danger'});
-                                //    return;
+                                return;
                             }
                             $('#div_alert').showAlert({message: 'Votre arduino <?php echo $i ?> a été programmé', level: 'success'});
                             jeedom.log.autoupdate({

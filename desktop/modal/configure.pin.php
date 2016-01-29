@@ -150,6 +150,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', '1');
                                     echo '<option value="out">{{Sortie Digitale}}</option>';
                                 } else {
                                     echo '<option value="in">{{Entrée Digitale}}</option>';
+                                    echo '<option value="inup">{{Entrée Digitale avec Pull-Up}}</option>';
                                     echo '<option value="out">{{Sortie Digitale}}</option>';
                                     echo '<option value="rout">{{Émetteur Radio 315/433 MHz}}</option>';
                                     if ($pinPWM == 1) { echo '<option value="pout">{{Sortie PWM}}</option>'; }
