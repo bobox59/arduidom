@@ -287,16 +287,22 @@ def COMServer(options, threadName, arduID):
 	SerialPort.setDTR(False)
 	SerialPort.setRTS(False)
 	time.sleep(0.1)
+	SerialPort.flush()
 	SerialPort.flushInput()
 	SerialPort.setDTR(True)
 	SerialPort.setRTS(True)
+	SerialPort.flush()
+	SerialPort.flushInput()
 	time.sleep(0.1)
 	logger.debug("En attente de l'arduino " + str(arduID) + " (HELLO)")
-	while not re.search("^HELLO", SerialPort.readline()):
+	line = ""
+	while not re.search("^HELLO", line):
 		time.sleep(0.5)
-		#logger.debug("[" + "@" + "] >> Arduino" + str(arduID))
+		line = SerialPort.readline()
+		logger.debug("Arduino " + str(arduID) + " >> [" + line + "]")
 		#SerialPort.write("@\n")
 	SerialPort.flush()
+	SerialPort.flushInput()
 	logger.debug("Arduino " + str(arduID) + " est pret.")
 	if arduID == 1: options.A1_ready = True
 	if arduID == 2: options.A2_ready = True
