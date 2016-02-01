@@ -722,6 +722,18 @@ class arduidom extends eqLogic
             if ($config == 'custout') {
                 $CP = $CP . "d";
             }
+            if ($config == 'dht1') {
+                $CP = $CP . "1";
+            }
+            if ($config == 'dht2') {
+                $CP = $CP . "2";
+            }
+            if ($config == 'dht3') {
+                $CP = $CP . "3";
+            }
+            if ($config == 'dht4') {
+                $CP = $CP . "4";
+            }
         }
     }
     if ($General_Debug) log::add('arduidom', 'debug', 'send the setPinMapping to ' . $CP);

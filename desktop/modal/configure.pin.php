@@ -152,9 +152,13 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', '1');
                                     echo '<option value="in">{{Entrée Digitale}}</option>';
                                     echo '<option value="inup">{{Entrée Digitale avec Pull-Up}}</option>';
                                     echo '<option value="out">{{Sortie Digitale}}</option>';
-                                    echo '<option value="rout">{{Émetteur Radio 315/433 MHz}}</option>';
                                     if ($pinPWM == 1) { echo '<option value="pout">{{Sortie PWM}}</option>'; }
-                                    if ($pinINT == 1) { echo '<option value="rin">{{Récepteur Radio 315/433 MHz}}</option>'; }
+                                    echo '<option value="dht1">{{Sonde DHT11/DHT22 n°1}}</option>';
+                                    echo '<option value="dht2">{{Sonde DHT11/DHT22 n°2}}</option>';
+                                    echo '<option value="dht3">{{Sonde DHT11/DHT22 n°3}}</option>';
+                                    echo '<option value="dht4">{{Sonde DHT11/DHT22 n°4}}</option>';
+                                    echo '<option value="rout">{{Émetteur Radio 433 MHz}}</option>';
+                                    if ($pinINT == 1) { echo '<option value="rin">{{Récepteur Radio 433 MHz}}</option>'; }
                                     echo '</select>';
                                 }
                             }

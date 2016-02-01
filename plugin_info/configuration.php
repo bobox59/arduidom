@@ -61,7 +61,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
             <form class="form-horizontal">
                 <fieldset>
                     <div class="form-group">
-                        <label class="col-lg-3 control-label">Port Arduino</label>
+                        <label class="col-lg-3 control-label">Port de l'Arduino N° <?php echo $i ?></label>
                         <div class="col-lg-9">
                             <select class="configKey form-control" data-l1key="A<?php echo $i ?>_port">
                                 <option value="none" id="arduinoportselect">Aucun</option>
@@ -86,7 +86,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-lg-3 control-label">Modèle de l Arduino N° <?php echo $i ?></label>
+                        <label class="col-lg-3 control-label">Modèle de l'Arduino N° <?php echo $i ?></label>
                         <div class="col-lg-4">
                             <select class="configKey form-control" data-l1key="A<?php echo $i ?>_model">
                                 <option value="" id="arduinomodelselect">Aucun - Désactivé</option>
@@ -117,19 +117,11 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
 
 
 
-                    <div class="panel panel-default">
-                        <label class="col-lg-3 control-label">{{Contrôle de l'arduino n°<?php echo $i ?>}}</label>
                         <div class="panel-body">
-                                <a class="btn btn-success" id="bt_CheckArduidomDeamon<?php echo $i ?>"><i class='fa fa-check-square-o'></i>{{ Vérifier la liaison avec le N°<?php echo $i ?>}}</a>&nbsp;
-                                <a class="btn btn-warning" id="bt_RestartArduidomDeamon<?php echo $i ?>"><i class='fa fa-refresh'></i>{{ (Ré)Activer le N°<?php echo $i ?>}}</a>&nbsp;
-                                <a class="btn btn-danger" id="bt_StopArduidomDeamon<?php echo $i ?>"><i class='fa fa-stop'></i>{{ Désactiver le N°<?php echo $i ?>}}</a>
+                            <a class="btn btn-success" id="bt_CheckArduidomDeamon<?php echo $i ?>"><i class='fa fa-check-square-o'></i>{{ Vérifier la liaison avec le N°<?php echo $i ?>}}</a>&nbsp;
+                            <a class="btn btn-primary" id="bt_CompileArduino<?php echo $i ?>"><i class="fa fa-check-circle"></i>{{ Compiler le Sketch (en test...)}}</a>&nbsp;
+                            <a class="btn btn-danger" id="bt_FlashArduino<?php echo $i ?>"><i class="fa fa-arrow-circle-right"></i>{{ Téléverser le Sketch sur l arduino n°<?php echo $i ?>}}</a>&nbsp;
                         </div>
-                        <label class="col-lg-3 control-label">Gestion des Sketchs</label>
-                        <div class="panel-body">
-                            <a class="btn btn-primary" id="bt_CompileArduino<?php echo $i ?>"><i class="fa fa-check-circle"></i>{{ Compiler le Sketch (nouvelle fonction en test...)}}</a>&nbsp;
-                            <a class="btn btn-danger" id="bt_FlashArduino<?php echo $i ?>"><i class="fa fa-arrow-circle-right"></i>{{ Téléverser le Sketch sur l arduino}}</a>&nbsp;
-                        </div>
-                    </div>
                 </fieldset>
             </form>
         </div>

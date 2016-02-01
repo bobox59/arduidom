@@ -24,11 +24,15 @@ function arduidom_install() {
     if (is_object($cron)) {
         $cron->remove();
     }
-    $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
+    $cron = cron::byClassAndFunction('arduidom', 'ping_arduino');
+    if (is_object($cron)) {
+        $cron->remove();
+    }
+    $cron = cron::byClassAndFunction('arduidom', 'ping_arduino');
     if (!is_object($cron)) {
         $cron = new cron();
         $cron->setClass('arduidom');
-        $cron->setFunction('checkdaemon');
+        $cron->setFunction('ping_arduino');
         $cron->setOption("{'', true}");
         $cron->setEnable(1);
         $cron->setDeamon(0);
@@ -41,6 +45,10 @@ function arduidom_install() {
 function arduidom_update() {
     config::save("ArduinoRequiredVersion","105","arduidom");
     $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
+    if (is_object($cron)) {
+        $cron->remove();
+    }
+    $cron = cron::byClassAndFunction('arduidom', 'ping_arduino');
     if (is_object($cron)) {
         $cron->remove();
     }
@@ -64,11 +72,11 @@ function arduidom_update() {
         config::save('db_version', 145, 'arduidom'); // Inscrit la version de migration dans la config
     }
     arduidom::deamon_start();
-    $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
+    $cron = cron::byClassAndFunction('arduidom', 'ping_arduino');
     if (!is_object($cron)) {
         $cron = new cron();
         $cron->setClass('arduidom');
-        $cron->setFunction('checkdaemon');
+        $cron->setFunction('ping_arduino');
         $cron->setOption("{'', true}");
         $cron->setEnable(1);
         $cron->setDeamon(0);
@@ -79,6 +87,10 @@ function arduidom_update() {
 
 function arduidom_remove() {
     $cron = cron::byClassAndFunction('arduidom', 'checkdaemon');
+    if (is_object($cron)) {
+        $cron->remove();
+    }
+    $cron = cron::byClassAndFunction('arduidom', 'ping_arduino');
     if (is_object($cron)) {
         $cron->remove();
     }

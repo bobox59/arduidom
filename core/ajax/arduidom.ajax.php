@@ -93,6 +93,10 @@ try {
                         if ($config == 'rin') { $conftxt = " => Recepteur 433MHz";}
                         if ($config == 'rout') { $conftxt = " => Emetteur 433MHz";}
                         if ($config == 'pout') { $conftxt = " => Sortie PWM";}
+                        if ($config == 'dht1') { $conftxt = " => Sonde DHT n°1";}
+                        if ($config == 'dht2') { $conftxt = " => Sonde DHT n°2";}
+                        if ($config == 'dht3') { $conftxt = " => Sonde DHT n°3";}
+                        if ($config == 'dht4') { $conftxt = " => Sonde DHT n°4";}
                         if ($config == 'ain') { $conftxt = " => Entrée analogique";}
                         if ($config == 'custin') { $conftxt = " => Entrée Customisee";}
                         if ($config == 'custout') { $conftxt = " => Sortie Customisee";}

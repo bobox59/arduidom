@@ -10,11 +10,6 @@ $eqLogics = eqLogic::byType('arduidom')
     <div class="col-lg-2 col-md-3 col-sm-4">
         <div class="bs-sidebar">
             <ul id="ul_eqLogic" class="nav nav-list bs-sidenav">
-                <center>
-                    <a class="btn btn-default btn-sm tooltips" id="bt_configurePin" title="{{Configurer les pins}}" style="width : 100%;"><i class="fa fa-cogs"></i> {{Configurer les pins}}</a>
-                    <a class="btn btn-default btn-sm tooltips expertModeVisible" id="bt_ArduinologMessage" title="{{Log des messages Arduino}}" style="width : 100%;display: inline-block;"><i class="fa fa-file-o"></i> {{Log des messages RADIO}}</a>
-                    <a class="btn btn-default btn-sm tooltips" id="bt_LearnCode" title="{{Apprentissage Radio}}" style="width : 100%;display: inline-block;"><i class="fa fa-wifi"></i> {{Apprentissage Radio}}</a>
-                </center>
                 <a class="btn btn-default eqLogicAction" style="width : 100%;margin-top : 5px;margin-bottom: 5px;" data-action="add"><i class="fa fa-plus-circle"></i> {{Ajouter}}</a>
                 <li class="filter" style="margin-bottom: 5px;"><input class="filter form-control input-sm" placeholder="Rechercher" style="width: 100%"/></li>
                 <?php
@@ -26,6 +21,27 @@ $eqLogics = eqLogic::byType('arduidom')
         </div>
     </div>
     <div class="col-lg-10 col-md-9 col-sm-8 eqLogicThumbnailDisplay" style="border-left: solid 1px #EEE; padding-left: 25px;">
+        <legend>{{Gestion}}</legend>
+        <div class="eqLogicThumbnailContainer">
+            <div class="cursor" id="bt_configurePin" style="background-color : #ffffff; height : 140px;margin-bottom : 10px;padding : 5px;border-radius: 2px;width : 160px;margin-left : 10px;" >
+                <center>
+                    <i class="fa fa-cogs" style="font-size : 5em;color:#767676;"></i>
+                </center>
+                <span style="font-size : 1.1em;position:relative; top : 23px;word-break: break-all;white-space: pre-wrap;word-wrap: break-word;color:#767676"><center>{{Config. des Pins}}</center></span>
+            </div>
+            <div class="cursor" id="bt_ArduinologMessage" style="background-color : #ffffff; height : 140px;margin-bottom : 10px;padding : 5px;border-radius: 2px;width : 160px;margin-left : 10px;" >
+                <center>
+                    <i class="fa fa-list-alt" style="font-size : 5em;color:#767676;"></i>
+                </center>
+                <span style="font-size : 1.1em;position:relative; top : 23px;word-break: break-all;white-space: pre-wrap;word-wrap: break-word;color:#767676"><center>{{Messages Radio}}</center></span>
+            </div>
+            <div class="cursor" id="bt_LearnCode" style="background-color : #ffffff; height : 140px;margin-bottom : 10px;padding : 5px;border-radius: 2px;width : 160px;margin-left : 10px;" >
+                <center>
+                    <i class="fa fa-rss" style="font-size : 5em;color:#767676;"></i>
+                </center>
+                <span style="font-size : 1.1em;position:relative; top : 23px;word-break: break-all;white-space: pre-wrap;word-wrap: break-word;color:#767676"><center>{{Apprentissage Radio}}</center></span>
+            </div>
+    </div>
         <legend>{{Mes équipements Arduidom}}</legend>
         <div class="eqLogicThumbnailContainer">
             <div class="cursor eqLogicAction" data-action="add" style="background-color : #ffffff; height : 200px;margin-bottom : 10px;padding : 5px;border-radius: 2px;width : 160px;margin-left : 10px;" >
@@ -46,7 +62,6 @@ $eqLogics = eqLogic::byType('arduidom')
             }
             ?>
         </div>
-
     </div>
 
     <div class="col-lg-10 col-md-9 col-sm-8 eqLogic" style="border-left: solid 1px #EEE; padding-left: 25px;display: none;">
@@ -94,6 +109,12 @@ $eqLogics = eqLogic::byType('arduidom')
                     <div class="col-sm-10">
                         <input type="checkbox" class="eqLogicAttr bootstrapSwitch" data-label-text="{{Activer}}" data-l1key="isEnable" checked/>
                         <input type="checkbox" class="eqLogicAttr bootstrapSwitch" data-label-text="{{Visible}}" data-l1key="isVisible" checked/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">{{Commentaire}}</label>
+                    <div class="col-sm-3">
+                        <textarea class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="commentaire" ></textarea>
                     </div>
                 </div>
 
