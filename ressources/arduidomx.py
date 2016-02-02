@@ -120,7 +120,8 @@ def cli_parser(argv=None):
 
 def tcp_handler(options, clientsocket, clientaddr, arduID):
     global to_arduino_1, to_arduino_2, to_arduino_3, to_arduino_4, to_arduino_5, to_arduino_6, to_arduino_7, to_arduino_8
-    logger.debug("Accepted jeedom connection from: " + str(clientaddr) + " to arduino " + str(arduID))
+    if arduID != 0:
+        logger.debug("Accepted jeedom connection from: " + str(clientaddr) + " to arduino " + str(arduID))
     while 1:
         jeedata = clientsocket.recv(1024)
         jeedata = jeedata.replace('\n', '')
@@ -129,14 +130,14 @@ def tcp_handler(options, clientsocket, clientaddr, arduID):
             break
         else:
             if arduID == 0:
-                logger.debug("JeeDom  >> [" + jeedata + "] >> Démon Python")
+                #logger.debug("JeeDom  >> [" + jeedata + "] >> Démon Python")
                 if jeedata[0:4] == 'PING':
-                    logger.debug("Jeedom PING Received !")
+                    #logger.debug("Jeedom PING Received !")
                     if True: # remplacer par une verif générale du démon
-                        logger.debug("[" + "PING_OK" + "] >> JeeDom")
+                        logger.debug("JeeDom  >> [" + jeedata + "] >> Démon Python >> [" + "PING_OK" + "] >> JeeDom")
                         clientsocket.send("PING_OK")
                     else:
-                        logger.debug("[" + "PING_ERROR" + "] >> JeeDom")
+                        logger.debug("JeeDom  >> [" + jeedata + "] >> Démon Python >> [" + "PING_ERROR" + "] >> JeeDom")
                         clientsocket.send("PING_ERROR")
                     break
 
@@ -209,7 +210,8 @@ def tcp_handler(options, clientsocket, clientaddr, arduID):
                     logger.debug("[" + str(answer) + "] >> JeeDom")
                     clientsocket.send(answer)
                 break
-    logger.debug("Close Jeedom Socket")
+    if arduID != 0:
+        logger.debug("Close Jeedom Socket")
     clientsocket.close()
 
 
@@ -629,8 +631,8 @@ def main(argv=None):
 
     for nb in range(1,int(options.ArduinoQty)+1) :
         logger.debug("Verify Arduino Version [" + options.ArduinoVersion + "] >> Arduino " + str(nb))
-        logger.debug("Jeedom PING Received for arduino " + str(nb) + " !")
-        logger.debug("Make Ping Request for arduino " + str(nb) + " !")
+        if nb != 0: logger.debug("Jeedom PING Received for arduino " + str(nb) + " !")
+        if nb != 0: logger.debug("Make Ping Request for arduino " + str(nb) + " !")
         ping_request = from_jeedom("PING", "^PING_OK")
         if nb == 1: to_arduino_1.put(ping_request)
         if nb == 2: to_arduino_2.put(ping_request)
