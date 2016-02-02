@@ -79,6 +79,11 @@ if ($_GET['daemonready'] == 1) { // informe start_daemon() que python est pret.
     config::save('daemonstarted', 1, 'arduidom');
     die();
 }
+if ($_GET['daemonready'] == 2) { // informe start_daemon() que python est pret.
+    log::add('arduidom', 'error', "Un ou plusieurs Arduino n'ont pas la version du sketch requise !");
+    config::save('daemonstarted', 2, 'arduidom');
+    die();
+}
 
 
 if (file_exists($ardulogfile) == false) {
