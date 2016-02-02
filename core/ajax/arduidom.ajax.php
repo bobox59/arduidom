@@ -42,12 +42,12 @@ try {
                 ajax::error("Impossible de téléverser vers un arduino Ethernet !", 1);
             }
             $chk = arduidom::FlashArduino($i);
-            log::add('arduidom', 'info', 'FlashArduino STEP 2: avrdude finished for arduino n°' . $i . ' with result ' . $chk);
+            log::add('arduidom', 'info', 'FlashArduino STEP 2: avrdude sur arduino n°' . $i . ' = ' . $chk);
             arduidom::set_daemon_mode("KILLED");
-            if ($chk == true) {
-                ajax::success("Le démon a correctement démarré apres le televersement de l'arduino !");
+            if ($chk == "OK") {
+                ajax::success("L'arduino a été programmé !");
             } else {
-                ajax::error("Le démon n'a pas démarré apres le televersement de l'arduino !", 1);
+                ajax::error("Il y a eu des erreurs pendant televersement de l'arduino, voir /tmp/avrdude.log...  " . $chk, 1);
             }
         }
 

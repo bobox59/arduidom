@@ -107,15 +107,6 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                     </div>
 
 
-                    <div class="form-group">
-                        <label class="col-lg-3 control-label">Activation AUTO du démon</label>
-                        <div class="col-lg-2">
-                            <input type="checkbox" id="bt_actiautodemon<?php echo $i ?>" class="configKey form-control bootstrapSwitch" data-l1key="A<?php echo $i ?>_arduinoenable" />
-                        </div>
-                    </div>
-
-
-
 
                         <div class="panel-body">
                             <a class="btn btn-success" id="bt_CheckArduidomDeamon<?php echo $i ?>"><i class='fa fa-check-square-o'></i>{{ Vérifier la liaison avec le N°<?php echo $i ?>}}</a>&nbsp;

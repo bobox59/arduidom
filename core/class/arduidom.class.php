@@ -345,9 +345,10 @@ class arduidom extends eqLogic
         //if ($daemonmode != "STARTING" && $daemonmode != "ERROR" && $daemonmode != "KILLING") { // ne check pas les arduino pendant un démarrage
         if ($daemonmode == "OK") { // ne ping les arduino que si OK
             $tcpcheck = arduidom::sendtoArduino("PING", 0);
-            if ($tcpcheck != "PING_OK") {
-                log::add('arduidom', 'error', "Erreur: Réponse du démon = [" . $tcpcheck . "] au lieu de [PING_OK] (in daemon_info())");
+            if ($tcpcheck == "PING_OK") {
                 $return['state'] = 'ok';
+            } else {
+                log::add('arduidom', 'error', "Erreur: Réponse du démon = [" . $tcpcheck . "] au lieu de [PING_OK] (in daemon_info())");
             }
         } else {
             log::add('arduidom', 'error', "DaemonMode is not OK (in daemon_info())");
@@ -403,9 +404,6 @@ class arduidom extends eqLogic
         $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
 
         //// Termine les démons restants
-        for ($d = 1; $d <= $nbArduinos; $d++) {
-            config::save('A' . $d . "_arduinoenable", 0, 'arduidom');
-        }
         touch($daemon_path . "/arduidomx.kill");
         sleep(1.5);
         if ($General_Debug) log::add('arduidom', 'info', 'kill daemon(s)...');
@@ -517,30 +515,15 @@ class arduidom extends eqLogic
         //// Verifications, SetPin, RestoreStates
         $errorCounter = 0;
         $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1));
+        self::set_daemon_mode("STARTED"); // necessaire pour le restorestates
         for ($d = 1; $d <= $nbArduinos; $d++) {
-            $model = config::byKey('A' . $d . '_model', 'arduidom', '');
-            $port = config::byKey('A' . $d . '_port', 'arduidom', '');
-            if ($port != 'none' && $model != 'none' && $port != '' && $model != '') {
-                config::save('A' . $d . "_arduinoenable", 1, 'arduidom');
-                if (file_exists($port) || $port == "Network") {
-                    $result = self::setPinMapping($d);
-                    log::add('arduidom', 'debug', 'arduino ' . $d . ' : Pin Mapping = ' . $result);
-                    self::set_daemon_mode("STARTED"); // necessaire pour le restorestates
-                    $result = self::restoreStates($d);
-                    log::add('arduidom', 'debug', 'arduino ' . $d . ' : Restore State = ' . $result);
-                } else {
-                    log::add('arduidom', 'error', __("Verifier que l'arduino " . $d . " est bien branché et reconnu", __FILE__), 'noArduinoComPort');
-                    event::add('jeedom::alert', array('level' => 'error', 'message' => __("Verifier que l'arduino " . $d . " est bien branché et reconnu", __FILE__),));
-                    $errorCounter += 1;
-                }
-            } else {
-                log::add('arduidom', 'error', __("Le port ou modèle de l'Arduino " . $d . " n'est pas configuré", __FILE__), 'noArduinoComPort');
-                event::add('jeedom::alert', array('level' => 'error', 'message' => __("Le port ou modèle de l'Arduino " . $d . " n'est pas configuré", __FILE__),));
-                $errorCounter += 1;
-            }
+            $result = self::setPinMapping($d);
+            if ($result != "OK") $errorCounter += 1;
+            log::add('arduidom', 'debug', 'arduino ' . $d . ' : Pin Mapping = ' . $result);
+            $result = self::restoreStates($d);
+            if ($result != "OK") $errorCounter += 1;
+            log::add('arduidom', 'debug', 'arduino ' . $d . ' : Restore State = ' . $result);
         }
-        if ($General_Debug) log::add('arduidom', 'info', '$errorCounter=' . $errorCounter);
-
         if ($errorCounter > 0) {
             self::set_daemon_mode("ERROR");
             log::add('arduidom', 'error', $errorCounter . ' Erreur(s) pendant le lancement du démon...');
@@ -564,11 +547,7 @@ class arduidom extends eqLogic
         if ($General_Debug) log::add('arduidom', 'debug', "* daemon_stop() called. *");
         if ($General_Debug) log::add('arduidom', 'debug', "*************************");
         log::add('arduidom', 'info', 'Arret du démon...');
-        $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1));
         $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
-        for ($d = 1; $d <= $nbArduinos; $d++) {
-            config::save('A' . $d . "_arduinoenable", 0, 'arduidom');
-        }
         touch($daemon_path . "/arduidomx.kill");
         sleep(1.5);
         $pid_file = $daemon_path . "/arduidomx.pid";
@@ -598,39 +577,24 @@ class arduidom extends eqLogic
             if ($General_Debug) log::add("arduidom", "debug", "Daemon is in FLASHING mode, skipping.");
             return false;
         }
-        $NoDaemonEnabled = 1;
         $arduinoQty = config::byKey('ArduinoQty', 'arduidom', 0);
         for ($d = 1; $d <= $arduinoQty; $d++) {
             if ($_AID == '' || $_AID == $d) {
-                $DaemonEnabled = config::byKey('A' . $d . "_arduinoenable", 'arduidom', 0);
-                if ($DaemonEnabled == 0) {
-                    //if ($General_Debug) log::add('arduidom', 'debug', $randomNb . "L'arduino N°" . $d . ' ne sera pas verifié car il a été stoppé manuellement ou Désactivé');
-                    if ($_AID == $d && $General_Debug) log::add('arduidom', 'debug', "ping_arduino(" . $_AID . ") returns 0");
-                    if ($_AID == $d) return 0;
+                $tcpcheck = arduidom::sendtoArduino("PING", 0);
+                $ArduinoRequiredVersion = "PING_OK_V:" . config::byKey("ArduinoRequiredVersion","arduidom");
+                if ($_AID == 0) $ArduinoRequiredVersion = "PING_OK";
+                if ($tcpcheck != $ArduinoRequiredVersion) {
+                    log::add('arduidom', 'error', "Erreur: Réponse de l'arduino " . $d . " = [" . $tcpcheck . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (checkdaemon)");
+                        return 0;
                 } else {
-                    $NoDaemonEnabled = 0;
-                    $tcpcheck = arduidom::sendtoArduino("PING", 0);
-                    $ArduinoRequiredVersion = "PING_OK_V:" . config::byKey("ArduinoRequiredVersion","arduidom");
-                    if ($_AID == 0) $ArduinoRequiredVersion = "PING_OK";
-                    if ($tcpcheck != $ArduinoRequiredVersion) {
-                        log::add('arduidom', 'error', "Erreur: Réponse de l'arduino " . $d . " = [" . $tcpcheck . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (checkdaemon)");
-                            return 0;
-                    } else {
-                        //if ($General_Debug) log::add('arduidom', 'debug', $randomNb . "La liaison avec l'arduino n°" . $d . ' fonctionne correctement.');
-                        if ($AutoSendRF) self::sendtoArduino("RF",$d);
-                        if ($_AID == $d && $General_Debug) log::add('arduidom', 'debug', "ping_arduino(" . $_AID . ") returns 1");
-                        if ($_AID == $d) return 1;
-                    }
+                    //if ($General_Debug) log::add('arduidom', 'debug', $randomNb . "La liaison avec l'arduino n°" . $d . ' fonctionne correctement.');
+                    if ($AutoSendRF) self::sendtoArduino("RF",$d);
+                    if ($_AID == $d && $General_Debug) log::add('arduidom', 'debug', "ping_arduino(" . $_AID . ") returns 1");
+                    if ($_AID == $d) return 1;
                 }
             }
         }
-        if ($NoDaemonEnabled == 1) {
-            //log::add('arduidom', 'debug', $randomNb . "ping_arduino(" . $_AID . ") returns 0 because no daemon enabled");
-            return 0;
-        } else {
-            //log::add('arduidom', 'debug', $randomNb . "ping_arduino(" . $_AID . ") returns 1");
-            return 1;
-        }
+        return 1;
     }
 
     public static function setPinMapping($_AID)
@@ -780,12 +744,6 @@ class arduidom extends eqLogic
         log::add("arduidom","debug","sendtoArduino impossible, arduino en cours de flashage...");
         return "DAEMON_NOT_OK";
     }
-    $DaemonEnabled = config::byKey('A' . $_AID . "_arduinoenable", 'arduidom', 0);
-    if ($DaemonEnabled == 0 && $_AID != 0) {
-        log::add('arduidom', 'debug', 'sendtoArduino(' . $_tcpmsg . ',' . $_AID . ') IMPOSSIBLE, Le démon ' . $_AID . ' est stoppé ou Désactivé');
-        if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
-        return "DAEMON_DISABLED";
-    } else {
         $port = config::byKey('A' . $_AID . '_port', 'arduidom', 'none', true);
         $ip = config::byKey('A' . $_AID . '_daemonip', 'arduidom', '127.0.0.1', true);
         if (($port != 'none' && $port != "") || $_AID == 0) {
@@ -855,7 +813,7 @@ class arduidom extends eqLogic
                 return "BAD_CONFIG";
             }
         }
-    }
+
     if ($General_Debug) log::add('arduidom', 'debug', "sendtoarduino return EMPTY");
     if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
     return("EMPTY");
@@ -970,14 +928,22 @@ class arduidom extends eqLogic
             throw new Exception(__("Modele Arduino " . $model . " n'est pas supporté par la fonction !", __FILE__));
             break;
     }
-
-    $cmd = 'sudo /usr/bin/avrdude -C/etc/avrdude.conf -v -v -v ' . $cmd_model . ' -P' . $port . ' -b' . $cmd_speed . ' -D -Uflash:w:' . $daemon_path . '/' . $cmd_hexfile . '.hex:i';
+    $logfile = "/tmp/avrdude.log";
+    if (file_exists($logfile)) unlink($logfile);
+    $cmd = 'sudo /usr/bin/avrdude -C/etc/avrdude.conf -v -v -v -l ' . $logfile . ' ' . $cmd_model . ' -P' . $port . ' -b' . $cmd_speed . ' -D -Uflash:w:' . $daemon_path . '/' . $cmd_hexfile . '.hex:i';
     $cmd .= ' >> ' . log::getPathToLog("arduidom") . ' 2>&1';
     log::add('arduidom', 'info', 'Execution du téléversement: ' . $cmd);
-    exec($cmd);
+    $result = exec($cmd);
     sleep(1);
     log::add('arduidom', 'info', '# Fin du téléversement (' . $result . ')');
     self::set_daemon_mode("KILLED");
+    if( strpos(file_get_contents($logfile),"bytes of flash written") !== false) {
+        if( strpos(file_get_contents($logfile),"bytes of flash verified") !== false) {
+            if( strpos(file_get_contents($logfile),"avrdude done.") !== false) {
+            return "OK";// do stuff
+            }
+        }
+    }
     return $result;
 }
 
