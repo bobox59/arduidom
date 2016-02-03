@@ -54,10 +54,6 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', '1');
         <div class="tab-pane<?php if ($_AID == 1) echo " active" ?>" id="tab_<?php echo $_AID ?>">
 
 
-
-
-
-
             <div id='div_configurePinAlert<?php echo $_AID ?>' style="display: none;"></div>
             Configuration des PINs de l'arduino n°<?php echo $_AID ?>
             <a class="btn btn-success btn-xs pull-right" id="bt_configurePinSave<?php echo $_AID ?>" style="color : white;"><i class="fa fa-check"></i> Sauvegarder</a>

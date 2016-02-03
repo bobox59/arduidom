@@ -197,7 +197,7 @@ function getPinMapping() {
             for (var i in data.result) {
                 if (data.result[i].value != 'disable' && isset(data.result[i].key)) {
                     count += 1;
-                    console.log('^ ' + count + ' ----------------------------');
+                    //console.log('^ ' + count + ' ----------------------------');
                     var name = "Arduino n°";
                     var ardunb = data.result[i].key.replace("pin::", "");
                     newnb = ardunb.slice(0, -3);
@@ -205,31 +205,33 @@ function getPinMapping() {
                     name += " Pin ";
                     name += ardunb.slice(1);
                     var actualpin = ardunb.slice(1);
-                    console.log('ardunb=' + ardunb);
-                    console.log('name=' + name);
-                    console.log('pin=' + actualpin);
+                    //console.log('ardunb=' + ardunb);
+                    //console.log('name=' + name);
+                    //console.log('pin=' + actualpin);
                     if (newnb != lastnb) {
                         result += '<optgroup label="Arduino n°' + newnb + ' ---------------------------------------------------">';
                         lastnb = newnb
+                        noop = 0;
+                        dhts = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
                     }
 
                     if (isset(data.result[i].name)) {
                         name += " - ";
                         name += data.result[i].name;
-                        console.log('data.result(i).name=' + data.result[i].name);
+                        //console.log('data.result(i).name=' + data.result[i].name);
                     }
                     if (name.indexOf("HIDE_") > 0) { // Cache si il y a un HIDE_
-                        console.log("DHT Pin Type to HIDE !");
+                        //console.log("DHT Pin Type to HIDE !");
                         var dhtnb = name.substr((name.indexOf("HIDE_DHT_") + 9),1);
-                        console.log("DHT detected number is " + dhtnb);
+                        //console.log("DHT detected number is " + dhtnb);
                         dhtqty += 1;
-                        console.log('name=[' + name + ']');
-                        console.log('index=[' + name.indexOf("HIDE_DHT_") + ']');
+                        //console.log('name=[' + name + ']');
+                        //console.log('index=[' + name.indexOf("HIDE_DHT_") + ']');
                         dhts[dhtnb] = actualpin; //name.substr((name.indexOf("HIDE_DHT_") + 9),1);
-                        console.log('dhts[' + dhtnb + '] = ' + actualpin);
-                        console.log('name=[' + name + ']');
-                        console.log('DHT real pin=[' + name.substr((name.indexOf("PIN_") + 4),9) + ']');
-                        console.log('name=[' + name + ']');
+                        //console.log('dhts[' + dhtnb + '] = ' + actualpin);
+                        //console.log('name=[' + name + ']');
+                        //console.log('DHT real pin=[' + name.substr((name.indexOf("PIN_") + 4),9) + ']');
+                        //console.log('name=[' + name + ']');
                     } else {
                         noop = 0;
                         var dhtindex=0;
