@@ -157,6 +157,10 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', '1');
                                     echo '<option value="dht2">{{Sonde DHT11/DHT22 n°2}}</option>';
                                     echo '<option value="dht3">{{Sonde DHT11/DHT22 n°3}}</option>';
                                     echo '<option value="dht4">{{Sonde DHT11/DHT22 n°4}}</option>';
+                                    echo '<option value="dht5">{{Sonde DHT11/DHT22 n°5}}</option>';
+                                    echo '<option value="dht6">{{Sonde DHT11/DHT22 n°6}}</option>';
+                                    echo '<option value="dht7">{{Sonde DHT11/DHT22 n°7}}</option>';
+                                    echo '<option value="dht8">{{Sonde DHT11/DHT22 n°8}}</option>';
                                     echo '<option value="rout">{{Émetteur Radio 433 MHz}}</option>';
                                     if ($pinINT == 1) { echo '<option value="rin">{{Récepteur Radio 433 MHz}}</option>'; }
                                     echo '</select>';

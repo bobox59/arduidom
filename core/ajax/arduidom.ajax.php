@@ -93,14 +93,18 @@ try {
                         if ($config == 'rin') { $conftxt = " => Recepteur 433MHz";}
                         if ($config == 'rout') { $conftxt = " => Emetteur 433MHz";}
                         if ($config == 'pout') { $conftxt = " => Sortie PWM";}
-                        if ($config == 'dht1') { $conftxt = " => Sonde DHT n°1";}
-                        if ($config == 'dht2') { $conftxt = " => Sonde DHT n°2";}
-                        if ($config == 'dht3') { $conftxt = " => Sonde DHT n°3";}
-                        if ($config == 'dht4') { $conftxt = " => Sonde DHT n°4";}
+                        if ($config == 'dht1') { $conftxt = " HIDE_DHT_1_PIN_" . $logicalId;}
+                        if ($config == 'dht2') { $conftxt = " HIDE_DHT_2_PIN_" . $logicalId;}
+                        if ($config == 'dht3') { $conftxt = " HIDE_DHT_3_PIN_" . $logicalId;}
+                        if ($config == 'dht4') { $conftxt = " HIDE_DHT_4_PIN_" . $logicalId;}
+                        if ($config == 'dht5') { $conftxt = " HIDE_DHT_5_PIN_" . $logicalId;}
+                        if ($config == 'dht6') { $conftxt = " HIDE_DHT_6_PIN_" . $logicalId;}
+                        if ($config == 'dht7') { $conftxt = " HIDE_DHT_7_PIN_" . $logicalId;}
+                        if ($config == 'dht8') { $conftxt = " HIDE_DHT_8_PIN_" . $logicalId;}
                         if ($config == 'ain') { $conftxt = " => Entrée analogique";}
                         if ($config == 'custin') { $conftxt = " => Entrée Customisee";}
                         if ($config == 'custout') { $conftxt = " => Sortie Customisee";}
-                        $result[] = array('plugin' => 'arduidom', 'value' => $config, 'key' => 'pin::'.(($k * 1000) + $logicalId), 'name' => $pin['arduport'] . $conftxt);
+                        $result[] = array('plugin' => 'arduidom', 'value' => $config, 'key' => 'pin::'.(($k * 1000) + $logicalId), 'name' => $pin['arduport'] . $conftxt, 'dht' => $dht);
                     }
                 }
             }
