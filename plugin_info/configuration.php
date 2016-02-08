@@ -42,6 +42,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
     Actualiser la page après la Sauvegarde d'un changement.
 </div>
 <hr>
+
 <ul class="nav nav-pills nav-justified" id="tab_arid">
     <?php for ($i=1; $i <= $ArduinoQty; $i++) {
         if ($i == 1) {
@@ -110,7 +111,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
 
                         <div class="panel-body">
                             <a class="btn btn-success" id="bt_CheckArduidomDeamon<?php echo $i ?>"><i class='fa fa-check-square-o'></i>{{ Vérifier la liaison avec le N°<?php echo $i ?>}}</a>&nbsp;
-                            <a class="btn btn-primary" id="bt_CompileArduino<?php echo $i ?>"><i class="fa fa-check-circle"></i>{{ Compiler le Sketch (en test...)}}</a>&nbsp;
+                            <!-- <a class="btn btn-primary" id="bt_CompileArduino<?php echo $i ?>"><i class="fa fa-check-circle"></i>{{ Compiler le Sketch (en test...)}}</a>&nbsp; -->
                             <a class="btn btn-danger" id="bt_FlashArduino<?php echo $i ?>"><i class="fa fa-arrow-circle-right"></i>{{ Téléverser le Sketch sur l arduino n°<?php echo $i ?>}}</a>&nbsp;
                         </div>
                 </fieldset>
@@ -126,7 +127,11 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                 &nbsp;
                 <a href="plugins/arduidom/ressources/Archive.zip" class="btn btn-info" id="bt_Download"><i class='fa fa-download'></i> Télécharger les Sketchs (USB & Shield Ethernet)</a>&nbsp;&nbsp;&nbsp;
                 <a class="btn btn-danger" id="bt_MigrateArduidom"><i class='fa fa-exclamation-triangle'></i> FORCER la Migration des données</a>
-                <hr>
+                <?php if (substr(jeedom::version(),0,1) == 1) {
+                    echo '<hr><a class="btn btn-danger" id="bt_RestartArduidomDeamon"><i class="fa fa-arrow-circle-right"></i>{{ (Re)Démarrer le démon (bouton temporaire pour retro-compatibilité v2 sur jeedom v1.2)}}</a>&nbsp;';
+                    echo '<hr><a class="btn btn-warning" id="bt_Prerequis"><i class="fa fa-arrow-circle-right"></i>{{ (Re)installer les dépendances (bouton temporaire pour retro-compatibilité v2 sur jeedom v1.2)}}</a>&nbsp;';
+                    echo '<hr>Le log du démon python se trouve dans /tmp/arduidom_daemon';
+                } ?>
             </div>
         </div>
 
@@ -136,6 +141,70 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
 
 <script>
     var jsinitok = false;
+    $('#bt_RestartArduidomDeamon').on('click', function () {
+        $.ajax({// fonction permettant de faire de l'ajax
+            type: "POST", // methode de transmission des données au fichier php
+            url: "plugins/arduidom/core/ajax/arduidom.ajax.php", // url du fichier php
+            data: {
+                action: "startDaemon"
+            },
+            dataType: 'json',
+            error: function (request, status, error) {
+                handleAjaxError(request, status, error);
+            },
+            success: function (data) { // si l'appel a bien fonctionné
+                if (data.state != 'ok') {
+                    $('#div_alert').showAlert({message: data.result, level: 'danger'});
+                    return;
+                }
+                $('#div_alert').showAlert({message: 'Le démon a été correctement redémarré', level: 'success'});
+            }
+        });
+        //history.go(0);
+    });
+    $('#bt_Prerequis').on('click', function () {
+        $.ajax({// fonction permettant de faire de l'ajax
+            type: "POST", // methode de transmission des données au fichier php
+            url: "plugins/arduidom/core/ajax/arduidom.ajax.php", // url du fichier php
+            data: {
+                action: "bt_Prerequis"
+            },
+            dataType: 'json',
+            error: function (request, status, error) {
+                handleAjaxError(request, status, error);
+            },
+            success: function (data) { // si l'appel a bien fonctionné
+                if (data.state != 'ok') {
+                    $('#div_alert').showAlert({message: data.result, level: 'danger'});
+                    return;
+                }
+                $('#div_alert').showAlert({message: 'Les dépendances ont été installées', level: 'success'});
+            }
+        });
+        //history.go(0);
+    });
+    $('#bt_StopArduidomDeamon').on('click', function () {
+        $.ajax({// fonction permettant de faire de l'ajax
+            type: "POST", // methode de transmission des données au fichier php
+            url: "plugins/arduidom/core/ajax/arduidom.ajax.php", // url du fichier php
+            data: {
+                action: "stopDaemon"
+            },
+            dataType: 'json',
+            error: function (request, status, error) {
+                handleAjaxError(request, status, error);
+            },
+            success: function (data) { // si l'appel a bien fonctionné
+                if (data.state != 'ok') {
+                    $('#div_alert').showAlert({message: data.result, level: 'danger'});
+                    return;
+                }
+                $('#div_alert').showAlert({message: 'Le démon a été correctement stoppé', level: 'success'});
+            }
+        });
+        //history.go(0);
+    });
+
 </script>
 
 <?php for ($i=1; $i <= $ArduinoQty; $i++) { ?>
@@ -160,48 +229,6 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                         return;
                     }
                     $('#div_alert').showAlert({message: 'Le démon <?php echo $i ?> fonctionne correctement', level: 'success'});
-                }
-            });
-            //history.go(0);
-        });
-        $('#bt_RestartArduidomDeamon<?php echo $i ?>').on('click', function () {
-            $.ajax({// fonction permettant de faire de l'ajax
-                type: "POST", // methode de transmission des données au fichier php
-                url: "plugins/arduidom/core/ajax/arduidom.ajax.php", // url du fichier php
-                data: {
-                    action: "restartDaemon<?php echo $i ?>"
-                },
-                dataType: 'json',
-                error: function (request, status, error) {
-                    handleAjaxError(request, status, error);
-                },
-                success: function (data) { // si l'appel a bien fonctionné
-                    if (data.state != 'ok') {
-                        $('#div_alert').showAlert({message: data.result, level: 'danger'});
-                        return;
-                    }
-                    $('#div_alert').showAlert({message: 'Le démon <?php echo $i ?> a été correctement redémarré', level: 'success'});
-                }
-            });
-            //history.go(0);
-        });
-        $('#bt_StopArduidomDeamon<?php echo $i ?>').on('click', function () {
-            $.ajax({// fonction permettant de faire de l'ajax
-                type: "POST", // methode de transmission des données au fichier php
-                url: "plugins/arduidom/core/ajax/arduidom.ajax.php", // url du fichier php
-                data: {
-                    action: "stopDaemon<?php echo $i ?>"
-                },
-                dataType: 'json',
-                error: function (request, status, error) {
-                    handleAjaxError(request, status, error);
-                },
-                success: function (data) { // si l'appel a bien fonctionné
-                    if (data.state != 'ok') {
-                        $('#div_alert').showAlert({message: data.result, level: 'danger'});
-                        return;
-                    }
-                    $('#div_alert').showAlert({message: 'Le démon <?php echo $i ?> a été correctement stoppé', level: 'success'});
                 }
             });
             //history.go(0);

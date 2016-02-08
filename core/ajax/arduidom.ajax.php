@@ -27,6 +27,24 @@ try {
     }
 
 
+    if (init('action') == 'startDaemon') {
+        if (arduidom::deamon_start(true)) {
+            ajax::success();
+        } else {
+            ajax::error("Le démon n'a pas démarré !");
+        }
+    }
+    if (init('action') == 'bt_Prerequis') {
+        arduidom::dependancy_install();
+        ajax::success();
+    }
+    if (init('action') == 'stopDaemon') {
+        if (arduidom::deamon_stop()) {
+            ajax::success();
+        } else {
+            ajax::error("Le démon n'a pas été stoppé !");
+        }
+    }
     for ($i=1; $i < 9; $i++) {
         if (init('action') == 'checkDaemon' . $i) {
             if (arduidom::ping_arduino($i,false) == 1) {

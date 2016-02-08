@@ -34,6 +34,7 @@ from_arduino_6 = Queue()
 from_arduino_7 = Queue()
 from_arduino_8 = Queue()
 
+
 class cmdarg_data:
     def __init__(
         self,
@@ -60,7 +61,7 @@ class from_jeedom:
         self.request = command
         self._answer = ""
         self._status = "WAITING"  # START|IN_PROGRESS|OK|TIMEOUT
-        self.timeout = 5
+        self.timeout = 10
         self.confirm = confirm
         self.start_time = int(time.time())
 
@@ -289,30 +290,25 @@ def COMServer(options, threadName, arduID):
     logger.debug("Thread " + threadName + " for arduino " + str(arduID) + " Started.")
     logger.info("Opening Arduino USB Port...")
     SerialPort = ""
-    if arduID == 1 : SerialPort = serial.Serial(options.A1_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
-    if arduID == 2 : SerialPort = serial.Serial(options.A2_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
-    if arduID == 3 : SerialPort = serial.Serial(options.A3_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
-    if arduID == 4 : SerialPort = serial.Serial(options.A4_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
-    if arduID == 5 : SerialPort = serial.Serial(options.A5_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
-    if arduID == 6 : SerialPort = serial.Serial(options.A6_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
-    if arduID == 7 : SerialPort = serial.Serial(options.A7_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
-    if arduID == 8 : SerialPort = serial.Serial(options.A8_port, 115200, timeout=0.1, xonxoff=0, rtscts=0)
+    if arduID == 1 : SerialPort = serial.Serial(options.A1_port, 115200, timeout=0.3, xonxoff=0, rtscts=0)
+    if arduID == 2 : SerialPort = serial.Serial(options.A2_port, 115200, timeout=0.3, xonxoff=0, rtscts=0)
+    if arduID == 3 : SerialPort = serial.Serial(options.A3_port, 115200, timeout=0.3, xonxoff=0, rtscts=0)
+    if arduID == 4 : SerialPort = serial.Serial(options.A4_port, 115200, timeout=0.3, xonxoff=0, rtscts=0)
+    if arduID == 5 : SerialPort = serial.Serial(options.A5_port, 115200, timeout=0.3, xonxoff=0, rtscts=0)
+    if arduID == 6 : SerialPort = serial.Serial(options.A6_port, 115200, timeout=0.3, xonxoff=0, rtscts=0)
+    if arduID == 7 : SerialPort = serial.Serial(options.A7_port, 115200, timeout=0.3, xonxoff=0, rtscts=0)
+    if arduID == 8 : SerialPort = serial.Serial(options.A8_port, 115200, timeout=0.3, xonxoff=0, rtscts=0)
 
     logger.debug("Reset Arduino " + str(arduID) + " via USB") # Reset Arduino
-    SerialPort.setDTR(False)
-    SerialPort.setRTS(False)
-    time.sleep(0.1)
     SerialPort.flush()
     SerialPort.flushInput()
     SerialPort.setDTR(True)
-    SerialPort.setRTS(True)
-    SerialPort.flush()
-    SerialPort.flushInput()
-    time.sleep(0.1)
+    time.sleep(0.030)    # Read somewhere that 22ms is what the UI does.
+    SerialPort.setDTR(False)
     logger.debug("En attente de l'arduino " + str(arduID) + " (HELLO)")
     line = ""
     while not re.search("^HELLO", line):
-        time.sleep(0.5)
+        time.sleep(1)
         line = SerialPort.readline()
         line = line.replace('\n', '')
         line = line.replace('\r', '')
@@ -320,6 +316,14 @@ def COMServer(options, threadName, arduID):
     SerialPort.flush()
     SerialPort.flushInput()
     logger.debug("Arduino " + str(arduID) + " est pret.")
+    if arduID == 1 : options.A1_hello = 1
+    if arduID == 2 : options.A2_hello = 1
+    if arduID == 3 : options.A3_hello = 1
+    if arduID == 4 : options.A4_hello = 1
+    if arduID == 5 : options.A5_hello = 1
+    if arduID == 6 : options.A6_hello = 1
+    if arduID == 7 : options.A7_hello = 1
+    if arduID == 8 : options.A8_hello = 1
     while True:
         while SerialPort.isOpen():
             line = SerialPort.readline()
@@ -531,6 +535,14 @@ def main(argv=None):
     options.A6_ready = False
     options.A7_ready = False
     options.A8_ready = False
+    options.A1_hello = 0
+    options.A2_hello = 0
+    options.A3_hello = 0
+    options.A4_hello = 0
+    options.A5_hello = 0
+    options.A6_hello = 0
+    options.A7_hello = 0
+    options.A8_hello = 0
 
     logger.info(".")
     logger.info(".")
@@ -590,17 +602,6 @@ def main(argv=None):
         os.remove(PID_FILENAME)
     file(PID_FILENAME, "w").write(str(os.getpid()))
 
-    #-------------------------- MAIN TCP THREAD -------------------------------------------------------------------
-    try:
-        logger.info("Launch Main TCP Thread")
-        worker_tcp = Thread(target=tcpServerThread, args=(options, "TH-TcpServer", 0,))
-        worker_tcp.setDaemon(True)
-        worker_tcp.start()
-        ## thread.start_new_thread(tcpServerThread, (options,"TH-TcpServer",))
-    except ImportError, e:
-        logger.error("Error with Thread TH-TcpServer " + str(e))
-        quit()
-
     #-------------------------- THREADS USB -------------------------------------------------------------------
     logger.info(".")
     logger.info(".")
@@ -627,21 +628,43 @@ def main(argv=None):
         logger.error("Error with Thread TH-COMServer :" + str(e))
         quit()
 
-
-
     for nb in range(1,int(options.ArduinoQty)+1) :
         logger.debug("Verify Arduino Version [" + options.ArduinoVersion + "] >> Arduino " + str(nb))
         if nb != 0: logger.debug("Jeedom PING Received for arduino " + str(nb) + " !")
         if nb != 0: logger.debug("Make Ping Request for arduino " + str(nb) + " !")
         ping_request = from_jeedom("PING", "^PING_OK")
-        if nb == 1: to_arduino_1.put(ping_request)
-        if nb == 2: to_arduino_2.put(ping_request)
-        if nb == 3: to_arduino_3.put(ping_request)
-        if nb == 4: to_arduino_4.put(ping_request)
-        if nb == 5: to_arduino_5.put(ping_request)
-        if nb == 6: to_arduino_6.put(ping_request)
-        if nb == 7: to_arduino_7.put(ping_request)
-        if nb == 8: to_arduino_8.put(ping_request)
+        if nb == 1:
+            while options.A1_hello != 1:
+                time.sleep(0.1)
+            to_arduino_1.put(ping_request)
+        if nb == 2:
+            while options.A2_hello != 1:
+                time.sleep(0.1)
+            to_arduino_2.put(ping_request)
+        if nb == 3:
+            while options.A3_hello != 1:
+                time.sleep(0.1)
+            to_arduino_3.put(ping_request)
+        if nb == 4:
+            while options.A4_hello != 1:
+                time.sleep(0.1)
+            to_arduino_4.put(ping_request)
+        if nb == 5:
+            while options.A5_hello != 1:
+                time.sleep(0.1)
+            to_arduino_5.put(ping_request)
+        if nb == 6:
+            while options.A6_hello != 1:
+                time.sleep(0.1)
+            to_arduino_6.put(ping_request)
+        if nb == 7:
+            while options.A7_hello != 1:
+                time.sleep(0.1)
+            to_arduino_7.put(ping_request)
+        if nb == 8:
+            while options.A8_hello != 1:
+                time.sleep(0.1)
+            to_arduino_8.put(ping_request)
 
         while not ping_request.finished():
             time.sleep(0.1)
@@ -664,6 +687,17 @@ def main(argv=None):
         if nb == 8: options.A8_ready = True
 
 
+
+    #-------------------------- MAIN TCP THREAD -------------------------------------------------------------------
+    try:
+        logger.info("Launch Main TCP Thread")
+        worker_tcp = Thread(target=tcpServerThread, args=(options, "TH-TcpServer", 0,))
+        worker_tcp.setDaemon(True)
+        worker_tcp.start()
+        ## thread.start_new_thread(tcpServerThread, (options,"TH-TcpServer",))
+    except ImportError, e:
+        logger.error("Error with Thread TH-TcpServer " + str(e))
+        quit()
 
     #-------------------------- THREADS TCP -------------------------------------------------------------------
     logger.info(".")

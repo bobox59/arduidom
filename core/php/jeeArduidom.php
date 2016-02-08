@@ -17,13 +17,22 @@
  */
 require_once dirname(__FILE__) . "/../../../../core/php/core.inc.php";
 
-//log::add('arduidom', 'debug', "$$$ jeeArduidom Start");
+$DebugTimetoDo = false;
+$starttime = microtime(true);
+$rid = rand(10,99) . " ^ ";
+$steps = 0;
+if ($DebugTimetoDo) log::add('arduidom', 'debug', $rid . "$$$$$$$$$$$$$ jeeArduidom Start " . $rid . " @ " . $starttime);
+echo( $rid . "$$$$$$$$$$$$$ jeeArduidom Start " . $rid . " @ " . $starttime . "\n\r");
+echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r");
 
 $ardulogfile = dirname(__FILE__) . "/../../../../log/arduidom.message";
 $arduid = 0;
+$daemonreadyfound = 0;
 $time_before = microtime(true) ;
-//$bench_id = 0;
-//$bench_id++; $elapsed_time = microtime(true) - $time_before; log::add('arduidom','debug', '                                                                                   benchmark b(' . $bench_id . '): ' . ($elapsed_time * 1000) . " ms ");
+$bench_id = 0;
+$bench_id++; $elapsed_time = microtime(true) - $time_before;
+if ($DebugTimetoDo) log::add('arduidom','debug', $rid . '                                                                                   benchmark b(' . $bench_id . '): ' . ($elapsed_time * 1000) . " ms ");
+echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r"); 
 if (isset($argv)) {
     foreach ($argv as $arg) {
         $argList = explode('=', $arg);
@@ -33,6 +42,7 @@ if (isset($argv)) {
             }
             if ($argList[0] == 'daemonready') {
                 $arduid = $argList[1];
+                $daemonreadyfound = 1;
             }
             if (is_numeric($argList[0])) {
                 $valuetoconvert = $argList[0];
@@ -42,6 +52,7 @@ if (isset($argv)) {
         }
     }
 }
+echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r"); 
 if (!isset($argv)) {
     $idArray = explode('&',$_SERVER["QUERY_STRING"]);
     foreach ($idArray as $arg) {
@@ -52,6 +63,7 @@ if (!isset($argv)) {
             }
             if ($argList[0] == 'daemonready') {
                 $arduid = $argList[1];
+                $daemonreadyfound = 1;
             }
             if (is_numeric($argList[0])) {
                 $valuetoconvert = $argList[0];
@@ -62,6 +74,7 @@ if (!isset($argv)) {
         }
     }
 }
+echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r"); 
 
 //log::add('arduidom', 'debug', "$$$ jeeArduidom Check API");
 
@@ -71,44 +84,50 @@ if (!jeedom::apiAccess(init('api'))) {
     log::add('arduidom', 'error', "Clef API non valide, vous n\'etes pas autorisé à effectuer cette action");
     die();
 }
+echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r"); 
 //log::add('arduidom', 'debug', "$$$ jeeArduidom API OK, ID=" . $arduid);
 //log::add('arduidom', 'debug', "$$$ jeeArduidom API OK, GET=" . $_GET['daemonready']);
 
-if ($_GET['daemonready'] == 1) { // informe start_daemon() que python est pret.
-    log::add('arduidom', 'info', "Le démon python est pret.");
-    config::save('daemonstarted', 1, 'arduidom');
-    die();
-}
-if ($_GET['daemonready'] == 2) { // informe start_daemon() que python est pret.
-    log::add('arduidom', 'error', "Un ou plusieurs Arduino n'ont pas la version du sketch requise !");
-    config::save('daemonstarted', 2, 'arduidom');
-    die();
-}
-
-
-if (file_exists($ardulogfile) == false) {
-    log::add('arduidom', 'info', "Creation de arduidom.message");
-    file_put_contents($ardulogfile, date("Y-m-d H:i:s") . "",FILE_APPEND);
-    if (file_exists($ardulogfile) == false) {
-        log::add('arduidom', 'error', "Impossible de creer le fichier log arduidom.message (Probleme de droits ?)");
+if ($daemonreadyfound == 1) { // informe start_daemon() que python est pret.
+    if ($_GET['daemonready'] == 1) { // informe start_daemon() que python est pret.
+        log::add('arduidom', 'info', "Le démon python est pret.");
+        config::save('daemonstarted', 1, 'arduidom');
+        die();
+    }
+    if ($_GET['daemonready'] == 2) {
+        log::add('arduidom', 'error', "Un ou plusieurs Arduino n'ont pas la version du sketch requise !");
+        config::save('daemonstarted', 2, 'arduidom');
+        die();
     }
 }
+echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r"); 
+
+if (file_exists($ardulogfile) == false) {
+    log::add('arduidom', 'info', $rid . "Creation de arduidom.message");
+    file_put_contents($ardulogfile, date("Y-m-d H:i:s") . "",FILE_APPEND);
+    if (file_exists($ardulogfile) == false) {
+        log::add('arduidom', 'error', $rid . "Impossible de creer le fichier log arduidom.message (Probleme de droits ?)");
+    }
+}
+echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r"); 
 if (file_exists($ardulogfile) == true && filesize($ardulogfile) > 50000) { // Limit log size
     copy($ardulogfile, $ardulogfile . ".1");
     file_put_contents($ardulogfile, date("Y-m-d H:i:s") . " => File rotate, old file to arduidom.message.1\r\n");
 }
+echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r"); 
 
 //log::add('arduidom','debug','=============DECODAGE RADIO DE LA TABLE $_GET => AFFICHAGE DANS Log Messages Arduidom===================3');
 $array_recu = "";
 $jeedebugkeys = "";
 $code_radio = '';
+echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r"); 
 foreach ($_GET as $key => $value){ // DECODAGE RADIO DE LA TABLE $_GET => AFFICHAGE DANS Log Messages Arduidom
     $array_recu = $array_recu . $key . $value . ' / ';
     $jeedebugkeys = $jeedebugkeys . $key . "=" . $value . " & ";
 
     if (strpos($value,'RFD:') !== false) { // DECODAGE D'UN CODE RADIO RECU
         $code_radio = $value;
-        log::add('arduidom','debug', 'Code radio recu :: ' . $code_radio);
+        log::add('arduidom','debug', $rid . 'Code radio recu :: ' . $code_radio . " @ " . (microtime(true) - $starttime));
         $valueList = explode(':', $value);
         if ($valueList[5] == "1") { // P:1 => TRISTATE
             $decodedvalue = intval ($valueList[1]);
@@ -152,45 +171,47 @@ foreach ($_GET as $key => $value){ // DECODAGE RADIO DE LA TABLE $_GET => AFFICH
 }
 //log::add('arduidom','debug','========jee========ID:' . $arduid . "  " . $jeedebugkeys);
 
+echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r"); 
 
 $ApprentissageRadio = cache::byKey('arduidom_radio_learn');
 $ApprentissageRadio = $ApprentissageRadio->getValue();
 if ($ApprentissageRadio == "1" && $code_radio != '') {
-    log::add('arduidom','info', 'Radio Code = ' . $code_radio);
-    log::add('arduidom','info', 'Learning Mode = ' . $ApprentissageRadio);
+    log::add('arduidom','info', $rid . 'Radio Code = ' . $code_radio);
+    log::add('arduidom','info', $rid . 'Learning Mode = ' . $ApprentissageRadio);
     $RadioCacheId = cache::byKey('arduidom_radio_index');
     $RadioCacheId = $RadioCacheId->getValue();
     $RadioCacheLastCode = cache::byKey('arduidom_radio_lastcode');
     $RadioCacheLastCode = $RadioCacheLastCode->getValue();
-    log::add('arduidom','info',"READ CACHE arduidom_radio_lastcode=" . $RadioCacheLastCode);
+    if ($DebugTimetoDo) log::add('arduidom','info',$rid . "READ CACHE arduidom_radio_lastcode=" . $RadioCacheLastCode);
     if ($RadioCacheId == '' || ($RadioCacheLastCode != $code_radio)) $RadioCacheId = 0;
-    log::add('arduidom','debug', '===============CACHE============== index:' . $RadioCacheId);
+    if ($DebugTimetoDo) log::add('arduidom','debug', $rid . '===============CACHE============== index:' . $RadioCacheId);
     $RadioCacheId++;
     cache::set('arduidom_radio_index',$RadioCacheId);
-    log::add('arduidom','info',"Write CACHE arduidom_radio_lastcode=" . $code_radio);
+    if ($DebugTimetoDo) log::add('arduidom','info',$rid . "Write CACHE arduidom_radio_lastcode=" . $code_radio);
     cache::set('arduidom_radio_lastcode', $code_radio);
     $RadioCacheLastCode = cache::byKey('arduidom_radio_lastcode');
     $RadioCacheLastCode = $RadioCacheLastCode->getValue();
-    log::add('arduidom','info',"READ CACHE arduidom_radio_lastcode=" . $RadioCacheLastCode);
+    if ($DebugTimetoDo) log::add('arduidom','info',$rid . "READ CACHE arduidom_radio_lastcode=" . $RadioCacheLastCode);
 }
+echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r"); 
 
 // **** ACTIONS SUR LES DONNEES **** //
-//log::add('arduidom', 'debug', "$$$ jeeArduidom actions sur les données");
+if ($DebugTimetoDo) log::add('arduidom', 'debug', $rid . "$$$ jeeArduidom actions sur les données");
 
 foreach (eqLogic::byType('arduidom') as $eqLogic){
     foreach ($eqLogic->getCmd('info') as $cmd) {
         $pin_nb = $cmd->getLogicalId();
         if ($pin_nb == 999 && $code_radio != '' && $ApprentissageRadio != "1") { // Cherche les cmd Arduidom avec la pin 999 (RADIO VIRTUEL)
             $valueToCheck = $cmd->getConfiguration('value');
-            log::add('arduidom','debug', '===============TEST============== compare ' . $valueToCheck . ' & ' . $code_radio);
+            if ($DebugTimetoDo) log::add('arduidom','debug', $rid . '===============TEST============== compare ' . $valueToCheck . ' & ' . $code_radio);
             if ($valueToCheck == $code_radio) {
                 if (is_object($cmd)) {
-                    log::add('arduidom','debug', 'Arduino n°' . $arduid . ' Action (Reception Radio) sur ' . $cmd->getHumanName());
+                    log::add('arduidom','debug', $rid . 'Arduino n°' . $arduid . ' Action (Reception Radio) sur ' . $cmd->getHumanName() . " @ " . (microtime(true) - $starttime));
                     $daemon_path = realpath(dirname(__FILE__) . '/../../core/php');
                     $command = 'nice -n 19 php ' . $daemon_path . '/jeeRadio.php api=' . config::byKey('api') . " code=" . $code_radio . " time=" . "5" ;
-                    log::add('arduidom', 'info', 'Lancement radio : ' . $command);
+                    log::add('arduidom', 'info', $rid . 'Lancement radio : ' . $command . " @ " . (microtime(true) - $starttime));
                     exec($command . ' > /dev/null&');
-                    log::add('arduidom', 'info', 'Fin du lancement radio : ' . $command);
+                    log::add('arduidom', 'info', $rid . 'Fin du lancement radio : ' . $command . " @ " . (microtime(true) - $starttime));
                 }
             }
 
@@ -205,8 +226,8 @@ foreach (eqLogic::byType('arduidom') as $eqLogic){
                     $cmd->setCollectDate('');
                     $cmd->event($_GET[$pin_nb]);
                     //log::add('arduidom', 'debug', '$$$ jeeArduidom after $cmd->event(' . $_GET[$pin_nb] . ") on pin " . $pin_nb);
-                    log::add('arduidom', 'debug', 'Arduino n°' . $arduid . ' Mise à jour de ' . $eqLogic->getHumanName() . ' terminée (pin' . $pin_nb . ' = ' . $_GET[$pin_nb] . ')');
-                    log::add('arduidom', 'event', 'Arduino n°' . $arduid . ' Mise à jour de ' . $eqLogic->getHumanName() . ' terminée (pin' . $pin_nb . ' = ' . $_GET[$pin_nb] . ')');
+                    if ($DebugTimetoDo) log::add('arduidom', 'debug', $rid . 'Arduino n°' . $arduid . ' Mise à jour de ' . $eqLogic->getHumanName() . ' terminée (pin' . $pin_nb . ' = ' . $_GET[$pin_nb] . ')' . " @ " . (microtime(true) - $starttime));
+                    log::add('arduidom', 'event', $rid . 'Arduino n°' . $arduid . ' Mise à jour de ' . $eqLogic->getHumanName() . ' terminée (pin' . $pin_nb . ' = ' . $_GET[$pin_nb] . ')' . " @ " . (microtime(true) - $starttime));
                 } else {
                     //log::add('arduidom', 'debug', "$$$ jeeArduidom Compare [" . $cmd . "] :: Is NOT an object :(");
                 }
@@ -217,5 +238,9 @@ foreach (eqLogic::byType('arduidom') as $eqLogic){
     }
 }
 //log::add('arduidom', 'debug', "$$$ jeeArduidom END !!!!!!!!!!!!!!");
+echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r"); 
 
-//$bench_id++; $elapsed_time = microtime(true) - $time_before; log::add('arduidom','debug', '                                                    ------------------        LAST benchmark(' . $bench_id . '): ' . ($elapsed_time * 1000) . " ms ");
+$bench_id++; $elapsed_time = microtime(true) - $time_before; if ($DebugTimetoDo) log::add('arduidom','debug', $rid . '                                                    ------------------        LAST benchmark(' . $bench_id . '): ' . ($elapsed_time * 1000) . " ms ");
+if ($DebugTimetoDo) log::add('arduidom', 'debug', $rid . "$$$$$$$$$$$$$ jeeArduidom END " . $rid . " @ " . (microtime(true) - $starttime));
+echo($rid . "$$$$$$$$$$$$$ jeeArduidom END " . $rid . " @ " . (microtime(true) - $starttime) . "\n\r");
+echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r"); 
