@@ -507,14 +507,9 @@ class arduidom extends eqLogic
         $usb_arduinos = 0;
         //if ($_debug) log::add('arduidom','DEBUG','strpos1:' . strpos(config::byKey('A1_port', 'arduidom', '', 1), "/dev"));
         //if ($_debug) log::add('arduidom','DEBUG','strpos2:' . strpos(config::byKey('A2_port', 'arduidom', '', 1), "/dev"));
-        if (strpos(config::byKey('A1_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
-        if (strpos(config::byKey('A2_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
-        if (strpos(config::byKey('A3_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
-        if (strpos(config::byKey('A4_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
-        if (strpos(config::byKey('A5_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
-        if (strpos(config::byKey('A6_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
-        if (strpos(config::byKey('A7_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
-        if (strpos(config::byKey('A8_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
+        for ($a = 1; $a <= 8; $a++) {
+            if (strpos(config::byKey('A' . $a . '_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
+        }
         if ($usb_arduinos > 0) {
             $cmd = 'nohup nice -n 19 /usr/bin/python ' . $ressource_path . '/arduidomx.py';
             if ($_debug) $cmd .= ' -lDEBUG';
@@ -594,8 +589,10 @@ class arduidom extends eqLogic
         $pid_file = $daemon_path . "/arduidomx.pid";
         if (file_exists($pid_file)) {
             $pid = intval(trim(file_get_contents($pid_file)));
-            if (substr(jeedom::version(),0,1) == 2) $killresult = system::kill($pid);
-            if (substr(jeedom::version(),0,1) == 2) if ($General_Debug) log::add('arduidom', 'debug', 'system::kill(' . $pid . ") = " . $killresult);
+            if (substr(jeedom::version(),0,1) == 2) {
+                $killresult = system::kill($pid);
+                if ($General_Debug) log::add('arduidom', 'debug', 'system::kill(' . $pid . ") = " . $killresult);
+            }
             if ($General_Debug) log::add('arduidom', 'debug', "removing file " . $daemon_path . "/arduidomx.pid");
             unlink($daemon_path . "/arduidomx.pid");
         }

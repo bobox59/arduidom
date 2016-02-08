@@ -246,8 +246,7 @@ def parse_adrduino_answer(options, line, arduID):
         elif line.find("DATA:") > -1:
             logger.debug("RF values => FOUND")
             pinvalue = line.rsplit(',')
-            cmd = []
-            cmd.append('arduid=' + str(arduID))
+            cmd = ['arduid=' + str(arduID)]
             cmdlog = 'PHP(DATA)=> '
             for pinnumber in range(0, len(pinvalue)):
                 cmd.append(str(pinnumber) + "=" + pinvalue[pinnumber].replace("DATA:", ""))
@@ -258,8 +257,7 @@ def parse_adrduino_answer(options, line, arduID):
         elif line.find("DHT:") > -1:
             logger.debug("DHT values => FOUND")
             dhtvalue = line.rsplit(';')
-            cmd = []
-            cmd.append('arduid=' + str(arduID))
+            cmd = ['arduid=' + str(arduID)]
             cmdlog = "PHP(DHT)->"
             for pinnumber in range(0, len(dhtvalue)):
                 if dhtvalue[pinnumber].find("nan") == -1:
@@ -274,9 +272,7 @@ def parse_adrduino_answer(options, line, arduID):
             psplit2 = psplit[1].rsplit('<<')
             # pinvalue[pinnumber] = psplit2[0]
             cmdlog = 'PHP=> '
-            cmd = []
-            cmd.append('arduid=' + str(arduID))
-            cmd.append(str(pinnumber) + "=" + psplit2[0])
+            cmd = ['arduid=' + str(arduID), str(pinnumber) + "=" + psplit2[0]]
             cmdlog += str(arduID) + ":" + str(pinnumber) + "=" + psplit2[0]
             logger.debug(cmdlog)
             options.jeedom.send(cmd)
@@ -402,9 +398,6 @@ def COMServer(options, threadName, arduID):
     logger.error("Thread END")
 
 def read_configFile( options, configFile):
-    """
-    Read items from the configuration file
-    """
     if os.path.exists( configFile ):
 
         # ----------------------
@@ -607,19 +600,19 @@ def main(argv=None):
     logger.info(".")
     # noinspection PyBroadException
     try:
-        for nb in range(1,int(options.ArduinoQty)+1) :
+        for nb1 in range(1,int(options.ArduinoQty)+1) :
             portcheck = ''
-            if nb == 1 : portcheck = options.A1_port
-            if nb == 2 : portcheck = options.A2_port
-            if nb == 3 : portcheck = options.A3_port
-            if nb == 4 : portcheck = options.A4_port
-            if nb == 5 : portcheck = options.A5_port
-            if nb == 6 : portcheck = options.A6_port
-            if nb == 7 : portcheck = options.A7_port
-            if nb == 8 : portcheck = options.A8_port
+            if nb1 == 1 : portcheck = options.A1_port
+            if nb1 == 2 : portcheck = options.A2_port
+            if nb1 == 3 : portcheck = options.A3_port
+            if nb1 == 4 : portcheck = options.A4_port
+            if nb1 == 5 : portcheck = options.A5_port
+            if nb1 == 6 : portcheck = options.A6_port
+            if nb1 == 7 : portcheck = options.A7_port
+            if nb1 == 8 : portcheck = options.A8_port
             if portcheck != 'Network' :
-                logger.info("Launch USB Thread n°" + str(nb))
-                worker_usb = Thread(target=COMServer, args=(options, "TH-COMServer", nb,))
+                logger.info("Launch USB Thread n°" + str(nb1))
+                worker_usb = Thread(target=COMServer, args=(options, "TH-COMServer", nb1,))
                 worker_usb.setDaemon(True)
                 worker_usb.start()
                 ## thread.start_new_thread(COMServer, (options,"TH-COMServer",))
@@ -628,65 +621,143 @@ def main(argv=None):
         logger.error("Error with Thread TH-COMServer :" + str(e))
         quit()
 
-    for nb in range(1,int(options.ArduinoQty)+1) :
-        logger.debug("Verify Arduino Version [" + options.ArduinoVersion + "] >> Arduino " + str(nb))
-        if nb != 0: logger.debug("Jeedom PING Received for arduino " + str(nb) + " !")
-        if nb != 0: logger.debug("Make Ping Request for arduino " + str(nb) + " !")
+    if options.A1_port == "Network" :
+        options.A1_hello = 1
+
+
+    for nb2 in range(1,int(options.ArduinoQty)+1) :
+        logger.debug("Verify Arduino Version [" + options.ArduinoVersion + "] >> Arduino " + str(nb2))
+        if nb2 != 0: logger.debug("Jeedom PING Received for arduino " + str(nb2) + " !")
+        if nb2 != 0: logger.debug("Make Ping Request for arduino " + str(nb2) + " !")
         ping_request = from_jeedom("PING", "^PING_OK")
-        if nb == 1:
-            while options.A1_hello != 1:
-                time.sleep(0.1)
-            to_arduino_1.put(ping_request)
-        if nb == 2:
-            while options.A2_hello != 1:
-                time.sleep(0.1)
-            to_arduino_2.put(ping_request)
-        if nb == 3:
-            while options.A3_hello != 1:
-                time.sleep(0.1)
-            to_arduino_3.put(ping_request)
-        if nb == 4:
-            while options.A4_hello != 1:
-                time.sleep(0.1)
-            to_arduino_4.put(ping_request)
-        if nb == 5:
-            while options.A5_hello != 1:
-                time.sleep(0.1)
-            to_arduino_5.put(ping_request)
-        if nb == 6:
-            while options.A6_hello != 1:
-                time.sleep(0.1)
-            to_arduino_6.put(ping_request)
-        if nb == 7:
-            while options.A7_hello != 1:
-                time.sleep(0.1)
-            to_arduino_7.put(ping_request)
-        if nb == 8:
-            while options.A8_hello != 1:
-                time.sleep(0.1)
-            to_arduino_8.put(ping_request)
-
-        while not ping_request.finished():
-            time.sleep(0.1)
-        answer = ping_request.answer()
-        logger.debug("[" + str(answer) + "] >> JeeDom")
-        if answer != "PING_OK_V:" + options.ArduinoVersion:
-            logger.error("Version du sketch Arduino " + str(nb) + " Incorrecte !")
-            cmd = []
-            cmd.append('daemonready=2') # indique a jeedom ERREUR DE VERSION
-            options.jeedom.send(cmd)
-            quit()
-        logger.debug("Version Arduino " + str(nb) + " OK")
-        if nb == 1: options.A1_ready = True
-        if nb == 2: options.A2_ready = True
-        if nb == 3: options.A3_ready = True
-        if nb == 4: options.A4_ready = True
-        if nb == 5: options.A5_ready = True
-        if nb == 6: options.A6_ready = True
-        if nb == 7: options.A7_ready = True
-        if nb == 8: options.A8_ready = True
-
-
+        if nb2 == 1:
+            if options.A1_port != 'Network':
+                while options.A1_hello != 1:
+                    time.sleep(0.1)
+                to_arduino_1.put(ping_request)
+                while not ping_request.finished():
+                    time.sleep(0.1)
+                answer = ping_request.answer()
+                logger.debug("[" + str(answer) + "] >> JeeDom")
+                if answer != "PING_OK_V:" + options.ArduinoVersion:
+                    logger.error("Version du sketch Arduino " + str(nb2) + " Incorrecte !")
+                    cmd = ['daemonready=2']
+                    options.jeedom.send(cmd)
+                    quit()
+                logger.debug("Version Arduino " + str(nb2) + " OK")
+            options.A1_ready = True
+        if nb2 == 2:
+            if options.A2_port != 'Network':
+                while options.A2_hello != 1:
+                    time.sleep(0.1)
+                to_arduino_2.put(ping_request)
+                while not ping_request.finished():
+                    time.sleep(0.1)
+                answer = ping_request.answer()
+                logger.debug("[" + str(answer) + "] >> JeeDom")
+                if answer != "PING_OK_V:" + options.ArduinoVersion:
+                    logger.error("Version du sketch Arduino " + str(nb2) + " Incorrecte !")
+                    cmd = ['daemonready=2']
+                    options.jeedom.send(cmd)
+                    quit()
+                logger.debug("Version Arduino " + str(nb2) + " OK")
+            options.A2_ready = True
+        if nb2 == 3:
+            if options.A3_port != 'Network':
+                while options.A3_hello != 1:
+                    time.sleep(0.1)
+                to_arduino_3.put(ping_request)
+                while not ping_request.finished():
+                    time.sleep(0.1)
+                answer = ping_request.answer()
+                logger.debug("[" + str(answer) + "] >> JeeDom")
+                if answer != "PING_OK_V:" + options.ArduinoVersion:
+                    logger.error("Version du sketch Arduino " + str(nb2) + " Incorrecte !")
+                    cmd = ['daemonready=2']
+                    options.jeedom.send(cmd)
+                    quit()
+                logger.debug("Version Arduino " + str(nb2) + " OK")
+            options.A3_ready = True
+        if nb2 == 4:
+            if options.A4_port != 'Network':
+                while options.A4_hello != 1:
+                    time.sleep(0.1)
+                to_arduino_4.put(ping_request)
+                while not ping_request.finished():
+                    time.sleep(0.1)
+                answer = ping_request.answer()
+                logger.debug("[" + str(answer) + "] >> JeeDom")
+                if answer != "PING_OK_V:" + options.ArduinoVersion:
+                    logger.error("Version du sketch Arduino " + str(nb2) + " Incorrecte !")
+                    cmd = ['daemonready=2']
+                    options.jeedom.send(cmd)
+                    quit()
+                logger.debug("Version Arduino " + str(nb2) + " OK")
+            options.A4_ready = True
+        if nb2 == 5:
+            if options.A5_port != 'Network':
+                while options.A5_hello != 1:
+                    time.sleep(0.1)
+                to_arduino_5.put(ping_request)
+                while not ping_request.finished():
+                    time.sleep(0.1)
+                answer = ping_request.answer()
+                logger.debug("[" + str(answer) + "] >> JeeDom")
+                if answer != "PING_OK_V:" + options.ArduinoVersion:
+                    logger.error("Version du sketch Arduino " + str(nb2) + " Incorrecte !")
+                    cmd = ['daemonready=2']
+                    options.jeedom.send(cmd)
+                    quit()
+                logger.debug("Version Arduino " + str(nb2) + " OK")
+            options.A5_ready = True
+        if nb2 == 6:
+            if options.A6_port != 'Network':
+                while options.A6_hello != 1:
+                    time.sleep(0.1)
+                to_arduino_6.put(ping_request)
+                while not ping_request.finished():
+                    time.sleep(0.1)
+                answer = ping_request.answer()
+                logger.debug("[" + str(answer) + "] >> JeeDom")
+                if answer != "PING_OK_V:" + options.ArduinoVersion:
+                    logger.error("Version du sketch Arduino " + str(nb2) + " Incorrecte !")
+                    cmd = ['daemonready=2']
+                    options.jeedom.send(cmd)
+                    quit()
+                logger.debug("Version Arduino " + str(nb2) + " OK")
+            options.A6_ready = True
+        if nb2 == 7:
+            if options.A7_port != 'Network':
+                while options.A7_hello != 1:
+                    time.sleep(0.1)
+                to_arduino_7.put(ping_request)
+                while not ping_request.finished():
+                    time.sleep(0.1)
+                answer = ping_request.answer()
+                logger.debug("[" + str(answer) + "] >> JeeDom")
+                if answer != "PING_OK_V:" + options.ArduinoVersion:
+                    logger.error("Version du sketch Arduino " + str(nb2) + " Incorrecte !")
+                    cmd = ['daemonready=2']
+                    options.jeedom.send(cmd)
+                    quit()
+                logger.debug("Version Arduino " + str(nb2) + " OK")
+            options.A7_ready = True
+        if nb2 == 8:
+            if options.A8_port != 'Network':
+                while options.A8_hello != 1:
+                    time.sleep(0.1)
+                to_arduino_8.put(ping_request)
+                while not ping_request.finished():
+                    time.sleep(0.1)
+                answer = ping_request.answer()
+                logger.debug("[" + str(answer) + "] >> JeeDom")
+                if answer != "PING_OK_V:" + options.ArduinoVersion:
+                    logger.error("Version du sketch Arduino " + str(nb2) + " Incorrecte !")
+                    cmd = ['daemonready=2']
+                    options.jeedom.send(cmd)
+                    quit()
+                logger.debug("Version Arduino " + str(nb2) + " OK")
+            options.A8_ready = True
 
     #-------------------------- MAIN TCP THREAD -------------------------------------------------------------------
     try:
@@ -730,8 +801,7 @@ def main(argv=None):
     logger.info("ALL TCP Threads Launched !")
 
     logger.info("Tell to jeedom Arduinos are OK")
-    cmd = []
-    cmd.append('daemonready=1')
+    cmd = ['daemonready=1']
     options.jeedom.send(cmd)
 
     logger.info("Surveille le .kill ...")
