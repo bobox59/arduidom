@@ -16,12 +16,14 @@
  * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
  */
 require_once dirname(__FILE__) . "/../../../../core/php/core.inc.php";
+$ip = $_SERVER['REMOTE_ADDR'];
 
 $DebugTimetoDo = false;
 $starttime = microtime(true);
 $rid = rand(10,99) . " ^ ";
 $steps = 0;
 if ($DebugTimetoDo) log::add('arduidom', 'debug', $rid . "$$$$$$$$$$$$$ jeeArduidom Start " . $rid . " @ " . $starttime);
+if ($DebugTimetoDo) log::add('arduidom', 'debug', "IP: " . $ip . " - " . $rid . " @ " . $starttime);
 //echo( $rid . "$$$$$$$$$$$$$ jeeArduidom Start " . $rid . " @ " . $starttime . "\n\r");
 //echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r");
 
@@ -38,7 +40,21 @@ if (isset($argv)) {
         $argList = explode('=', $arg);
         if (isset($argList[0]) && isset($argList[1])) {
             if ($argList[0] == 'arduid') {
-                $arduid = $argList[1];
+                if ($argList[1] == "net") { // Detection automatique de l'arduino ID pour les shield ethernet
+                    $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1));
+                    for ($d = 1; $d <= $nbArduinos; $d++) {
+                        if (config::byKey('A' . $d . '_port', 'arduidom', '', true) == "Network") {
+                            if (config::byKey('A' . $d . '_port', 'daemonip', '', true) != "127.0.0.1") {
+                                if ($DebugTimetoDo) log::add('arduidom', 'debug', "Shield Ethernet detecté en ID:" . $d);
+                                $argList[1] = $d;
+                                $arduid = $d;
+
+                            }
+                        }
+                    }
+                } else {
+                    $arduid = $argList[1];
+                }
             }
             if ($argList[0] == 'daemonready') {
                 $arduid = $argList[1];
@@ -59,7 +75,21 @@ if (!isset($argv)) {
         $argList = explode('=', $arg);
         if (isset($argList[0]) && isset($argList[1])) {
             if ($argList[0] == 'arduid') {
-                $arduid = $argList[1];
+                if ($argList[1] == "net") { // Detection automatique de l'arduino ID pour les shield ethernet
+                    $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1));
+                    for ($d = 1; $d <= $nbArduinos; $d++) {
+                        if (config::byKey('A' . $d . '_port', 'arduidom', '', true) == "Network") {
+                            if (config::byKey('A' . $d . '_port', 'daemonip', '', true) != "127.0.0.1") {
+                                if ($DebugTimetoDo) log::add('arduidom', 'debug', "Shield Ethernet detecté en ID:" . $d);
+                                $argList[1] = $d;
+                                $arduid = $d;
+
+                            }
+                        }
+                    }
+                } else {
+                    $arduid = $argList[1];
+                }
             }
             if ($argList[0] == 'daemonready') {
                 $arduid = $argList[1];
@@ -74,6 +104,7 @@ if (!isset($argv)) {
         }
     }
 }
+
 //echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r");
 
 //log::add('arduidom', 'debug', "$$$ jeeArduidom Check API");
@@ -218,7 +249,7 @@ foreach (eqLogic::byType('arduidom') as $eqLogic){
         } else {
 
             //log::add('arduidom', 'debug', "$$$ jeeArduidom Compare [" . $pin_nb . "]");
-            if (array_key_exists($pin_nb, $_GET)) {
+            if (array_key_exists($pin_nb, $_GET) && $_GET[$pin_nb] != "na") {
                 //log::add('arduidom', 'debug', "$$$ jeeArduidom Compare [" . $pin_nb . "] : It Exists 1 :)");
                 if (is_object($cmd)) {
                     //log::add('arduidom', 'debug', "$$$ jeeArduidom Compare [" . $pin_nb . "] : Is an object :)");

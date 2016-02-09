@@ -238,6 +238,8 @@ class arduidom extends eqLogic
 
         $ressource_path = realpath(dirname(__FILE__) . '/../../ressources');
 
+        if (config::byKey("ArduinoRequiredVersion","arduidom","",true) != 107) $return['state'] = 'nok' ;
+
         // FICHIERS NECESSAIRES
         if (!file_exists("/usr/bin/arduino")) $return['state'] = 'nok';
         if (!file_exists("/usr/bin/avrdude")) $return['state'] = 'nok';
@@ -276,7 +278,7 @@ class arduidom extends eqLogic
     public static function dependancy_install()
     {
         log::add('arduidom','debug','Installation des dependances....');
-        config::save("ArduinoRequiredVersion","106","arduidom");
+        config::save("ArduinoRequiredVersion","107","arduidom");
         log::remove('arduidom_update');
         chmod(dirname(__FILE__) . '/../../ressources/install.sh',0775);
         $cmd = 'sudo ' . dirname(__FILE__) . '/../../ressources/install.sh';
@@ -622,7 +624,7 @@ class arduidom extends eqLogic
             if ($_AID == 0) $ArduinoRequiredVersion = "PING_OK";
 
             if ($tcpcheck != $ArduinoRequiredVersion) {
-                log::add('arduidom', 'error', "Erreur: Réponse de l'arduino " . $_AID . " = [" . $tcpcheck . "] au lieu de [PING_OK_V:" . $ArduinoRequiredVersion . "] (checkdaemon)");
+                log::add('arduidom', 'error', "Erreur: Réponse de l'arduino " . $_AID . " = [" . $tcpcheck . "] au lieu de [" . $ArduinoRequiredVersion . "] (checkdaemon)");
                     return 0;
             } else {
                 //if ($General_Debug) log::add('arduidom', 'debug', $randomNb . "La liaison avec l'arduino n°" . $d . ' fonctionne correctement.');
@@ -775,8 +777,8 @@ class arduidom extends eqLogic
     $General_Debug = config::byKey('generalDebug','arduidom',0, true);
     if ($_AID == 0) $General_Debug = 0; // Pas de log sur démon direct, trop bavard...
     if ($General_Debug) log::add('arduidom', 'debug', "^--------------------------------------------------------------------------------------");
-    if ($General_Debug) log::add('arduidom', 'debug', getmicrotime() . ' - sendtoArduino(' . $_tcpmsg . ',' . $_AID . ') called');
-
+    if ($General_Debug) log::add('arduidom', 'debug', 'sendtoArduino(' . $_tcpmsg . ',' . $_AID . ') called');
+    $func_start_time = getmicrotime(true);
     $daemonmode = self::get_daemon_mode();
     if ($daemonmode == "FLASHING") {
         log::add("arduidom","debug","sendtoArduino impossible, arduino en cours de flashage...");
@@ -813,15 +815,22 @@ class arduidom extends eqLogic
                     $resp = "";
 
                     if ($port == "Network") {
-                        if ($General_Debug) log::add('arduidom', 'debug', "Attente de la réponse du démon ArduiDom " . $_AID . " ...");
+                        if ($General_Debug) log::add('arduidom', 'debug', "Attente de la réponse arduino " . $_AID . " ...");
                         while (!feof($fp)) {
                             $resp = $resp . fgets($fp);
+                            if ((time() - $start_time) > 5) { // Time out de 5 secondes pour le check du démon
+                                log::add('arduidom', 'error', 'Erreur: TIMEOUT sur attente de réponse arduino ' . $_AID);
+                                if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __('Erreur: TIMEOUT sur attente de réponse arduino ' . $_AID, __FILE__),));
+                                if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
+                                return "TIMEOUT";
+                            }
                         }
                         $resp = str_replace("\r", '', $resp);
                         $resp = str_replace("\n", '', $resp);
-                        if ($General_Debug) log::add('arduidom', 'debug', 'Réponse TCP recue  $_tcpmsg=' . $resp);
+                        if ($General_Debug) log::add('arduidom', 'debug', 'Réponse TCP recue = ' . $resp);
                         if ((time() - $start_time) > 5) { // Time out de 5 secondes pour le check du démon
                             log::add('arduidom', 'error', 'Erreur: TIMEOUT sur Réponse du démon ' . $_AID);
+                            if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __('Erreur: TIMEOUT sur Réponse du démon ' . $_AID, __FILE__),));
                             if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
                             return "TIMEOUT";
                         }
@@ -841,7 +850,10 @@ class arduidom extends eqLogic
                         }
                         fclose($fp);
                     }
-                    if ($General_Debug) log::add('arduidom', 'debug', getmicrotime() . ' - sendtoArduino(' . $_tcpmsg . ',' . $_AID . ') reply [' . $resp . ']');
+                    $elapsed_time = getmicrotime(true) - $func_start_time;
+                    $elapsed_time = $elapsed_time * 1000;
+                    $elapsed_time = number_format($elapsed_time, 1, '.', '') . " ms";
+                    if ($General_Debug) log::add('arduidom', 'debug', 'sendtoArduino(' . $_tcpmsg . ',' . $_AID . ') reply [' . $resp . '] takes ' . $elapsed_time);
                     if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
                     return $resp;
                 }
