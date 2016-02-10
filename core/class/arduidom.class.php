@@ -238,7 +238,7 @@ class arduidom extends eqLogic
 
         $ressource_path = realpath(dirname(__FILE__) . '/../../ressources');
 
-        if (config::byKey("ArduinoRequiredVersion","arduidom","",true) != 107) $return['state'] = 'nok' ;
+        if (config::byKey("ArduinoRequiredVersion","arduidom","",true) != 108) $return['state'] = 'nok' ;
 
         // FICHIERS NECESSAIRES
         if (!file_exists("/usr/bin/arduino")) $return['state'] = 'nok';
@@ -278,7 +278,7 @@ class arduidom extends eqLogic
     public static function dependancy_install()
     {
         log::add('arduidom','debug','Installation des dependances....');
-        config::save("ArduinoRequiredVersion","107","arduidom");
+        config::save("ArduinoRequiredVersion","108","arduidom");
         log::remove('arduidom_update');
         chmod(dirname(__FILE__) . '/../../ressources/install.sh',0775);
         $cmd = 'sudo ' . dirname(__FILE__) . '/../../ressources/install.sh';
@@ -668,6 +668,14 @@ class arduidom extends eqLogic
             if ($config == 'dht2') $CP = $CP . "2";
             if ($config == 'dht3') $CP = $CP . "3";
             if ($config == 'dht4') $CP = $CP . "4";
+            if ($config == 'dht5') $CP = $CP . "5";
+            if ($config == 'dht6') $CP = $CP . "6";
+            if ($config == 'dht7') $CP = $CP . "7";
+            if ($config == 'dht8') $CP = $CP . "8";
+            if ($config == 'pup') $CP = $CP . "u";
+            if ($config == 'pdwn') $CP = $CP . "v";
+            if ($config == 'oinv') $CP = $CP . "x";
+            if ($config == 'blnk') $CP = $CP . "b";
         }
     }
     if ($General_Debug) log::add('arduidom', 'debug', 'send the setPinMapping to ' . $CP);
@@ -753,6 +761,12 @@ class arduidom extends eqLogic
     if ($config == 'out') {
         $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
     }
+    if ($config == 'pup' || $config == 'pdwn' || $config == 'blnk') {
+        $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . sprintf("%04s", $_value);
+    }
+    if ($config == 'oinv') {
+        $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
+    }
     if ($config == 'rout') {
         $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
     }
@@ -763,10 +777,10 @@ class arduidom extends eqLogic
         $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . sprintf("%010s", $_value);
     }
     $tcpcheck = arduidom::sendtoArduino($tcpmsg, $arduid);
-    // if ($tcpcheck != $tcpmsg . "_OK") {
-    if ($tcpcheck != "SP_OK") {
-        log::add('arduidom','error', "Erreur setPinValue " . $tcpcheck . " (Recu : " . $tcpmsg . ")");
-        if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur setPinValue " . $tcpcheck . " (Recu : " . $tcpmsg . ")", __FILE__),));
+    if ($tcpcheck != $tcpmsg . "_OK") {
+    //if ($tcpcheck != "SP_OK") {
+        log::add('arduidom','error', "Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ")");
+        if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ")", __FILE__),));
     }
     return $tcpcheck;
 }

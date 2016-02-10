@@ -300,7 +300,11 @@ function handlePin(tr) {
         tr.find('.cmdAttr[data-l1key=subType]').value('binary');
         tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
     }
-    if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'out') {
+    if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'out' ||
+        tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'pup' ||
+        tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'pdwn' ||
+        tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'oinv' ||
+        tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'blnk' ) {
         console.log("data Mode is : out");
         console.log("type:" + (tr.find('.cmdAttr[data-l1key=type]').value != ''));
         if (tr.find('.cmdAttr[data-l1key=type]').value == '') {

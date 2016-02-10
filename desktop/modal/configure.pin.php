@@ -148,6 +148,10 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', '1');
                                     echo '<option value="in">{{Entrée Digitale}}</option>';
                                     echo '<option value="inup">{{Entrée Digitale avec Pull-Up}}</option>';
                                     echo '<option value="out">{{Sortie Digitale}}</option>';
+                                    echo '<option value="pup">{{Sortie Digitale en pulse UP}}</option>';
+                                    echo '<option value="pdwn">{{Sortie Digitale en pulse DOWN}}</option>';
+                                    echo '<option value="oinv">{{Sortie Digitale à inversion}}</option>';
+                                    echo '<option value="blnk">{{Sortie Digitale à clignotement}}</option>';
                                     if ($pinPWM == 1) { echo '<option value="pout">{{Sortie PWM}}</option>'; }
                                     echo '<option value="dht1">{{Sonde DHT11/DHT22 n°1}}</option>';
                                     echo '<option value="dht2">{{Sonde DHT11/DHT22 n°2}}</option>';

@@ -180,7 +180,7 @@ def tcp_handler(options, clientsocket, clientaddr, arduID):
                     clientsocket.send(answer)
 
                 elif jeedata[0:2] == 'SP':
-                    sp_request = from_jeedom(jeedata, "SP_OK")
+                    sp_request = from_jeedom(jeedata, jeedata + "_OK")
                     if arduID == 1: to_arduino_1.put(sp_request)
                     if arduID == 2: to_arduino_2.put(sp_request)
                     if arduID == 3: to_arduino_3.put(sp_request)
@@ -364,6 +364,9 @@ def COMServer(options, threadName, arduID):
                 line = line.replace('\r', '')
                 logger.debug("1_Arduino " + str(arduID) + " >> " + "[" + line + "]")
                 while not re.search(command.confirm, line):
+                    if re.search("_BAD", line):
+                        command.result(line)
+                        break
                     parse_adrduino_answer(options, line, arduID)
                     if command.status() == "TIMEOUT":
                         logger.error("TIMEOUT : " + request)

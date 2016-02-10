@@ -122,6 +122,10 @@ try {
                         if ($config == 'ain') { $conftxt = " => Entrée analogique";}
                         if ($config == 'custin') { $conftxt = " => Entrée Customisee";}
                         if ($config == 'custout') { $conftxt = " => Sortie Customisee";}
+                        if ($config == 'pup') { $conftxt = " => Sortie digitale Pulse UP";}
+                        if ($config == 'pdwn') { $conftxt = " => Sortie digitale Pulse DOWN";}
+                        if ($config == 'oinv') { $conftxt = " => Sortie digitale à inversion";}
+                        if ($config == 'blnk') { $conftxt = " => Sortie digitale à Clignotement";}
                         $result[] = array('plugin' => 'arduidom', 'value' => $config, 'key' => 'pin::'.(($k * 1000) + $logicalId), 'name' => $pin['arduport'] . $conftxt, 'dht' => $dht);
                     }
                 }
