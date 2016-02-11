@@ -409,7 +409,7 @@ def read_configFile( options, configFile):
         # ----------------------
         # Serial device
         options.ArduinoVersion = read_config( configFile, "ArduinoVersion")
-        options.ArduinoQty = read_config( configFile, "ArduinoQty")
+        options.ArduinoQty = int(read_config( configFile, "ArduinoQty"))
         logger.debug("ArduinoQty: " + str(options.ArduinoQty))
         #options.serial_device = read_config( configFile, "serial_device")
         #logger.debug("Serial device: " + str(options.serial_device))
@@ -423,22 +423,30 @@ def read_configFile( options, configFile):
 
         # ----------------------
         # SERIALS
-        options.A1_port = read_config( configFile, "A1_serial_port")
-        options.A2_port = read_config( configFile, "A2_serial_port")
-        options.A3_port = read_config( configFile, "A3_serial_port")
-        options.A4_port = read_config( configFile, "A4_serial_port")
-        options.A5_port = read_config( configFile, "A5_serial_port")
-        options.A6_port = read_config( configFile, "A6_serial_port")
-        options.A7_port = read_config( configFile, "A7_serial_port")
-        options.A8_port = read_config( configFile, "A8_serial_port")
-        logger.debug("Arduino 1 Port: " + str(options.A1_port))
-        logger.debug("Arduino 2 Port: " + str(options.A2_port))
-        logger.debug("Arduino 3 Port: " + str(options.A3_port))
-        logger.debug("Arduino 4 Port: " + str(options.A4_port))
-        logger.debug("Arduino 5 Port: " + str(options.A5_port))
-        logger.debug("Arduino 6 Port: " + str(options.A6_port))
-        logger.debug("Arduino 7 Port: " + str(options.A7_port))
-        logger.debug("Arduino 8 Port: " + str(options.A8_port))
+        if options.ArduinoQty == 1:
+            options.A1_port = read_config( configFile, "A1_serial_port")
+            logger.debug("Arduino 1 Port: " + str(options.A1_port))
+        if options.ArduinoQty == 2:
+            options.A2_port = read_config( configFile, "A2_serial_port")
+            logger.debug("Arduino 2 Port: " + str(options.A2_port))
+        if options.ArduinoQty == 3:
+            options.A3_port = read_config( configFile, "A3_serial_port")
+            logger.debug("Arduino 3 Port: " + str(options.A3_port))
+        if options.ArduinoQty == 4:
+            options.A4_port = read_config( configFile, "A4_serial_port")
+            logger.debug("Arduino 4 Port: " + str(options.A4_port))
+        if options.ArduinoQty == 5:
+            options.A5_port = read_config( configFile, "A5_serial_port")
+            logger.debug("Arduino 5 Port: " + str(options.A5_port))
+        if options.ArduinoQty == 6:
+            options.A6_port = read_config( configFile, "A6_serial_port")
+            logger.debug("Arduino 6 Port: " + str(options.A6_port))
+        if options.ArduinoQty == 7:
+            options.A7_port = read_config( configFile, "A7_serial_port")
+            logger.debug("Arduino 7 Port: " + str(options.A7_port))
+        if options.ArduinoQty == 8:
+            options.A8_port = read_config( configFile, "A8_serial_port")
+            logger.debug("Arduino 8 Port: " + str(options.A8_port))
 
         # -----------------------
         # DAEMON

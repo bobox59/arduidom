@@ -50,7 +50,7 @@ try {
             if (arduidom::ping_arduino($i,false) == 1) {
                 ajax::success();
             } else {
-                ajax::error("Le démon " . $i . " ne fonctionne pas !");
+                ajax::error("L'Arduino " . $i . " ne fonctionne pas !");
             }
         }
         if (init('action') == 'FlashArduino' . $i) {

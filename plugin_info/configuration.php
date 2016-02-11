@@ -25,9 +25,11 @@ if (!isConnect()) {
 $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
 
 ?>
-<div class="form-group">
-    <label class="col-lg-3 control-label">Nombre d'arduino(s) utilisés</label>
-    <div class="col-sm-3">
+<input class="form-control col-md-12" style="background-color: #FFE3AF" value="Cette version de plugin NECESSITE le Sketch Arduidom_unified_v<?php echo (config::byKey("ArduinoRequiredVersion","arduidom","",true) - 100);?> sur vos Arduinos pour pouvoir fonctionner." disabled/>
+<br />&nbsp;
+<div class="row">
+    <label class="col-xs-2 control-label">Nombre d'arduino(s) utilisés</label>
+    <div class="col-xs-2">
         <select id="Arduinoqty" class="configKey form-control" data-l1key="ArduinoQty">
             <option value="1" id="ArduinoQty">1</option>
             <option value="2" id="ArduinoQty">2</option>
@@ -112,14 +114,20 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                             <input class="configKey form-control" data-l1key="A<?php echo $i ?>_daemonip" />
                         </div>
                     </div>
-
-
-
-                        <div class="panel-body">
+                    <div class="form-group">
+                        <label class="col-lg-3 control-label">Test de liaison</label>
+                        <div class="col-lg-4">
                             <a class="btn btn-success" id="bt_CheckArduidomDeamon<?php echo $i ?>"><i class='fa fa-check-square-o'></i>{{ Vérifier la liaison avec le N°<?php echo $i ?>}}</a>&nbsp;
-                            <!-- <a class="btn btn-primary" id="bt_CompileArduino<?php echo $i ?>"><i class="fa fa-check-circle"></i>{{ Compiler le Sketch (en test...)}}</a>&nbsp; -->
-                            <a class="btn btn-danger" id="bt_FlashArduino<?php echo $i ?>"><i class="fa fa-arrow-circle-right"></i>{{ Téléverser le Sketch sur l arduino n°<?php echo $i ?>}}</a>&nbsp;
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-3 control-label">Téléversement</label>
+                        <div class="col-lg-4">
+                            <a class="btn btn-danger" id="bt_FlashArduino<?php echo $i ?>"><i class="fa fa-arrow-circle-right"></i>{{ Téléverser le Sketch Arduidom_unified_v<?php echo (config::byKey("ArduinoRequiredVersion","arduidom","",true) - 100);?> sur l arduino n°<?php echo $i ?>}}</a>&nbsp;
+                        </div>
+                    </div>
+                    <!-- <a class="btn btn-primary" id="bt_CompileArduino<?php echo $i ?>"><i class="fa fa-check-circle"></i>{{ Compiler le Sketch (en test...)}}</a>&nbsp; -->
+
                 </fieldset>
             </form>
         </div>
@@ -131,7 +139,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
         <div class="form-group">
             <div class="col-lg-10">
                 &nbsp;
-                <a href="plugins/arduidom/ressources/Archive.zip" class="btn btn-info" id="bt_Download"><i class='fa fa-download'></i> Télécharger les Sketchs (USB & Shield Ethernet)</a>&nbsp;&nbsp;&nbsp;
+                <a href="plugins/arduidom/ressources/Archive.zip" class="btn btn-info" id="bt_Download"><i class='fa fa-download'></i> Télécharger les Sketchs pour USB & Shield Ethernet (Arduidom_unified_v<?php echo (config::byKey("ArduinoRequiredVersion","arduidom","",true) - 100);?>)</a>&nbsp;&nbsp;&nbsp;
                 <a class="btn btn-danger" id="bt_MigrateArduidom"><i class='fa fa-exclamation-triangle'></i> FORCER la Migration des données</a>
                 <?php if (substr(jeedom::version(),0,1) == 1) {
                     echo '<hr><a class="btn btn-danger" id="bt_RestartArduidomDeamon"><i class="fa fa-arrow-circle-right"></i>{{ (Re)Démarrer le démon (bouton temporaire pour retro-compatibilité v2 sur jeedom v1.2)}}</a>&nbsp;';
@@ -234,7 +242,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                         $('#div_alert').showAlert({message: data.result, level: 'danger'});
                         return;
                     }
-                    $('#div_alert').showAlert({message: 'Le démon <?php echo $i ?> fonctionne correctement', level: 'success'});
+                    $('#div_alert').showAlert({message: 'L\'Arduino <?php echo $i ?> fonctionne correctement', level: 'success'});
                 }
             });
             //history.go(0);

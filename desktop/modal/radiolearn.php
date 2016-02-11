@@ -25,7 +25,7 @@ if (!isConnect('admin')) {
 $_AID = init('arduid');
 $daemonRunning = arduidom::ping_arduino($_AID,false,true);
 if ($daemonRunning != 1) {
-    throw new Exception(__("Action Impossible : Le démon Arduidom " . $_AID . " ne fonctionne pas !", __FILE__));
+    throw new Exception(__("Action Impossible : L\'Arduino " . $_AID . " ne fonctionne pas !", __FILE__));
 }
 ?>
 

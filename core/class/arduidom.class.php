@@ -141,7 +141,7 @@ class arduidom extends eqLogic
 
         $oldlogfile = realpath(dirname(__FILE__)) . '/../../../../log/arduidom_daemon';
         log::add('arduidom', 'info', "Delete old log file " . $oldlogfile . " => " . unlink($oldlogfile));
-        config::save('db_version', 108, 'arduidom'); // Inscrit la version de migration dans la config
+        config::save('db_version', 123, 'arduidom'); // Inscrit la version de migration dans la config
         log::add('arduidom', 'info', "Migration des données pour v1.08 Terminée.");
         self::deamon_start();
         return 1;
@@ -238,7 +238,7 @@ class arduidom extends eqLogic
 
         $ressource_path = realpath(dirname(__FILE__) . '/../../ressources');
 
-        if (config::byKey("ArduinoRequiredVersion","arduidom","",true) != 108) $return['state'] = 'nok' ;
+        if (config::byKey("ArduinoRequiredVersion","arduidom","",true) != 123) $return['state'] = 'nok' ;
 
         // FICHIERS NECESSAIRES
         if (!file_exists("/usr/bin/arduino")) $return['state'] = 'nok';
@@ -278,7 +278,7 @@ class arduidom extends eqLogic
     public static function dependancy_install()
     {
         log::add('arduidom','debug','Installation des dependances....');
-        config::save("ArduinoRequiredVersion","108","arduidom");
+        config::save("ArduinoRequiredVersion","123","arduidom");
         log::remove('arduidom_update');
         chmod(dirname(__FILE__) . '/../../ressources/install.sh',0775);
         $cmd = 'sudo ' . dirname(__FILE__) . '/../../ressources/install.sh';
@@ -506,13 +506,14 @@ class arduidom extends eqLogic
         chmod($ressource_path . '/config_arduidom.xml', 0777);
 
         //// Verifie si le python est necessaire... (inutile si aucun arduino USB)
-        $usb_arduinos = 0;
+        //$usb_arduinos = 0;
         //if ($_debug) log::add('arduidom','DEBUG','strpos1:' . strpos(config::byKey('A1_port', 'arduidom', '', 1), "/dev"));
         //if ($_debug) log::add('arduidom','DEBUG','strpos2:' . strpos(config::byKey('A2_port', 'arduidom', '', 1), "/dev"));
-        for ($a = 1; $a <= 8; $a++) {
-            if (strpos(config::byKey('A' . $a . '_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
-        }
-        if ($usb_arduinos > 0) {
+        //for ($a = 1; $a <= 8; $a++) {
+        //    if (strpos(config::byKey('A' . $a . '_port', 'arduidom', '', true), "dev/") != false) $usb_arduinos += 1;
+        //}
+        //if ($usb_arduinos > 0) {
+        if (true) {
             $cmd = 'nohup nice -n 19 /usr/bin/python ' . $ressource_path . '/arduidomx.py';
             if ($_debug) $cmd .= ' -lDEBUG';
             unlink($ressource_path . '/arduidomx.kill');
@@ -644,6 +645,7 @@ class arduidom extends eqLogic
     //sleep(2);
     $CP = "CPzz";
     $modelPinMap = config::byKey('A' . $_AID . '_model', 'arduidom', 'none');
+    log::add('arduidom', 'debug', 'arduino ' . $_AID . ' have model ' . $modelPinMap);
     $ARDUPINMAP = '';
     if ($modelPinMap == "uno" || $modelPinMap == "duemilanove328" || $modelPinMap == "leo" || $modelPinMap == "nano168" || $modelPinMap == "nano328") $ARDUPINMAP = $ARDUPINMAP_A;
     if ($modelPinMap == "mega1280" || $modelPinMap == "mega2560") $ARDUPINMAP = $ARDUPINMAP_B;
@@ -781,8 +783,13 @@ class arduidom extends eqLogic
     $tcpcheck = arduidom::sendtoArduino($tcpmsg, $arduid);
     if ($tcpcheck != $tcpmsg . "_OK") {
     //if ($tcpcheck != "SP_OK") {
-        log::add('arduidom','error', "Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ")");
-        if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ")", __FILE__),));
+        if ($tcpcheck == $tcpmsg . "_BAD") {
+            log::add('arduidom', 'error', "Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ") Vérifiez votre configutation des pins !");
+            if (substr(jeedom::version(), 0, 1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ") Vérifiez votre configutation des pins !", __FILE__),));
+        } else {
+            log::add('arduidom', 'error', "Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ")");
+            if (substr(jeedom::version(), 0, 1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ")", __FILE__),));
+        }
     }
     $elapsed_time = getmicrotime(true) - $func_start_time;
     $elapsed_time = $elapsed_time * 1000;
@@ -820,27 +827,35 @@ class arduidom extends eqLogic
 
 
                 if (!$fp) {
-                    log::add('arduidom', 'error', "Le démon " . $_AID . " n'est pas connecté ! (errstr:)" . $errstr);
-                    if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
+                    if ($_AID == 0) {
+                        log::add('arduidom', 'error', "Le démon " . $_AID . " n'est pas connecté ! (errstr:" . $errstr . ")");
+                        if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
+                    } else {
+                        log::add('arduidom', 'error', "L'Arduino " . $_AID . " n'est pas connecté ! (errstr:" . $errstr . ")");
+                        if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
+                    }
                     return $errstr;
 
                 } else {
 
                     stream_set_timeout($fp, 10);
-                    if ($General_Debug) log::add('arduidom', 'debug', "Le démon " . $_AID . " est connecté, envoi...");
-
+                    if ($_AID == 0) {
+                        if ($General_Debug) log::add('arduidom', 'debug', "Le démon " . $_AID . " est connecté, envoi...");
+                    } else {
+                        if ($General_Debug) log::add('arduidom', 'debug', "L'Arduino " . $_AID . " est connecté, envoi...");
+                    }
                     if ($port == "Network") $_tcpmsg = $_tcpmsg . "\n"; // ajout d'une fin de ligne pour shield ethernet
                     fwrite($fp, $_tcpmsg);
                     $start_time = time();
                     $resp = "";
 
                     if ($port == "Network") {
-                        if ($General_Debug) log::add('arduidom', 'debug', "Attente de la réponse arduino " . $_AID . " ...");
+                        if ($General_Debug) log::add('arduidom', 'debug', "Attente de la réponse de l'arduino " . $_AID . " ...");
                         while (!feof($fp)) {
                             $resp = $resp . fgets($fp);
                             if ((time() - $start_time) > 10) { // Time out de 10 secondes pour le check du démon
-                                log::add('arduidom', 'error', 'Erreur: TIMEOUT sur attente de réponse arduino ' . $_AID);
-                                if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __('Erreur: TIMEOUT sur attente de réponse arduino ' . $_AID, __FILE__),));
+                                log::add('arduidom', 'error', "Erreur: TIMEOUT sur attente de réponse de l'arduino " . $_AID);
+                                if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur: TIMEOUT sur attente de réponse de l'arduino " . $_AID, __FILE__),));
                                 if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
                                 return "TIMEOUT";
                             }
@@ -849,8 +864,8 @@ class arduidom extends eqLogic
                         $resp = str_replace("\n", '', $resp);
                         if ($General_Debug) log::add('arduidom', 'debug', 'Réponse TCP recue = ' . $resp);
                         if ((time() - $start_time) > 10) { // Time out de 10 secondes pour le check du démon
-                            log::add('arduidom', 'error', 'Erreur: TIMEOUT sur Réponse du démon ' . $_AID);
-                            if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __('Erreur: TIMEOUT sur Réponse du démon ' . $_AID, __FILE__),));
+                            log::add('arduidom', 'error', "Erreur: TIMEOUT sur Réponse de l'arduino " . $_AID);
+                            if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur: TIMEOUT sur Réponse de l'arduino " . $_AID, __FILE__),));
                             if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
                             return "TIMEOUT";
                         }
@@ -863,7 +878,7 @@ class arduidom extends eqLogic
                             if ($General_Debug) log::add('arduidom', 'debug', '$_tcpmsg=' . $_tcpmsg);
 
                             if ((time() - $start_time) > 10) { // Time out de 10 secondes pour le check du démon
-                                log::add('arduidom', 'error', 'Erreur: TIMEOUT sur Réponse du démon ' . $_AID);
+                                log::add('arduidom', 'error', "Erreur: TIMEOUT sur Réponse du démon " . $_AID);
                                 if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
                                 return "TIMEOUT";
                             }
