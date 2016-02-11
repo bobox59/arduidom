@@ -738,6 +738,8 @@ class arduidom extends eqLogic
 {
     $General_Debug = config::byKey('generalDebug','arduidom',0, true);
     $DaemonReady = self::get_daemon_mode();
+    if ($General_Debug) log::add('arduidom', 'debug', 'setPinValue(' . $_logicalId . ',' . $_value . ') called');
+    $func_start_time = getmicrotime(true);
     if ($DaemonReady != "OK" && $DaemonReady != "STARTED") {
         if ($General_Debug) log::add("arduidom","debug","le démon n'est pas pret");
         return "DAEMON_NOT_OK";
@@ -782,6 +784,10 @@ class arduidom extends eqLogic
         log::add('arduidom','error', "Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ")");
         if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ")", __FILE__),));
     }
+    $elapsed_time = getmicrotime(true) - $func_start_time;
+    $elapsed_time = $elapsed_time * 1000;
+    $elapsed_time = number_format($elapsed_time, 1, '.', '') . " ms";
+    if ($General_Debug) log::add('arduidom', 'debug', 'setPinValue(' . $_logicalId . ',' . $_value . ') takes ' . $elapsed_time);
     return $tcpcheck;
 }
 
@@ -832,7 +838,7 @@ class arduidom extends eqLogic
                         if ($General_Debug) log::add('arduidom', 'debug', "Attente de la réponse arduino " . $_AID . " ...");
                         while (!feof($fp)) {
                             $resp = $resp . fgets($fp);
-                            if ((time() - $start_time) > 5) { // Time out de 5 secondes pour le check du démon
+                            if ((time() - $start_time) > 10) { // Time out de 10 secondes pour le check du démon
                                 log::add('arduidom', 'error', 'Erreur: TIMEOUT sur attente de réponse arduino ' . $_AID);
                                 if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __('Erreur: TIMEOUT sur attente de réponse arduino ' . $_AID, __FILE__),));
                                 if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
@@ -842,7 +848,7 @@ class arduidom extends eqLogic
                         $resp = str_replace("\r", '', $resp);
                         $resp = str_replace("\n", '', $resp);
                         if ($General_Debug) log::add('arduidom', 'debug', 'Réponse TCP recue = ' . $resp);
-                        if ((time() - $start_time) > 5) { // Time out de 5 secondes pour le check du démon
+                        if ((time() - $start_time) > 10) { // Time out de 10 secondes pour le check du démon
                             log::add('arduidom', 'error', 'Erreur: TIMEOUT sur Réponse du démon ' . $_AID);
                             if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __('Erreur: TIMEOUT sur Réponse du démon ' . $_AID, __FILE__),));
                             if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
@@ -856,7 +862,7 @@ class arduidom extends eqLogic
                             $_tcpmsg = str_replace("\n", '', $_tcpmsg);
                             if ($General_Debug) log::add('arduidom', 'debug', '$_tcpmsg=' . $_tcpmsg);
 
-                            if ((time() - $start_time) > 5) { // Time out de 5 secondes pour le check du démon
+                            if ((time() - $start_time) > 10) { // Time out de 10 secondes pour le check du démon
                                 log::add('arduidom', 'error', 'Erreur: TIMEOUT sur Réponse du démon ' . $_AID);
                                 if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
                                 return "TIMEOUT";
@@ -998,7 +1004,7 @@ class arduidom extends eqLogic
     $cmd .= ' >> ' . log::getPathToLog("arduidom") . ' 2>&1';
     log::add('arduidom', 'info', 'Execution du téléversement: ' . $cmd);
     $result = exec($cmd);
-    sleep(1);
+    sleep(2);
     log::add('arduidom', 'info', '# Fin du téléversement (' . $result . ')');
     self::set_daemon_mode("KILLED");
     if( strpos(file_get_contents($logfile),"bytes of flash written") !== false) {
