@@ -106,7 +106,7 @@ function getArduidomCodeLearn(_autoUpdate) {
                     console.log(data.result[1]);
                     if ($.trim(data.result[1].replace(regex, "\n")) == '[END SUCCESS]') {
                         //printUpdate();
-                        $('#div_alert').showAlert({message: '{{L\'opération est réussie}}', level: 'success'});
+                        $('#div_alert').showAlert({message: '{{L\'apprentissage radio a réussi}}', level: 'success'});
                         console.log('End Success ');
                         _autoUpdate = 0;
                     }
@@ -294,6 +294,12 @@ function handlePin(tr) {
         tr.find('.cmdAttr[data-l1key=subType]').value('binary');
         tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
     }
+    if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'inx') {
+        console.log("data Mode is : inx");
+        tr.find('.cmdAttr[data-l1key=type]').value('info');
+        tr.find('.cmdAttr[data-l1key=subType]').value('binary');
+        tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
+    }
     if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'inup') {
         console.log("data Mode is : inup");
         tr.find('.cmdAttr[data-l1key=type]').value('info');
@@ -402,6 +408,54 @@ function handlePin(tr) {
     }
     if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'dht4') {
         console.log("data Mode is : dht4");
+        tr.find('.cmdAttr[data-l1key=type]').value('info');
+        //tr.find('.cmdAttr[data-l1key=subType]').value('numeric');
+        tr.find('.cmdAttr[data-l1key=subType]').prop('disabled', false);
+        tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
+        tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
+        tr.find('.cmdAttr[data-l1key=unite]').show();
+        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=minValue]').show();
+        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=maxValue]').show();
+
+    }
+    if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'dht5') {
+        console.log("data Mode is : dht5");
+        tr.find('.cmdAttr[data-l1key=type]').value('info');
+        //tr.find('.cmdAttr[data-l1key=subType]').value('numeric');
+        tr.find('.cmdAttr[data-l1key=subType]').prop('disabled', false);
+        tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
+        tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
+        tr.find('.cmdAttr[data-l1key=unite]').show();
+        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=minValue]').show();
+        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=maxValue]').show();
+
+    }
+    if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'dht6') {
+        console.log("data Mode is : dht6");
+        tr.find('.cmdAttr[data-l1key=type]').value('info');
+        //tr.find('.cmdAttr[data-l1key=subType]').value('numeric');
+        tr.find('.cmdAttr[data-l1key=subType]').prop('disabled', false);
+        tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
+        tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
+        tr.find('.cmdAttr[data-l1key=unite]').show();
+        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=minValue]').show();
+        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=maxValue]').show();
+
+    }
+    if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'dht7') {
+        console.log("data Mode is : dht7");
+        tr.find('.cmdAttr[data-l1key=type]').value('info');
+        //tr.find('.cmdAttr[data-l1key=subType]').value('numeric');
+        tr.find('.cmdAttr[data-l1key=subType]').prop('disabled', false);
+        tr.find('.cmdAttr[data-l1key=isHistorized]').closest('span').show();
+        tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
+        tr.find('.cmdAttr[data-l1key=unite]').show();
+        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=minValue]').show();
+        tr.find('.cmdAttr[data-l1key=configuration][data-l2key=maxValue]').show();
+
+    }
+    if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'dht8') {
+        console.log("data Mode is : dht8");
         tr.find('.cmdAttr[data-l1key=type]').value('info');
         //tr.find('.cmdAttr[data-l1key=subType]').value('numeric');
         tr.find('.cmdAttr[data-l1key=subType]').prop('disabled', false);

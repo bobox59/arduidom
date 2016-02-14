@@ -33,7 +33,7 @@ from_arduino_5 = Queue()
 from_arduino_6 = Queue()
 from_arduino_7 = Queue()
 from_arduino_8 = Queue()
-
+trigger_nice = ""
 
 class cmdarg_data:
     def __init__(
@@ -57,6 +57,7 @@ class cmdarg_data:
 
 
 class from_jeedom:
+    global trigger_nice
     def __init__(self, command, confirm):
         self.request = command
         self._answer = ""
@@ -100,8 +101,8 @@ class Jeedom:
         # if mode == "php":
         self._Separateur = " "
         self.prefix = "nice -n 19 /usr/bin/php "
-        self.prefix += "/usr/share/nginx/www/jeedom/plugins/arduidom/core/php/jeeArduidom.php "
-        self.prefix += 'api=' + apikey
+        self.prefix += trigger_nice
+        self.prefix += ' api=' + apikey
         # TODO Else tcp
 
     def send(self, cmds):
@@ -260,9 +261,9 @@ def parse_adrduino_answer(options, line, arduID):
             cmd = ['arduid=' + str(arduID)]
             cmdlog = "PHP(DHT)->"
             for pinnumber in range(0, len(dhtvalue)):
-                if dhtvalue[pinnumber].find("nan") == -1:
+                if (dhtvalue[pinnumber].find("nan") == -1) and (dhtvalue[pinnumber].find("na") == -1):
                     cmd.append(str(pinnumber + 501) + "=" + dhtvalue[pinnumber].replace("DHT:", ""))
-                    cmdlog += str(arduID) + ":" + str(pinnumber + 501) + "=" + dhtvalue[pinnumber].replace("DHT:", "")
+                    cmdlog += str(arduID) + ":" + str(pinnumber + 501) + "=" + dhtvalue[pinnumber].replace("DHT:", "") + " "
             logger.debug(cmdlog)
             options.jeedom.send(cmd)
 
@@ -276,6 +277,7 @@ def parse_adrduino_answer(options, line, arduID):
             cmdlog += str(arduID) + ":" + str(pinnumber) + "=" + psplit2[0]
             logger.debug(cmdlog)
             options.jeedom.send(cmd)
+
         else:
             logger.info("Arduino " + str(arduID) + " (UNKNOWN ANSWER) >> [" + line + "]")
 
@@ -306,12 +308,17 @@ def COMServer(options, threadName, arduID):
     SerialPort.flushInput()
     logger.debug("En attente de l'arduino " + str(arduID) + " (HELLO)")
     line = ""
+    checktimer = 0
     while not re.search("^HELLO", line):
         time.sleep(1)
+        checktimer += 1
         line = SerialPort.readline()
         line = line.replace('\n', '')
         line = line.replace('\r', '')
         logger.debug("Arduino " + str(arduID) + " >> [" + line + "]")
+        if checktimer > 15:
+            logger.error("TIMEOUT d'attente du HELLO de l'arduino " + str(arduID))
+            quit()
     SerialPort.flush()
     SerialPort.flushInput()
     logger.debug("Arduino " + str(arduID) + " est pret.")
@@ -404,6 +411,7 @@ def COMServer(options, threadName, arduID):
     logger.error("Thread END")
 
 def read_configFile( options, configFile):
+    global trigger_nice
     if os.path.exists( configFile ):
 
         # ----------------------
@@ -411,8 +419,6 @@ def read_configFile( options, configFile):
         options.ArduinoVersion = read_config( configFile, "ArduinoVersion")
         options.ArduinoQty = int(read_config( configFile, "ArduinoQty"))
         logger.debug("ArduinoQty: " + str(options.ArduinoQty))
-        #options.serial_device = read_config( configFile, "serial_device")
-        #logger.debug("Serial device: " + str(options.serial_device))
 
         # ----------------------
         # SOCKET SERVER
@@ -423,28 +429,28 @@ def read_configFile( options, configFile):
 
         # ----------------------
         # SERIALS
-        if options.ArduinoQty == 1:
+        if options.ArduinoQty >= 1:
             options.A1_port = read_config( configFile, "A1_serial_port")
             logger.debug("Arduino 1 Port: " + str(options.A1_port))
-        if options.ArduinoQty == 2:
+        if options.ArduinoQty >= 2:
             options.A2_port = read_config( configFile, "A2_serial_port")
             logger.debug("Arduino 2 Port: " + str(options.A2_port))
-        if options.ArduinoQty == 3:
+        if options.ArduinoQty >= 3:
             options.A3_port = read_config( configFile, "A3_serial_port")
             logger.debug("Arduino 3 Port: " + str(options.A3_port))
-        if options.ArduinoQty == 4:
+        if options.ArduinoQty >= 4:
             options.A4_port = read_config( configFile, "A4_serial_port")
             logger.debug("Arduino 4 Port: " + str(options.A4_port))
-        if options.ArduinoQty == 5:
+        if options.ArduinoQty >= 5:
             options.A5_port = read_config( configFile, "A5_serial_port")
             logger.debug("Arduino 5 Port: " + str(options.A5_port))
-        if options.ArduinoQty == 6:
+        if options.ArduinoQty >= 6:
             options.A6_port = read_config( configFile, "A6_serial_port")
             logger.debug("Arduino 6 Port: " + str(options.A6_port))
-        if options.ArduinoQty == 7:
+        if options.ArduinoQty >= 7:
             options.A7_port = read_config( configFile, "A7_serial_port")
             logger.debug("Arduino 7 Port: " + str(options.A7_port))
-        if options.ArduinoQty == 8:
+        if options.ArduinoQty >= 8:
             options.A8_port = read_config( configFile, "A8_serial_port")
             logger.debug("Arduino 8 Port: " + str(options.A8_port))
 
@@ -454,10 +460,12 @@ def read_configFile( options, configFile):
         logger.debug("Daemon_pidfile: " + str(options.daemon_pidfile))
 
         # TRIGGER
+        trigger_nice = read_config( configFile, "trigger_nice")
+        options.trigger_nice = read_config( configFile, "trigger_nice")
+        logger.debug("trigger_nice: " + str(options.trigger_nice))
         options.trigger_url = read_config( configFile, "trigger_url")
-        options.apikey = read_config( configFile, "apikey")
-        options.trigger_timeout = read_config( configFile, "trigger_timeout")
         logger.debug("trigger_url: " + str(options.trigger_url))
+        options.apikey = read_config( configFile, "apikey")
         logger.debug("apikey: " + str(options.apikey))
 
     else:
@@ -646,8 +654,12 @@ def main(argv=None):
         ping_request = from_jeedom("PING", "^PING_OK")
         if nb2 == 1:
             if options.A1_port != 'Network':
+                comm_check = 0
                 while options.A1_hello != 1:
                     time.sleep(0.1)
+                    comm_check += 0.1
+                    if comm_check > 150:
+                        quit()
                 to_arduino_1.put(ping_request)
                 while not ping_request.finished():
                     time.sleep(0.1)
@@ -663,8 +675,12 @@ def main(argv=None):
             options.A1_ready = True
         if nb2 == 2:
             if options.A2_port != 'Network':
+                comm_check = 0
                 while options.A2_hello != 1:
                     time.sleep(0.1)
+                    comm_check += 0.1
+                    if comm_check > 150:
+                        quit()
                 to_arduino_2.put(ping_request)
                 while not ping_request.finished():
                     time.sleep(0.1)
@@ -680,8 +696,12 @@ def main(argv=None):
             options.A2_ready = True
         if nb2 == 3:
             if options.A3_port != 'Network':
+                comm_check = 0
                 while options.A3_hello != 1:
                     time.sleep(0.1)
+                    comm_check += 0.1
+                    if comm_check > 150:
+                        quit()
                 to_arduino_3.put(ping_request)
                 while not ping_request.finished():
                     time.sleep(0.1)
@@ -697,8 +717,12 @@ def main(argv=None):
             options.A3_ready = True
         if nb2 == 4:
             if options.A4_port != 'Network':
+                comm_check = 0
                 while options.A4_hello != 1:
                     time.sleep(0.1)
+                    comm_check += 0.1
+                    if comm_check > 150:
+                        quit()
                 to_arduino_4.put(ping_request)
                 while not ping_request.finished():
                     time.sleep(0.1)
@@ -714,8 +738,12 @@ def main(argv=None):
             options.A4_ready = True
         if nb2 == 5:
             if options.A5_port != 'Network':
+                comm_check = 0
                 while options.A5_hello != 1:
                     time.sleep(0.1)
+                    comm_check += 0.1
+                    if comm_check > 150:
+                        quit()
                 to_arduino_5.put(ping_request)
                 while not ping_request.finished():
                     time.sleep(0.1)
@@ -731,8 +759,12 @@ def main(argv=None):
             options.A5_ready = True
         if nb2 == 6:
             if options.A6_port != 'Network':
+                comm_check = 0
                 while options.A6_hello != 1:
                     time.sleep(0.1)
+                    comm_check += 0.1
+                    if comm_check > 150:
+                        quit()
                 to_arduino_6.put(ping_request)
                 while not ping_request.finished():
                     time.sleep(0.1)
@@ -748,8 +780,12 @@ def main(argv=None):
             options.A6_ready = True
         if nb2 == 7:
             if options.A7_port != 'Network':
+                comm_check = 0
                 while options.A7_hello != 1:
                     time.sleep(0.1)
+                    comm_check += 0.1
+                    if comm_check > 150:
+                        quit()
                 to_arduino_7.put(ping_request)
                 while not ping_request.finished():
                     time.sleep(0.1)
@@ -765,8 +801,12 @@ def main(argv=None):
             options.A7_ready = True
         if nb2 == 8:
             if options.A8_port != 'Network':
+                comm_check = 0
                 while options.A8_hello != 1:
                     time.sleep(0.1)
+                    comm_check += 0.1
+                    if comm_check > 150:
+                        quit()
                 to_arduino_8.put(ping_request)
                 while not ping_request.finished():
                     time.sleep(0.1)

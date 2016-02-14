@@ -1,16 +1,13 @@
-Comme préciser dans les Prérequis il vous faut, pour cette partie, être équipé de Arduino IDE 1.5.7 minimum et d’avoir ajouté la librairie DTH à votre IDE. Un lien de téléchargement est disponible depuis la page Général/Plugins/Arduidom pour récupérer le sketch Arduidom. Ce dernier est composé de trois fichiers à bien conserver ensamble dans le même dossier.
+Comme précisé dans les Prérequis il vous faut, pour cette partie, être équipé de Arduino IDE 1.6.7 minimum. Un lien de téléchargement est disponible depuis la page Général/Plugins/Arduidom pour récupérer le sketch Arduidom. Ce dernier est composé de fichiers à bien conserver ensembles dans le même dossier.
 
 image::../images/Arduidom_Wiki_5.png[]
 
 === Utilisation des sondes DHT ===
-Pour utiliser les sondes DHT il vous faut activer leur utilisation en définissant tout simplement quel PIN est connecté sur le Data de la(les) sonde(s).
-
-Exemple d’un sonde sur PIN 4 :
- define CNF_DHT_1_PIN 4 //pin pour la Premiere Sonde DHT (0 si aucune)
-Puis côté Jeedom créez un équippement composé de deux Infos sur les PIN « T » et « H » du DHT1 :
-
-image::../images/Arduidom_Wiki_5-1.png[]
+Depuis la V2, l'utilisation des DHT se parametre directement depuis la configuration des Pins.
 
 === Utilisation de codes perso ===
 Pour expliquer cette partie rien de mieux qu’un exemple concret et très bien détaillé sur un tuto de rhcpdu13 du forum Jeedom :
 [https://forum.jeedom.fr/viewtopic.php?f=28&t=3985 Arduidom v102 + LCD shield + thermostat]
+
+Note: depuis la V2, l'ensemble des codes persos sont transferés dans le BAS du Sketch sous forme de fonctions
+Ceci a pour but de faciliter les mises a jour de sketchs.

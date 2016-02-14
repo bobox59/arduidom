@@ -22,10 +22,8 @@ if (!isConnect('admin')) {
 //if (config::byKey('enableLogging', 'arduidom', 0) == 0) {
 //    echo '<div class="alert alert-danger">{{Vous n\'avez pas activé l\'enregistrement de tous les messages : allez dans Générale -> Plugin puis rfxcom et coché la case correspondante}}</div>';
 //}
-$_AID = init('arduid');
-$daemonRunning = arduidom::ping_arduino($_AID,false,true);
-if ($daemonRunning != 1) {
-    throw new Exception(__("Action Impossible : L\'Arduino " . $_AID . " ne fonctionne pas !", __FILE__));
+if (arduidom::get_daemon_mode() != "OK") {
+    throw new Exception(__("Action Impossible : Le démon ne fonctionne pas !", __FILE__));
 }
 ?>
 

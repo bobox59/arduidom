@@ -55,7 +55,7 @@ if (!isConnect('admin')) {
                 url: 'core/ajax/log.ajax.php',
                 data: {
                     action: 'get',
-                    logfile: 'arduidom_daemon_<?php echo $i ?>'
+                    logfile: 'arduidom_daemon'
                 },
                 dataType: 'json',
                 global: false,

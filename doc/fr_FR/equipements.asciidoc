@@ -1,11 +1,66 @@
+Détails des types de SORTIE:
+- Sortie Digitale
+Mettre en valeur 0 ou 1 pour définir l'etat de la pin
+- Sortie Digitale pulse up (par défaut à 0V, pulse à 5V)
+Mettre en valeur 0 pour la couper, et 1 - 9999 pour définir le temps en millisecondes pendant lequel la pin sera à 1 avant de revenir à 0
+- Sortie Digitale pulse down (par défaut à 5V, pulse à 0V)
+Mettre en valeur 0 pour que la pin soit à 1, et 1 - 9999 pour définir le temps en millisecondes pendant lequel la pin sera à 0 avant de revenir à 1
+- Sortie Digitale inversée
+Mettre en valeur 0 pour inverser l'etat de la pin, sinon 1 - 9999 pour définir le temps en millisecondes pendant lequel la pin sera inversée avant de revenir à son état initial.
+- Sortie Digitale à clignottement
+Mettre en valeur 0 pour eteindre la sortie, sinon 1 - 9999 pour définir le temps entre chaque changement d'etat
+- Sortie PWM
+Mettre en valeur 0 pour eteindre la sortie, sinon 1 - 1024 pour définir le niveau de la sortie en PulseWithModulation (Variation de Leds par ex.)
+
+Détails des types d' ENTREE:
+- Entrée Digitale
+Reporte l'etat d'une pin en entrée dans la valeur (0V => 0 / 5V => 1)
+- Entrée Digitale Inversée
+Reporte l'etat d'une pin en entrée qui sera inversée directement dans la valeur (0V => 1 / 5V => 0)
+- Entrée Digitale avec pull-up
+Reporte l'etat d'une pin en entrée dans la valeur (0V => 0 / 5V => 1) avec utilisation du pull-up (résistance vers 5V) interne a l'arduino
+Utile pour par ex. un bouton poussoir qui commute une pin vers la masse
+
+Emmeteur Radio:
+Pin sur laquelle est connecté un Emmeteur Radio 433 MHz
+Valeurs types acceptées par cette pin:
+T001100000000 (Protocole TRISTATE)
+H111111110111 (Protocole HOMEEASY-CHACON)
+E000FF1F00010 (Protocole EURODOMEST)
+
+Recepteur Radio:
+Pin sur laquelle est connecté un Recepteur Radio 433 MHz
+Valeurs types acceptées par cette pin:
+RFD:4275542:A:1:P:1 (Codes récupérables dans le log Radio)
+
+Sondes DHT:
+Pin sur laquelle est connecté une sonde de type DHT11 / DHT22
+
+
+Cas pratique d'utilisation d'une sortie avec un retour d'etat:
+
+Sur le plugin Arduidom, on crée un objet, puis on lui crée trois commandes (OFF, ON, ETAT)
+Dans les trois commandes, on configure la pin désirée (préalablement configurée en sortie Digitale)
+Les commandes OFF et ON, devront etre mise en type Action et sous-type Défaut
+La commande INFO devra etre configurée en Type INFO et sous-type Binaire, et ne rien avoir dans la case Valeur
+
 Cas pratique d'utilisation d'une prise radio:
+
 Sur le plugin Arduidom, on crée un objet, puis on lui crée deux commandes (OFF et ON)
 on leur attribue la pin qui sers a l'envoi Radio (Emetteur 433MHz)
-On reprend le code T011100001000 recu dans le log arduidom, qu'on colle dans la partie Données de la commande ON
-On reprend le code T011100000000 recu dans le log arduidom, qu'on colle dans la partie Données de la commande OFF
+On reprend le code T011100001000 correspondant a l'allumage de la prise, recu dans le log arduidom ou dans l'apprentissage radio, qu'on colle dans la partie Données de la commande ON
+On reprend le code T011100000000 correspondant a l'extinction de la prise, recu dans le log arduidom ou dans l'apprentissage radio, qu'on colle dans la partie Données de la commande OFF
 Voila, cliquer sur les Test, normalement la prise va s'allumer ou s'eteindre.
-Pour l'utilisation des entrées, je passe beaucoup par des virtuels (plugin)
-J'y ai prealablement créé une commande nommée Recepteur Radio dans mon plugin avec la pin Recepteur Radio 433MHz.
-Je retourne dans le virtuel, et j'y crée une commande info, avec ceci comme valeur:
- [Detecteurs][Recepteur Radio][RadioRX]#=RFD:4128768:A:1:P:1
-Ca aura pour effet de lire cette entrée uniquement a reception du code radio correspondant. (utile pour utiliser des detecteurs infrarouge/contacts).
+Depuis la V2, pour l'utilisation des entrées (Detecteurs, télécommandes, etc...) vous pouvez utiliser le log radio, reperer le code
+
+Cas pratique d'utilisation d'une télécommande ou détecteur radio:
+Exemple de contenu du fichier arduidom.message visible par le Log Radio:
+2016-02-14 08:28:12 2002 - Valeurs: pour eq en INFO: [ RFD:4128960:A:1:P:1 ] - pour eq en ACTION: [ T011100001000 ] (protocol:TRISTATE)
+2016-02-14 08:59:07 2002 - Valeurs: pour eq en INFO: [ RFD:4128768:A:1:P:1 ] - pour eq en ACTION: [ T011100000000 ] (protocol:TRISTATE)
+
+Pour l'utilisation des entrées, il vous suffit désormais de creer un equipement Arduidom
+Creer une pin, lui attribuer la "pin Arduino(s) - Réceptions Radios", la mettre en type INFO et sous-type BINAIRE
+Enfin dans la valeur, coller le code INFO, par ex: RFD:4128768:A:1:P:1
+
+à chaque activation de l'equipement radio en question (bouton de télécommande, détecteur, etc...)
+la valeur de l'equipement passera a 1 pendant quelques secondes puis repassera a 0

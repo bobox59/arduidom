@@ -13,6 +13,7 @@
     <A8_serial_port>#A8_serial_port#</A8_serial_port>
     <!-- Trigger -->
     <trigger_url>#trigger_url#</trigger_url>
+    <trigger_nice>#trigger_nice#</trigger_nice>
     <apikey>#apikey#</apikey>
     <!-- Daemon -->
     <daemon_pidfile>#pid_path#</daemon_pidfile>

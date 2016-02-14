@@ -23,9 +23,9 @@ if (!isConnect()) {
 }
 
 $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
-
+$Sketch = "Arduidom_unified_v" . (config::byKey("ArduinoRequiredVersion","arduidom",0,true) - 100);
 ?>
-<input class="form-control col-md-12" style="background-color: #FFE3AF" value="Cette version de plugin NECESSITE le Sketch Arduidom_unified_v<?php echo (config::byKey("ArduinoRequiredVersion","arduidom","",true) - 100);?> sur vos Arduinos pour pouvoir fonctionner." disabled/>
+<input class="form-control col-md-12" style="background-color: #FFE3AF" value="Cette version de plugin NECESSITE le Sketch <?php echo $Sketch;?> sur vos Arduinos pour pouvoir fonctionner." disabled/>
 <br />&nbsp;
 <div class="row">
     <label class="col-xs-2 control-label">Nombre d'arduino(s) utilisés</label>
@@ -114,16 +114,18 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                             <input class="configKey form-control" data-l1key="A<?php echo $i ?>_daemonip" />
                         </div>
                     </div>
+                    <!--
                     <div class="form-group">
                         <label class="col-lg-3 control-label">Test de liaison</label>
                         <div class="col-lg-4">
                             <a class="btn btn-success" id="bt_CheckArduidomDeamon<?php echo $i ?>"><i class='fa fa-check-square-o'></i>{{ Vérifier la liaison avec le N°<?php echo $i ?>}}</a>&nbsp;
                         </div>
                     </div>
+                    -->
                     <div class="form-group">
                         <label class="col-lg-3 control-label">Téléversement</label>
                         <div class="col-lg-4">
-                            <a class="btn btn-danger" id="bt_FlashArduino<?php echo $i ?>"><i class="fa fa-arrow-circle-right"></i>{{ Téléverser le Sketch Arduidom_unified_v<?php echo (config::byKey("ArduinoRequiredVersion","arduidom","",true) - 100);?> sur l arduino n°<?php echo $i ?>}}</a>&nbsp;
+                            <a class="btn btn-danger" id="bt_FlashArduino<?php echo $i ?>"><i class="fa fa-arrow-circle-right"></i>{{ Téléverser le Sketch <?php echo $Sketch;?> sur l arduino n°<?php echo $i ?>}}</a>&nbsp;
                         </div>
                     </div>
                     <!-- <a class="btn btn-primary" id="bt_CompileArduino<?php echo $i ?>"><i class="fa fa-check-circle"></i>{{ Compiler le Sketch (en test...)}}</a>&nbsp; -->
@@ -137,18 +139,33 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
 <form class="form-horizontal">
     <fieldset>
         <div class="form-group">
-            <div class="col-lg-10">
-                &nbsp;
-                <a href="plugins/arduidom/ressources/Archive.zip" class="btn btn-info" id="bt_Download"><i class='fa fa-download'></i> Télécharger les Sketchs pour USB & Shield Ethernet (Arduidom_unified_v<?php echo (config::byKey("ArduinoRequiredVersion","arduidom","",true) - 100);?>)</a>&nbsp;&nbsp;&nbsp;
-                <a class="btn btn-danger" id="bt_MigrateArduidom"><i class='fa fa-exclamation-triangle'></i> FORCER la Migration des données</a>
-                <?php if (substr(jeedom::version(),0,1) == 1) {
-                    echo '<hr><a class="btn btn-danger" id="bt_RestartArduidomDeamon"><i class="fa fa-arrow-circle-right"></i>{{ (Re)Démarrer le démon (bouton temporaire pour retro-compatibilité v2 sur jeedom v1.2)}}</a>&nbsp;';
-                    echo '<hr><a class="btn btn-warning" id="bt_Prerequis"><i class="fa fa-arrow-circle-right"></i>{{ (Re)installer les dépendances (bouton temporaire pour retro-compatibilité v2 sur jeedom v1.2)}}</a>&nbsp;';
-                    echo '<hr>Le log du démon python se trouve dans /tmp/arduidom_daemon';
-                } ?>
+            <label class="col-lg-3 control-label">Test de liaison</label>
+            <div class="col-lg-4">
+                <a class="btn btn-success" id="bt_CheckArduidomDeamon"><i class='fa fa-check-square-o'></i>{{ Vérifier la liaison avec le(s) Arduino(s)}}</a>&nbsp;
             </div>
         </div>
-
+        <div class="form-group">
+            <label class="col-lg-3 control-label">Sketch</label>
+            <div class="col-lg-4">
+                <a href="plugins/arduidom/ressources/<?php echo $Sketch; ?>.zip" class="btn btn-info" id="bt_Download"><i class='fa fa-download'></i> Télécharger les Sketchs pour USB & Shield Ethernet (<?php echo $Sketch;?>)</a>&nbsp;&nbsp;&nbsp;
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-lg-3 control-label">Migration</label>
+            <div class="col-lg-4">
+                <a class="btn btn-danger" id="bt_MigrateArduidom"><i class='fa fa-exclamation-triangle'></i> FORCER la Migration des données</a>
+            </div>
+        </div>
+        <?php if (substr(jeedom::version(),0,1) == 1) {
+            echo'<div class="form-group">';
+            echo'    <label class="col-lg-3 control-label">Controles (Jeedom < 2.0)</label>';
+            echo'    <div class="col-lg-4">';
+            echo '<hr><a class="btn btn-danger" id="bt_RestartArduidomDeamon"><i class="fa fa-arrow-circle-right"></i>{{ (Re)Démarrer le démon (bouton temporaire pour retro-compatibilité v2 sur jeedom v1.2)}}</a>&nbsp;';
+            echo '<hr><a class="btn btn-warning" id="bt_Prerequis"><i class="fa fa-arrow-circle-right"></i>{{ (Re)installer les dépendances (bouton temporaire pour retro-compatibilité v2 sur jeedom v1.2)}}</a>&nbsp;';
+            echo '<hr>Le log du démon python se trouve dans /tmp/arduidom_daemon';
+            echo'    </div>';
+            echo'</div>';
+        } ?>
     </fieldset>
 </form>
 
@@ -172,6 +189,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                     return;
                 }
                 $('#div_alert').showAlert({message: 'Le démon a été correctement redémarré', level: 'success'});
+                $('#ul_plugin .li_plugin[data-plugin_id=arduidom]').click();
             }
         });
         //history.go(0);
@@ -214,6 +232,29 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                     return;
                 }
                 $('#div_alert').showAlert({message: 'Le démon a été correctement stoppé', level: 'success'});
+                $('#ul_plugin .li_plugin[data-plugin_id=arduidom]').click();
+            }
+        });
+        //history.go(0);
+    });
+
+    $('#bt_CheckArduidomDeamon').on('click', function () {
+        $.ajax({// fonction permettant de faire de l'ajax
+            type: "POST", // methode de transmission des données au fichier php
+            url: "plugins/arduidom/core/ajax/arduidom.ajax.php", // url du fichier php
+            data: {
+                action: "checkDaemon"
+            },
+            dataType: 'json',
+            error: function (request, status, error) {
+                handleAjaxError(request, status, error);
+            },
+            success: function (data) { // si l'appel a bien fonctionné
+                if (data.state != 'ok') {
+                    $('#div_alert').showAlert({message: data.result, level: 'danger'});
+                    return;
+                }
+                $('#ul_plugin .li_plugin[data-plugin_id=arduidom]').click();
             }
         });
         //history.go(0);
@@ -223,8 +264,6 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
 
 <?php for ($i=1; $i <= $ArduinoQty; $i++) { ?>
     <script>
-
-
 
         $('#bt_CheckArduidomDeamon<?php echo $i ?>').on('click', function () {
             $.ajax({// fonction permettant de faire de l'ajax
@@ -243,6 +282,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                         return;
                     }
                     $('#div_alert').showAlert({message: 'L\'Arduino <?php echo $i ?> fonctionne correctement', level: 'success'});
+                    $('#ul_plugin .li_plugin[data-plugin_id=arduidom]').click();
                 }
             });
             //history.go(0);
@@ -275,6 +315,7 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
                                 search : $('#in_compileLogSearch<?php echo $i ?>'),
                                 control : $('#bt_compileLogStopStart<?php echo $i ?>')
                             });
+                            $('#ul_plugin .li_plugin[data-plugin_id=arduidom]').click();
                         }
                     });
                 }
@@ -286,25 +327,6 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
             });
         });
 
-
-        $('#bt_compileLogStopStart').on('click',function(){
-            if($(this).attr('data-state') == 1){
-                $(this).attr('data-state',0);
-                $(this).removeClass('btn-warning').addClass('btn-success');
-                $(this).html('<i class="fa fa-play"></i> {{Reprise}}');
-
-            }else{
-                $(this).removeClass('btn-success').addClass('btn-warning');
-                $(this).html('<i class="fa fa-pause"></i> {{Pause}}');
-                $(this).attr('data-state',1);
-                jeedom.log.autoupdate({
-                    log : 'arduidom_log<?php echo $i ?>',
-                    display : $('#pre_compilelog<?php echo $i ?>'),
-                    search : $('#in_compileLogSearch<?php echo $i ?>'),
-                    control : $('#bt_compileLogStopStart<?php echo $i ?>')
-                });
-            }
-        });
 
         $('#bt_CompileArduino<?php echo $i ?>').on('click', function () {
             $.ajax({
@@ -332,13 +354,28 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
             });
         });
 
-
-
-
-
-    </script>
+</script>
 <?php } ?>  <!-- FIN DU For PHP -->
 <script>
+    $('#bt_compileLogStopStart').on('click',function(){
+        if($(this).attr('data-state') == 1){
+            $(this).attr('data-state',0);
+            $(this).removeClass('btn-warning').addClass('btn-success');
+            $(this).html('<i class="fa fa-play"></i> {{Reprise}}');
+
+        }else{
+            $(this).removeClass('btn-success').addClass('btn-warning');
+            $(this).html('<i class="fa fa-pause"></i> {{Pause}}');
+            $(this).attr('data-state',1);
+            jeedom.log.autoupdate({
+                log : 'arduidom_log<?php echo $i ?>',
+                display : $('#pre_compilelog<?php echo $i ?>'),
+                search : $('#in_compileLogSearch<?php echo $i ?>'),
+                control : $('#bt_compileLogStopStart<?php echo $i ?>')
+            });
+        }
+    });
+
     $('#bt_MigrateArduidom').on('click', function () {
         bootbox.confirm('{{<center>Attention !</center><br><br>Etape extremement IMPORTANTE et DELICATE<br> Vous pouvez forcer une migration des données <br>apres avoir mis a jour en 1.xx <br>car il y a eu de tres gros changements depuis !<br> mais NORMALEMENT la migration se fait automatiquement<br> a la mise a jour du plugin.}}', function (result) {
             if (result) {
@@ -365,19 +402,15 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
         //history.go(0);
     });
 
-</script>
-
-<script>
-        $('#Arduinoqty').change(function() {
+    $('#Arduinoqty').change(function() {
         if (jsinitok) {
             console.log("Qty Changed ! Saving...");
             document.getElementById("bt_savePluginConfig").click();
             //location.reload();
+            $('#ul_plugin .li_plugin[data-plugin_id=arduidom]').click();
         }
-        });
-</script>
+    });
 
-<script>
     //$(document).ready(function(){
     setTimeout(function() {
         jsinitok = true;

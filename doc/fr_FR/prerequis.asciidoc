@@ -1,16 +1,8 @@
 
 - Confirmer que votre clef API est bien renseignée dans "Général/Administration/Configuration/Configuration général". Vous ne pourrez pas démarrer le deamon sans cette clef avec l'erreur suivante dans le log :
  arduidom.py: error: -a option requires an argument
-- Installer "avrdude" sur votre Jeedom pour profiter du flash par la page web. Depuis le Terminal ou SSH :
+- Sur un jeedom antérieur à la version 2.0 il faut installer "avrdude" sur votre Jeedom pour profiter du flash par la page web. Depuis le Terminal ou SSH :
  sudo apt-get install avrdude
 
-- Déterminer le port de votre Arduino depuis le Terminal ou SSH en listant les ports série reconnus par le système avant et après avoir connecté l’Arduino :
-
-1. Sans connecter l'arduino taper cette commande :
- ls /dev/tty*
-2. Connectez-le puis retapez la commande pour comparer les résultats, vous verrez un nouveau port dans la liste ;)
- ls /dev/tty*
-
-- Si vous flashez une version personnalisée du sketch il est important d’utiliser l'IDE Arduino 1.5.7 minimum et de lui fournir la librairieDHT. (ex : utilisation des sondes DHT, code perso, PIN virtuelles, modification des deltas et délais… )
- https://dl.dropboxusercontent.com/u/27241306/DHT.zip[LibrairieDHT]
- http://arduino.cc/en/Main/Software[IDE Arduino 1.5.8]
+- Si vous flashez une version personnalisée du sketch il est important d’utiliser l'IDE Arduino 1.6.7 minimum. les librairies nécessaires sont inclues dans le sketch. (ex : code perso, PIN virtuelles, modification des deltas et délais… )
+ http://arduino.cc/en/Main/Software[IDE Arduino]

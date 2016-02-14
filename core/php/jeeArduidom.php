@@ -160,7 +160,8 @@ foreach ($_GET as $key => $value){ // DECODAGE RADIO DE LA TABLE $_GET => AFFICH
         $code_radio = $value;
         log::add('arduidom','debug', $rid . 'Code radio recu :: ' . $code_radio . " @ " . (microtime(true) - $starttime));
         $valueList = explode(':', $value);
-        if ($valueList[5] == "1") { // P:1 => TRISTATE
+        switch($valueList[5]) { // PROTOCOLE
+        case "1":  // P:1 => TRISTATE
             $decodedvalue = intval ($valueList[1]);
             $decodedtris = str_pad(decbin($decodedvalue), 24, "0", STR_PAD_LEFT);
             $chunk = chunk_split($decodedtris, 2, "/");
@@ -172,10 +173,10 @@ foreach ($_GET as $key => $value){ // DECODAGE RADIO DE LA TABLE $_GET => AFFICH
                 if ($splitsvalue == "01") { $decodedtris .= "F"; };
             }
             $decodedtris = str_pad($decodedtris, 12, '0', STR_PAD_LEFT);;
-            file_put_contents($ardulogfile, date("Y-m-d H:i:s") . " => " . $key . " => " . $value . " (TRISTATE : T" . $decodedtris . ")\r\n",FILE_APPEND);
-        }
+            file_put_contents($ardulogfile, date("Y-m-d H:i:s") . " " . $key . " - Valeurs: pour eq en INFO: [ " . $value . " ] - pour eq en ACTION: [ T" . $decodedtris . " ] (protocol:TRISTATE)\r\n",FILE_APPEND);
+            break;
 
-        if ($valueList[5] == "4") { // P:4 => HOMEEASY  H:11111111GVDD = 11111111(id) G(group) V(value) DD(code device)
+        case "4":  // P:4 => HOMEEASY  H:11111111GVDD = 11111111(id) G(group) V(value) DD(code device)
             $decodedsender = intval ($valueList[1]);
             $decodedvalue = 0;
             $values = intval ($valueList[3]);
@@ -190,12 +191,18 @@ foreach ($_GET as $key => $value){ // DECODAGE RADIO DE LA TABLE $_GET => AFFICH
             $decodedvalue += $values;
 
             $decodedhe = str_pad($decodedsender, 8, "0", STR_PAD_LEFT) . str_pad($decodedvalue, 4, "0", STR_PAD_LEFT);
-            file_put_contents($ardulogfile, date("Y-m-d H:i:s") . " => " . $key . " => " . $value . " (HomeEasy : H" . $decodedhe . ")\r\n",FILE_APPEND);
-        }
+            file_put_contents($ardulogfile, date("Y-m-d H:i:s") . " " . $key . " - Valeurs: pour eq en INFO: [ " . $value . " ] - pour eq en ACTION: [ H" . $decodedhe . " ] (protocol:CHACON/HOMEEASY)\r\n",FILE_APPEND);
+            //file_put_contents($ardulogfile, date("Y-m-d H:i:s") . " => " . $key . " => " . $value . " (HomeEasy : H" . $decodedhe . ")\r\n",FILE_APPEND);
+            break;
 
-        if ($valueList[5] == "9") { // P:9 => BOBOX DIY RADIO)
-            file_put_contents($ardulogfile, date("Y-m-d H:i:s") . " => " . $key . " => " . $value . " (Bobox : B" . $valueList[3] . ")\r\n",FILE_APPEND);
-        }
+        case "9": // P:9 => BOBOX DIY RADIO)
+            file_put_contents($ardulogfile, date("Y-m-d H:i:s") . " " . $key . " - Valeurs: pour eq en INFO: [ " . $value . " ] (protocol:BOBOX)\r\n",FILE_APPEND);
+            break;
+
+        default:
+            file_put_contents($ardulogfile, date("Y-m-d H:i:s") . " " . $key . " - Valeurs: pour eq en INFO: [ " . $value . " ] (protocol:INCONNU)\r\n",FILE_APPEND);
+            break;
+        }// end of switch
     }
 
 

@@ -22,10 +22,9 @@ if (!isConnect('admin')) {
 //if (config::byKey('enableLogging', 'arduidom', 0) == 0) {
 //    echo '<div class="alert alert-danger">{{Vous n\'avez pas activé l\'enregistrement de tous les messages : allez dans Générale -> Plugin puis rfxcom et coché la case correspondante}}</div>';
 //}
-$_AID = init('arduid');
-$daemonRunning = arduidom::ping_arduino($_AID,false,true);
-if ($daemonRunning != 1) {
-    if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Action Impossible : L\'Arduino " . $_AID . " ne fonctionne pas !", __FILE__)));
+
+if (arduidom::get_daemon_mode() != "OK") {
+    if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Action Impossible : Le démon ne fonctionne pas !", __FILE__)));
 }
 ?>
 
@@ -47,6 +46,7 @@ if ($daemonRunning != 1) {
             dataType: 'json',
             global: false,
             error: function(request, status, error) {
+                console.log("ERR");
                 setTimeout(function() {
                     getJeedomLog(_autoUpdate, _log)
                 }, 3000);
@@ -56,11 +56,16 @@ if ($daemonRunning != 1) {
                     $('#div_alert').showAlert({message: data.result, level: 'danger'});
                     return;
                 }
+                //console.log("data.result1:\n");
+                //console.log(data.result[1]);
                 var log = '';
                 var regex = /<br\s*[\/]?>/gi;
                 for (var i in data.result.reverse()) {
-                    log += data.result[i][2].replace(regex, "\n");
+                    log += data.result[i];
+                    log += "\n";
                 }
+                //console.log("log:\n");
+                //console.log(log);
                 $('#pre_ardulog').text(log);
                 $('#pre_ardulog').scrollTop($('#pre_ardulog').height() + 200000);
                 if (!$('#pre_ardulog').is(':visible')) {

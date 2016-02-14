@@ -141,7 +141,7 @@ class arduidom extends eqLogic
 
         $oldlogfile = realpath(dirname(__FILE__)) . '/../../../../log/arduidom_daemon';
         log::add('arduidom', 'info', "Delete old log file " . $oldlogfile . " => " . unlink($oldlogfile));
-        config::save('db_version', 123, 'arduidom'); // Inscrit la version de migration dans la config
+        config::save('db_version', 124, 'arduidom'); // Inscrit la version de migration dans la config
         log::add('arduidom', 'info', "Migration des données pour v1.08 Terminée.");
         self::deamon_start();
         return 1;
@@ -238,7 +238,7 @@ class arduidom extends eqLogic
 
         $ressource_path = realpath(dirname(__FILE__) . '/../../ressources');
 
-        if (config::byKey("ArduinoRequiredVersion","arduidom","",true) != 123) $return['state'] = 'nok' ;
+        if (config::byKey("ArduinoRequiredVersion","arduidom","",true) != 124) $return['state'] = 'nok' ;
 
         // FICHIERS NECESSAIRES
         if (!file_exists("/usr/bin/arduino")) $return['state'] = 'nok';
@@ -278,7 +278,7 @@ class arduidom extends eqLogic
     public static function dependancy_install()
     {
         log::add('arduidom','debug','Installation des dependances....');
-        config::save("ArduinoRequiredVersion","123","arduidom");
+        config::save("ArduinoRequiredVersion","124","arduidom");
         log::remove('arduidom_update');
         chmod(dirname(__FILE__) . '/../../ressources/install.sh',0775);
         $cmd = 'sudo ' . dirname(__FILE__) . '/../../ressources/install.sh';
@@ -478,26 +478,23 @@ class arduidom extends eqLogic
         $replace_config = array(
             '#ArduinoVersion#' => config::byKey("ArduinoRequiredVersion", "arduidom", ""),
             '#ArduinoQty#' => config::byKey("arduinoqty","arduidom",0),
-            '#A1_serial_port#' => config::byKey('A1_port', 'arduidom', ''),
-            '#A2_serial_port#' => config::byKey('A2_port', 'arduidom', ''),
-            '#A3_serial_port#' => config::byKey('A3_port', 'arduidom', ''),
-            '#A4_serial_port#' => config::byKey('A4_port', 'arduidom', ''),
-            '#A5_serial_port#' => config::byKey('A5_port', 'arduidom', ''),
-            '#A6_serial_port#' => config::byKey('A6_port', 'arduidom', ''),
-            '#A7_serial_port#' => config::byKey('A7_port', 'arduidom', ''),
-            '#A8_serial_port#' => config::byKey('A8_port', 'arduidom', ''),
             '#log_path#' => log::getPathToLog('arduidom'),
             '#pid_path#' => $ressource_path . '/arduidomx.pid',
         );
+        for ($i = 1; $i <= 8; $i++) {
+            $replace_config['#A' . $i . '_serial_port#'] = config::byKey('A' . $i . '_port', 'arduidom', '');
+        }
         if (config::byKey('jeeNetwork::mode') == 'slave') {
             $replace_config['#sockethost#'] = network::getNetworkAccess('internal', 'ip', '127.0.0.1');
             $replace_config['#socketport#'] = 58300;
             $replace_config['#trigger_url#'] = config::byKey('jeeNetwork::master::ip') . '/plugins/arduidom/core/php/jeeArduidom.php';
+            $replace_config['#trigger_nice#'] = str_replace ( 'class' , 'php' , realpath(dirname(__FILE__))) . '/jeeArduidom.php';
             $replace_config['#apikey#'] = config::byKey('jeeNetwork::master::apikey');
         } else {
             $replace_config['#sockethost#'] = '0.0.0.0'; //'127.0.0.1';
             $replace_config['#socketport#'] = 58200;
             $replace_config['#trigger_url#'] = network::getNetworkAccess('internal', 'proto:127.0.0.1:port:comp') . '/plugins/arduidom/core/php/jeeArduidom.php';
+            $replace_config['#trigger_nice#'] = str_replace ( 'class' , 'php' , realpath(dirname(__FILE__))) . '/jeeArduidom.php';
             $replace_config['#apikey#'] = config::byKey('api');
         }
         $config = file_get_contents($ressource_path . '/config_template.xml');
@@ -543,8 +540,8 @@ class arduidom extends eqLogic
             }
             if (config::byKey('daemonstarted', 'arduidom', 0, true) == 2) {
                 self::set_daemon_mode("ERROR"); // daemonstarted = Etat du démon : 0=non demarré - 1=démon OK - 2=erreur version
-                log::add('arduidom', 'error', " Un ou plusieurs Arduino n'ont pas la version du sketch requise !...");
-                if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Un ou plusieurs Arduino n'ont pas la version du sketch requise !", __FILE__),));
+                log::add('arduidom', 'error', " Un ou plusieurs Arduino n\'ont pas la version du sketch requise ! Veuillez téléverser le sketch fourni avec le plugin.");
+                if (substr(jeedom::version(),0,1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Un ou plusieurs Arduino n\'ont pas la version du sketch requise ! Veuillez téléverser le sketch fourni avec le plugin.", __FILE__),));
                 return false;
             }
         } else {
@@ -658,6 +655,7 @@ class arduidom extends eqLogic
             if ($config == '') $CP = $CP . "z";
             if ($config == 'disable') $CP = $CP . "z";
             if ($config == 'in') $CP = $CP . "i";
+            if ($config == 'inx') $CP = $CP . "j";
             if ($config == 'inup') $CP = $CP . "y";
             if ($config == 'out') $CP = $CP . "o";
             if ($config == 'rin') $CP = $CP . "r";

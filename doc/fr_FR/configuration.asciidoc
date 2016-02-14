@@ -3,13 +3,15 @@ Après l'installation du plugin vous devez l'activer et préparer l'arduino depu
 === Configuration Générale ===
 1. Activez le plugin.
 
-2. Sélectionnez le model d'Arduino. ATENTION A NE PAS VOUS TROMPER ICI !!
+2. Sélectionnez le nombre d'arduinos a utiliser.
 
-3. Sélectionnez le port repéré dans les prérequis.
+3. Sélectionnez le modèle d'Arduino. ATENTION A NE PAS VOUS TROMPER ICI !!
 
-4. Sauvegardez.
+4. Sélectionnez le port.
 
-5. Téléversez le sketch. (Sauf si vous l’avez déjà fait manuellement)
+5. Sauvegardez.
+
+6. Téléversez le sketch. (Sauf si vous l’avez déjà fait manuellement)
 
 image::../images/Arduidom_Wiki_3-1.png[]
 
@@ -19,9 +21,21 @@ Rendez-vous sur la page Plugins/Protocol Domotique/Arduidom et sélectionnez « 
 
 '''''Désactivée ''  '''               Vous n’avez rien connecté ou vous l’utilisez sur du code perso dans le sketch.
 
-'''''Entrée Digitale    '''''        Pour remonter l’état 1/0 en entrée de la PIN (bouton, radar IR…).
+'''''Entrée Digitale    '''''        Pour remonter l’état 0/1 en entrée de la PIN (bouton, radar IR…).
 
-'''''Sortie Digitale  '''''           Pour piloter la sortie à l’état 1/0 de la PIN (Relais, LED…).
+'''''Entrée Digitale Inversée   '''''        Pour remonter l’état 1/0 en entrée de la PIN (bouton, radar IR…) inversée par le sketch.
+
+'''''Entrée Digitale avec pull-up   '''''    Pour remonter l’état 1/0 en entrée de la PIN avec un pull-up intégré a l'arduino (bouton, radar IR…) inversée par le sketch.
+
+'''''Sortie Digitale  '''''           Pour piloter la sortie à l’état 1/0 de la PIN (Relais, LED…). Également possible sur une PIN Analogique.
+
+'''''Sortie Digitale Pulse UP '''''           Pour piloter la sortie par une impulsion positive réglable de 1 à 9999 ms de la PIN (Télérupteur, Télécommande…).
+
+'''''Sortie Digitale Pulse Down '''''           Pour piloter la sortie par une impulsion négative réglable de 1 à 9999 ms de la PIN (Télérupteur, Télécommande…).
+
+'''''Sortie Digitale à Inversion '''''           Pour inverser l'etat de la PIN pendant un délai réglable de 1 à 9999 ms (LED bi-colore, etc…).
+
+'''''Sortie Digitale à clignotement '''''        Pour faire clignotter une PIN à une fréquence réglable de 1 à 9999 ms (LED, etc…).
 
 '''''Entrée Analogique'''''       Pour remonter l’état 0/1024 lu par l’entrée analogique (photorésistance, thermistance, capteur analogique…)
 
@@ -31,9 +45,11 @@ Rendez-vous sur la page Plugins/Protocol Domotique/Arduidom et sélectionnez « 
 
 '''''Emetteur Radio '''''               Pour connecter la PIN Data de votre émetteur 433mhz.
 
+'''''Sonde DHT n°1 à 8 '''''       Pour y connecter une sonde low-cost DHT11/DHT22 et récuperer l'humidité & la température de la sonde
+
 '''''Entrée Virtuelle  '''''         Pour remonter une valeur « float » (ex : -12.55) depuis la partie perso de votre sketch.
 
 '''''Sortie Virtuelle '''''           Pour envoyer une valeur « float » (ex : -12.55) disponible dans Jeedom à la partie perso de votre sketch.
 
-'''''Réservé DHT  '''''            Non configurable depuis Jeedom il vous indique le numéro de PIN à choisir dans votre équipement si vous utilisez les sondes DHT.
+'''''Réservé aux sondes DHT  '''''            Utilisé par le plugin Arduidom en interne.
 image::../images/Arduidom_Wiki_3-3.png[]

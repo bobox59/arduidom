@@ -45,6 +45,15 @@ try {
             ajax::error("Le démon n'a pas été stoppé !");
         }
     }
+
+    if (init('action') == 'checkDaemon') {
+        if (arduidom::deamon_info()['state'] == 'ok') {
+            ajax::success();
+        } else {
+            ajax::error("Le démon ne fonctionne pas !");
+        }
+    }
+
     for ($i=1; $i < 9; $i++) {
         if (init('action') == 'checkDaemon' . $i) {
             if (arduidom::ping_arduino($i,false) == 1) {
@@ -106,6 +115,7 @@ try {
                         //log::add("arduidom", "debug", '###### $i=' . $i . '   $k=' . $k);
                         //log::add("arduidom", "debug", '###### A' . $k . '_pin::' . $logicalId);
                         if ($config == 'in') { $conftxt = " => Entrée digitale";}
+                        if ($config == 'inx') { $conftxt = " => Entrée digitale Inversée";}
                         if ($config == 'inup') { $conftxt = " => Entrée digitale avec Pull-Up";}
                         if ($config == 'out') { $conftxt = " => Sortie digitale";}
                         if ($config == 'rin') { $conftxt = " => Recepteur 433MHz";}
@@ -161,8 +171,8 @@ try {
             $text = $text . "Appuyer sur la touche " . (3 - $RadioRepeats) . " fois avec une pause de 3 à 5 secondes entre chaque appui.\n";
             if ($RadioLastCode != '') $text = $text . "Code recu : " . $RadioLastCode . "\n";
         } else {
-            $text = $text . "Copiez ce code dans la valeur : " . $RadioLastCode . " OK \n";
-            $text = $text . "Vous pouvez fermer la fenetre. \n";
+            $text = $text . "Copiez ce code dans la valeur d'un equipement avec en pin Arduino (Receptions Radios) :  " . $RadioLastCode . " \n";
+            $text = $text . "Vous pouvez fermer cette fenetre. \n";
             $etat = "[END SUCCESS]\n";
             cache::set('arduidom_radio_index',0);
             cache::set('arduidom_radio_learn',0);
