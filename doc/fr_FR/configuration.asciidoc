@@ -3,7 +3,7 @@ Après l'installation du plugin vous devez l'activer et préparer l'arduino depu
 === Configuration Générale ===
 1. Activez le plugin.
 
-2. Sélectionnez le nombre d'arduinos a utiliser.
+2. Sélectionnez le nombre d'arduinos à utiliser.
 
 3. Sélectionnez le modèle d'Arduino. ATENTION A NE PAS VOUS TROMPER ICI !!
 
@@ -16,8 +16,8 @@ Après l'installation du plugin vous devez l'activer et préparer l'arduino depu
 image::../images/Arduidom_Wiki_3-1.png[]
 
 === Configuration des PIN ===
-La configuration des PIN est une partie très importante pour le fonctionnement du système. C’est ici que vous définissez quels PIN sert à quoi pour permettre au plugin de les configurer dans l’EEPROM de l’Arduino. Sans cette configuration l’Arduino n’activera aucuns de ses PIN et vous n’aurrez aucun choix possible dans les menu déroulant pendant la création d’un équipement.
-Rendez-vous sur la page Plugins/Protocol Domotique/Arduidom et sélectionnez « Configuration des PIN ». Un tableau vous propose de sélectionner le mode de fonctionnement de vos PIN, chaque PIN a ses particularités tous ne sont pas compatible avec toutes les fonctions ci-dessous :
+La configuration des PIN est une partie très importante pour le fonctionnement du système. C’est ici que vous définissez quels PIN sert à quoi pour permettre au plugin de les configurer dans l’EEPROM de l’Arduino. Sans cette configuration l’Arduino n’activera aucun de ses PIN et vous n’aurez aucun choix possible dans les menus déroulants pendant la création d’un équipement.
+Rendez-vous sur la page Plugins/Protocol Domotique/Arduidom et sélectionnez « Configuration des PIN ». Un tableau vous propose de sélectionner le mode de fonctionnement de vos PIN, chaque PIN a ses particularités. Tous ne sont pas compatibles avec toutes les fonctions ci-dessous :
 
 '''''Désactivée ''  '''               Vous n’avez rien connecté ou vous l’utilisez sur du code perso dans le sketch.
 
@@ -45,7 +45,7 @@ Rendez-vous sur la page Plugins/Protocol Domotique/Arduidom et sélectionnez « 
 
 '''''Emetteur Radio '''''               Pour connecter la PIN Data de votre émetteur 433mhz.
 
-'''''Sonde DHT n°1 à 8 '''''       Pour y connecter une sonde low-cost DHT11/DHT22 et récuperer l'humidité & la température de la sonde
+'''''Sonde DHT n°1 à 8 '''''       Pour y connecter une sonde low-cost DHT11/DHT22 et récupérer l'humidité & la température de la sonde
 
 '''''Entrée Virtuelle  '''''         Pour remonter une valeur « float » (ex : -12.55) depuis la partie perso de votre sketch.
 
