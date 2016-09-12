@@ -1,13 +1,13 @@
-Comme précisé dans les Prérequis il vous faut, pour cette partie, être équipé de Arduino IDE 1.6.7 minimum. Un lien de téléchargement est disponible depuis la page Général/Plugins/Arduidom pour récupérer le sketch Arduidom. Ce dernier est composé de fichiers à bien conserver ensembles dans le même dossier.
+Comme précisé dans les Prérequis il vous faut, pour cette partie, être équipé de Arduino IDE 1.6.7 minimum. Un lien de téléchargement est disponible depuis la page Général/Plugins/Arduidom pour récupérer le sketch Arduidom. Ce dernier est composé de fichiers à bien conserver ensemble dans le même dossier.
 
 image::../images/Arduidom_Wiki_5.png[]
 
 === Utilisation des sondes DHT ===
-Depuis la V2, l'utilisation des DHT se parametre directement depuis la configuration des Pins.
+Depuis la V2, l'utilisation des DHT se paramètre directement depuis la configuration des Pins.
 
 === Utilisation de codes perso ===
 Pour expliquer cette partie rien de mieux qu’un exemple concret et très bien détaillé sur un tuto de rhcpdu13 du forum Jeedom :
 [https://forum.jeedom.fr/viewtopic.php?f=28&t=3985 Arduidom v102 + LCD shield + thermostat]
 
 Note: depuis la V2, l'ensemble des codes persos sont transferés dans le BAS du Sketch sous forme de fonctions
-Ceci a pour but de faciliter les mises a jour de sketchs.
+Ceci a pour but de faciliter les mises à jour de sketchs.
