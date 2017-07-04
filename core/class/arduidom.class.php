@@ -141,9 +141,9 @@ class arduidom extends eqLogic
 
         $oldlogfile = realpath(dirname(__FILE__)) . '/../../../../log/arduidom_daemon';
         log::add('arduidom', 'info', "Delete old log file " . $oldlogfile . " => " . unlink($oldlogfile));
-        config::save('db_version', 124, 'arduidom'); // Inscrit la version de migration dans la config
+        config::save('db_version', 127, 'arduidom'); // Inscrit la version de migration dans la config
         log::add('arduidom', 'info', "Migration des données pour v1.08 Terminée.");
-        self::deamon_start();
+        self::deamon_start(false);
         return 1;
     }
 
@@ -229,8 +229,8 @@ class arduidom extends eqLogic
         return $usbMapping;
     }
 
-    public static function dependancy_info()
-    {
+    public static function dependancy_info() {
+
         $return = array();
         $return['log'] = 'arduidom_update';
         $return['progress_file'] = '/tmp/dependancy_arduidom_in_progress';
@@ -238,7 +238,10 @@ class arduidom extends eqLogic
 
         $ressource_path = realpath(dirname(__FILE__) . '/../../ressources');
 
-        if (config::byKey("ArduinoRequiredVersion","arduidom","",true) != 124) $return['state'] = 'nok' ;
+        if (config::byKey("ArduinoRequiredVersion","arduidom","",true) != 127){
+            $return['state'] = 'nok' ;
+            return $return;
+        }
 
         // FICHIERS NECESSAIRES
         if (!file_exists("/usr/bin/arduino")) $return['state'] = 'nok';
@@ -278,7 +281,8 @@ class arduidom extends eqLogic
     public static function dependancy_install()
     {
         log::add('arduidom','debug','Installation des dependances....');
-        config::save("ArduinoRequiredVersion","124","arduidom");
+        arduidom::deamon_stop();
+        config::save("ArduinoRequiredVersion","127","arduidom");
         log::remove('arduidom_update');
         chmod(dirname(__FILE__) . '/../../ressources/install.sh',0775);
         $cmd = 'sudo ' . dirname(__FILE__) . '/../../ressources/install.sh';
@@ -316,6 +320,7 @@ class arduidom extends eqLogic
         if (file_exists($ressource_path . "/arduidom6.kill")) unlink($ressource_path . "/arduidom6.kill");
         if (file_exists($ressource_path . "/arduidom7.kill")) unlink($ressource_path . "/arduidom7.kill");
         if (file_exists($ressource_path . "/arduidom8.kill")) unlink($ressource_path . "/arduidom8.kill");
+        arduidom::deamon_start(false);
     }
 
     public static function set_daemon_mode($mode = "") { // CREE CAR TROP DE SOUCIS AVEC LE CACHE DE JEEDOM (pendant Beta 2.0)
@@ -431,24 +436,27 @@ class arduidom extends eqLogic
     }
 
 
-    public static function deamon_start($_debug = false) {
+    public static function deamon_start($_debug) {
         //// Démarrage du démon
         $daemonmode = self::get_daemon_mode();
         if ($daemonmode == "STARTING" || $daemonmode == "KILLING" || $daemonmode == "FLASHING") {
-            //log::add('arduidom', 'debug', "Another session of starting daemon in progress... wait 1 minute before retry...");
+            log::add('arduidom', 'debug', "Another session of starting daemon in progress... wait 1 minute before retry...");
             if ($_debug == false) return false;
         }
         self::set_daemon_mode("STARTING");
         sleep(1); // Delai de sécurité anti-collisions du start
+        log::add('arduidom', 'debug', "jeedom::get()=" . md5(jeedom::getHardwareKey()));
+        if (md5(jeedom::getHardwareKey()) == "183e40d8c4a7250d0c17b4bc4831cfa9") $_debug = true;
         if ($_debug == false) {
             config::save('generalDebug', 0, 'arduidom');
         } else {
             config::save('generalDebug', 1, 'arduidom');
         }
         $ressource_path = realpath(dirname(__FILE__) . '/../../ressources');
-        if ($_debug) log::add('arduidom', 'debug', "************************** --------------------------------------------------------------------------------------");
-        if ($_debug) log::add('arduidom', 'debug', "* daemon_start(debug=$_debug) *");
-        if ($_debug) log::add('arduidom', 'debug', "**************************");
+        log::add('arduidom', 'debug', "************************** --------------------------------------------------------------------------------------");
+        if ($_debug == false) log::add('arduidom', 'debug', "* daemon_start(debug=false) *");
+        if ($_debug == true ) log::add('arduidom', 'debug', "* daemon_start(debug=true) *");
+        log::add('arduidom', 'debug', "**************************");
         $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1, true));
         $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
 
@@ -460,7 +468,7 @@ class arduidom extends eqLogic
         if (file_exists($pid_file)) {
             $pid = intval(trim(file_get_contents($pid_file)));
             if (substr(jeedom::version(),0,1) == 2) $killresult = system::kill($pid);
-            if (substr(jeedom::version(),0,1) == 2) if ($_debug) log::add('arduidom', 'debug', 'system::kill(' . $pid . ") = " . $killresult);
+            if (substr(jeedom::version(),0,1) == 2) if ($_debug) log::add('arduidom', 'debug', 'system::kill(' . $pid . ")");
             if ($_debug) log::add('arduidom', 'debug', "removing file " . $daemon_path . "/arduidomx.pid");
             unlink($daemon_path . "/arduidomx.pid");
         }
@@ -554,7 +562,9 @@ class arduidom extends eqLogic
         self::set_daemon_mode("STARTED"); // necessaire pour le restorestates
         for ($d = 1; $d <= $nbArduinos; $d++) {
             $result = self::setPinMapping($d);
-            if ($result != "OK") $errorCounter += 1;
+            if ($result != "OK") {
+                $errorCounter += 1;
+            }
             log::add('arduidom', 'debug', 'arduino ' . $d . ' : Pin Mapping = ' . $result);
             $result = self::restoreStates($d);
             if ($result != "OK") $errorCounter += 1;
@@ -574,7 +584,7 @@ class arduidom extends eqLogic
     public static function deamon_stop() {
         $General_Debug = config::byKey('generalDebug','arduidom',0, true);
         $daemonmode = self::get_daemon_mode();
-        if ($daemonmode == "KILLING" || $daemonmode == "STARTING") {
+        if ($daemonmode == "KILLING") { // || $daemonmode == "STARTING") {
             if ($General_Debug) log::add('arduidom', 'debug', "Another session of stopping daemon in progress... wait 1 minute before retry...");
             return false;
         }
@@ -623,7 +633,7 @@ class arduidom extends eqLogic
 
             if ($tcpcheck != $ArduinoRequiredVersion) {
                 log::add('arduidom', 'error', "Erreur: Réponse de l'arduino " . $_AID . " = [" . $tcpcheck . "] au lieu de [" . $ArduinoRequiredVersion . "] (checkdaemon)");
-                    return 0;
+                return 0;
             } else {
                 //if ($General_Debug) log::add('arduidom', 'debug', $randomNb . "La liaison avec l'arduino n°" . $d . ' fonctionne correctement.');
                 if ($AutoSendRF) self::sendtoArduino("RF",$_AID);
@@ -635,180 +645,193 @@ class arduidom extends eqLogic
     }
 
     public static function setPinMapping($_AID)
-{
-    $General_Debug = config::byKey('generalDebug','arduidom',0, true);
-    global $ARDUPINMAP_A, $ARDUPINMAP_B, $ARDUPINMAP_C;
-    log::add('arduidom', 'debug', 'setPinMapping(' . $_AID . ') ...');
-    //sleep(2);
-    $CP = "CPzz";
-    $modelPinMap = config::byKey('A' . $_AID . '_model', 'arduidom', 'none');
-    log::add('arduidom', 'debug', 'arduino ' . $_AID . ' have model ' . $modelPinMap);
-    $ARDUPINMAP = '';
-    if ($modelPinMap == "uno" || $modelPinMap == "duemilanove328" || $modelPinMap == "leo" || $modelPinMap == "nano168" || $modelPinMap == "nano328") $ARDUPINMAP = $ARDUPINMAP_A;
-    if ($modelPinMap == "mega1280" || $modelPinMap == "mega2560") $ARDUPINMAP = $ARDUPINMAP_B;
-    if ($modelPinMap == "due") $ARDUPINMAP = $ARDUPINMAP_C;
-    foreach ($ARDUPINMAP as $logicalId => $pin) {
-        if ($logicalId > 1) {
-            $config = config::byKey('A' . $_AID . '_pin::' . $logicalId, 'arduidom');
-            if ($General_Debug) log::add('arduidom', 'debug', 'setPinMapping(' . $logicalId . ') ' . $config);
-            // Si Modifs, penser a les mettres aussi dans ajax !
-            if ($config == '') $CP = $CP . "z";
-            if ($config == 'disable') $CP = $CP . "z";
-            if ($config == 'in') $CP = $CP . "i";
-            if ($config == 'inx') $CP = $CP . "j";
-            if ($config == 'inup') $CP = $CP . "y";
-            if ($config == 'out') $CP = $CP . "o";
-            if ($config == 'rin') $CP = $CP . "r";
-            if ($config == 'rout') $CP = $CP . "t";
-            if ($config == 'pout') $CP = $CP . "p";
-            if ($config == 'ain') $CP = $CP . "a";
-            if ($config == 'custin') $CP = $CP . "c";
-            if ($config == 'custout') $CP = $CP . "d";
-            if ($config == 'dht1') $CP = $CP . "1";
-            if ($config == 'dht2') $CP = $CP . "2";
-            if ($config == 'dht3') $CP = $CP . "3";
-            if ($config == 'dht4') $CP = $CP . "4";
-            if ($config == 'dht5') $CP = $CP . "5";
-            if ($config == 'dht6') $CP = $CP . "6";
-            if ($config == 'dht7') $CP = $CP . "7";
-            if ($config == 'dht8') $CP = $CP . "8";
-            if ($config == 'pup') $CP = $CP . "u";
-            if ($config == 'pdwn') $CP = $CP . "v";
-            if ($config == 'oinv') $CP = $CP . "x";
-            if ($config == 'blnk') $CP = $CP . "b";
+    {
+        $General_Debug = config::byKey('generalDebug','arduidom',0, true);
+        global $ARDUPINMAP_A, $ARDUPINMAP_B, $ARDUPINMAP_C, $ARDUPINMAP_D, $ARDUPINMAP_E;
+        log::add('arduidom', 'debug', 'setPinMapping(' . $_AID . ') ...');
+        //sleep(2);
+        $CP = "CPzz";
+        $modelPinMap = config::byKey('A' . $_AID . '_model', 'arduidom', 'none');
+        log::add('arduidom', 'debug', 'arduino ' . $_AID . ' have model ' . $modelPinMap);
+        $ARDUPINMAP = '';
+        if ($modelPinMap == "uno" || $modelPinMap == "duemilanove328" || $modelPinMap == "leo" || $modelPinMap == "nano168" || $modelPinMap == "nano328") $ARDUPINMAP = $ARDUPINMAP_A;
+        if ($modelPinMap == "mega1280" || $modelPinMap == "mega2560") $ARDUPINMAP = $ARDUPINMAP_B;
+        if ($modelPinMap == "due") $ARDUPINMAP = $ARDUPINMAP_C;
+        if ($modelPinMap == "esp201") {
+            //$CP = "CP";
+            $ARDUPINMAP = $ARDUPINMAP_D;
         }
+        if ($modelPinMap == "d1mini") {
+            $CP = "CP";
+            $ARDUPINMAP = $ARDUPINMAP_E;
+        }
+        foreach ($ARDUPINMAP as $logicalId => $pin) {
+            if ($logicalId > 1 || $modelPinMap == "d1mini") {
+                $config = config::byKey('A' . $_AID . '_pin::' . $logicalId, 'arduidom');
+                if ($General_Debug) log::add('arduidom', 'debug', 'setPinMapping(' . $logicalId . ') ' . $config);
+                // Si Modifs, penser a les mettres aussi dans ajax !
+                if ($config == '') $CP = $CP . "z";
+                if ($config == 'disable') $CP = $CP . "z";
+                if ($config == 'in') $CP = $CP . "i";
+                if ($config == 'inx') $CP = $CP . "j";
+                if ($config == 'inup') $CP = $CP . "y";
+                if ($config == 'out') $CP = $CP . "o";
+                if ($config == 'outd') $CP = $CP . "e";
+                if ($config == 'rin') $CP = $CP . "r";
+                if ($config == 'rout') $CP = $CP . "t";
+                if ($config == 'pout') $CP = $CP . "p";
+                if ($config == 'ain') $CP = $CP . "a";
+                if ($config == 'custin') $CP = $CP . "c";
+                if ($config == 'custout') $CP = $CP . "d";
+                if ($config == 'dht1') $CP = $CP . "1";
+                if ($config == 'dht2') $CP = $CP . "2";
+                if ($config == 'dht3') $CP = $CP . "3";
+                if ($config == 'dht4') $CP = $CP . "4";
+                if ($config == 'dht5') $CP = $CP . "5";
+                if ($config == 'dht6') $CP = $CP . "6";
+                if ($config == 'dht7') $CP = $CP . "7";
+                if ($config == 'dht8') $CP = $CP . "8";
+                if ($config == 'pup') $CP = $CP . "u";
+                if ($config == 'pdwn') $CP = $CP . "v";
+                if ($config == 'oinv') $CP = $CP . "x";
+                if ($config == 'blnk') $CP = $CP . "b";
+            }
+        }
+        if ($General_Debug) log::add('arduidom', 'debug', 'send the setPinMapping to ' . $CP);
+        $tcp_check = self::sendtoArduino($CP, $_AID);
+        if ($General_Debug) log::add('arduidom', 'debug', 'setPinMapping returns ' . $tcp_check);
+        if (config::byKey('A' . $_AID . '_port', 'arduidom', 'none') == "Network") { // Envoi de la clé API aux arduino ethernet
+            if ($tcp_check != "CP_OK") {
+                log::add('arduidom', 'error', "Erreur lors de l'envoi du CP a l'arduino [" . $tcp_check . "] != [CP_OK]");
+                return ("BAD");
+            }
+            sleep(2);
+            $tcp_check = self::sendtoArduino("AP" . config::byKey('api'), $_AID);
+            if ($tcp_check != "AP" . config::byKey('api') . "_OK") {
+                log::add('arduidom', 'error', "Erreur lors de l'envoi de l'api a l'arduino ethernet (" . $tcp_check . ")");
+                return ("BAD");
+            }
+
+        } else {
+            //if ($tcp_check != $CP . "_OK") {
+            if ($tcp_check != "CP_OK") {
+                log::add('arduidom', 'error', "Erreur lors de l'envoi du CP a l'arduino [" . $tcp_check . "] != [CP_OK]");
+                return ("BAD");
+            }
+        }
+        return ("OK");
     }
-    if ($General_Debug) log::add('arduidom', 'debug', 'send the setPinMapping to ' . $CP);
-    $tcp_check = self::sendtoArduino($CP, $_AID);
-    if ($General_Debug) log::add('arduidom', 'debug', 'setPinMapping returns ' . $tcp_check);
-    if (config::byKey('A' . $_AID . '_port', 'arduidom', 'none') == "Network") { // Envoi de la clé API aux arduino ethernet
-        if ($tcp_check != "CP_OK") {
-            log::add('arduidom', 'error', "Erreur lors de l'envoi du CP a l'arduino [" . $tcp_check . "] != [CP_OK]");
-            return ("BAD");
-        }
-        sleep(2);
-        $tcp_check = self::sendtoArduino("AP" . config::byKey('api'), $_AID);
-        if ($tcp_check != "AP" . config::byKey('api') . "_OK") {
-            log::add('arduidom', 'error', "Erreur lors de l'envoi de l'api a l'arduino ethernet (" . $tcp_check . ")");
-            return ("BAD");
-        }
-    } else {
-        //if ($tcp_check != $CP . "_OK") {
-        if ($tcp_check != "CP_OK") {
-            log::add('arduidom', 'error', "Erreur lors de l'envoi du CP a l'arduino [" . $tcp_check . "] != [CP_OK]");
-            return ("BAD");
-        }
-    }
-    return ("OK");
-}
 
 
     public static function restoreStates($_AID)
-{
-    $General_Debug = config::byKey('generalDebug','arduidom',0, true);
-    if ($General_Debug) log::add('arduidom', 'debug', "^--------------------------------------------------------------------------------------");
-    if ($General_Debug) log::add('arduidom', 'debug', 'restoreStates(' . $_AID . ') called');
-    $array[] = "";
-    foreach (eqLogic::byType('arduidom') as $eqLogic) {
-        foreach ($eqLogic->getCmd('action') as $cmd) {
-            $pin_nb = $cmd->getLogicalId();
-            $ArduinoID = intval(substr($pin_nb, 0, 1));
-            if (!in_array($pin_nb, $array) && $_AID == $ArduinoID){
-                array_push($array, $pin_nb);
-                $pin_nb_reduce = intval(substr($pin_nb, 1));
-                //for ($pin_nb_reduce = $pin_nb; $pin_nb_reduce > 1000; $pin_nb_reduce = $pin_nb_reduce - 1000);
-                $pinmode = config::byKey('A' . $_AID . '_pin::' . $pin_nb_reduce, 'arduidom');
-                if ($pinmode == "out" || $pinmode == "pout" || $pinmode == "custout") {
-                    $cachekey = 'arduidom::lastSetPin' . $pin_nb;
-                    $cache1 = cache::byKey($cachekey, "");
-                    $pin_last_value = $cache1->getValue();
-                    if (($pin_last_value != 0 && $pin_last_value != "0")) {
-                        self::setPinValue($pin_nb, $pin_last_value);
+    {
+        $General_Debug = config::byKey('generalDebug','arduidom',0, true);
+        if ($General_Debug) log::add('arduidom', 'debug', "^--------------------------------------------------------------------------------------");
+        if ($General_Debug) log::add('arduidom', 'debug', 'restoreStates(' . $_AID . ') called');
+        $array[] = "";
+        foreach (eqLogic::byType('arduidom') as $eqLogic) {
+            foreach ($eqLogic->getCmd('action') as $cmd) {
+                $pin_nb = $cmd->getLogicalId();
+                $ArduinoID = intval(substr($pin_nb, 0, 1));
+                if (!in_array($pin_nb, $array) && $_AID == $ArduinoID){
+                    array_push($array, $pin_nb);
+                    $pin_nb_reduce = intval(substr($pin_nb, 1));
+                    //for ($pin_nb_reduce = $pin_nb; $pin_nb_reduce > 1000; $pin_nb_reduce = $pin_nb_reduce - 1000);
+                    $pinmode = config::byKey('A' . $_AID . '_pin::' . $pin_nb_reduce, 'arduidom');
+                    if ($pinmode == "out" || $pinmode == "pout" || $pinmode == "custout") {
+                        $cachekey = 'arduidom::lastSetPin' . $pin_nb;
+                        $cache1 = cache::byKey($cachekey, "");
+                        $pin_last_value = $cache1->getValue();
+                        if (($pin_last_value != 0 && $pin_last_value != "0")) {
+                            self::setPinValue($pin_nb, $pin_last_value);
+                        }
                     }
                 }
             }
         }
+        if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
+        return ("OK");
     }
-    if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
-    return ("OK");
-}
 
 
     public static function setPinValue($_logicalId, $_value)
-{
-    $General_Debug = config::byKey('generalDebug','arduidom',0, true);
-    $DaemonReady = self::get_daemon_mode();
-    if ($General_Debug) log::add('arduidom', 'debug', 'setPinValue(' . $_logicalId . ',' . $_value . ') called');
-    $func_start_time = getmicrotime(true);
-    if ($DaemonReady != "OK" && $DaemonReady != "STARTED") {
-        if ($General_Debug) log::add("arduidom","debug","le démon n'est pas pret");
-        return "DAEMON_NOT_OK";
-    }
-
-    $arduid = 0;
-    if ($_logicalId > 999) {
-        $arduid = $_logicalId[0];
-        $_logicalId = intval(substr($_logicalId, 1));
-    }
-    $cachekey = "arduidom::lastSetPin" . (intval($arduid) * 1000 + intval($_logicalId));
-    cache::set($cachekey, $_value, 0);
-    if ($General_Debug) log::add('arduidom','debug', '   cache::set(' . $cachekey . ',' . $_value . ')');
-    $tcpmsg = "";
-    log::add('arduidom', 'debug', 'setPinValue(' . $_logicalId . ',' . $_value . ') for arduino ' . $arduid);
-    $config = config::byKey('A' . $arduid . '_pin::' . $_logicalId, 'arduidom');
-    if ($General_Debug) log::add('arduidom','debug', '   $config=' . $config);
-    if ($config == 'disable') {
-        $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
-    }
-    if ($config == 'out') {
-        $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
-    }
-    if ($config == 'pup' || $config == 'pdwn' || $config == 'blnk') {
-        $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . sprintf("%04s", $_value);
-    }
-    if ($config == 'oinv') {
-        $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
-    }
-    if ($config == 'rout') {
-        $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
-    }
-    if ($config == 'pout') {
-        $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . sprintf("%03s", $_value);
-    }
-    if ($config == 'custout') {
-        $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . sprintf("%010s", $_value);
-    }
-    $tcpcheck = arduidom::sendtoArduino($tcpmsg, $arduid);
-    if ($tcpcheck != $tcpmsg . "_OK") {
-    //if ($tcpcheck != "SP_OK") {
-        if ($tcpcheck == $tcpmsg . "_BAD") {
-            log::add('arduidom', 'error', "Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ") Vérifiez votre configutation des pins !");
-            if (substr(jeedom::version(), 0, 1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ") Vérifiez votre configutation des pins !", __FILE__),));
-        } else {
-            log::add('arduidom', 'error', "Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ")");
-            if (substr(jeedom::version(), 0, 1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ")", __FILE__),));
+    {
+        $General_Debug = config::byKey('generalDebug','arduidom',0, true);
+        $DaemonReady = self::get_daemon_mode();
+        if ($General_Debug) log::add('arduidom', 'debug', 'setPinValue(' . $_logicalId . ',' . $_value . ') called');
+        $func_start_time = getmicrotime(true);
+        if ($DaemonReady != "OK" && $DaemonReady != "STARTED") {
+            if ($General_Debug) log::add("arduidom","debug","le démon n'est pas pret");
+            return "DAEMON_NOT_OK";
         }
+
+        $arduid = 0;
+        if ($_logicalId > 999) {
+            $arduid = $_logicalId[0];
+            $_logicalId = intval(substr($_logicalId, 1));
+        }
+        $cachekey = "arduidom::lastSetPin" . (intval($arduid) * 1000 + intval($_logicalId));
+        cache::set($cachekey, $_value, 0);
+        if ($General_Debug) log::add('arduidom','debug', '   cache::set(' . $cachekey . ',' . $_value . ')');
+        $tcpmsg = "";
+        log::add('arduidom', 'debug', 'setPinValue(' . $_logicalId . ',' . $_value . ') for arduino ' . $arduid);
+        $config = config::byKey('A' . $arduid . '_pin::' . $_logicalId, 'arduidom');
+        if ($General_Debug) log::add('arduidom','debug', '   $config=' . $config);
+        if ($config == 'disable') {
+            $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
+        }
+        if ($config == 'out') {
+            $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
+        }
+        if ($config == 'outd') {
+            $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
+        }
+        if ($config == 'pup' || $config == 'pdwn' || $config == 'blnk') {
+            $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . sprintf("%04s", $_value);
+        }
+        if ($config == 'oinv') {
+            $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
+        }
+        if ($config == 'rout') {
+            $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . $_value;
+        }
+        if ($config == 'pout') {
+            $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . sprintf("%03s", $_value);
+        }
+        if ($config == 'custout') {
+            $tcpmsg = "SP" . sprintf("%02s", $_logicalId) . sprintf("%010s", $_value);
+        }
+        $tcpcheck = arduidom::sendtoArduino($tcpmsg, $arduid);
+        if ($tcpcheck != $tcpmsg . "_OK") {
+            //if ($tcpcheck != "SP_OK") {
+            if ($tcpcheck == $tcpmsg . "_BAD") {
+                log::add('arduidom', 'error', "Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ") Vérifiez votre configutation des pins !");
+                if (substr(jeedom::version(), 0, 1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ") Vérifiez votre configutation des pins !", __FILE__),));
+            } else {
+                log::add('arduidom', 'error', "Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ")");
+                if (substr(jeedom::version(), 0, 1) == 2) event::add('jeedom::alert', array('level' => 'error', 'message' => __("Erreur sur setPinValue(" . $arduid . ',' . $tcpmsg . ") - (Recu : " . $tcpcheck . ")", __FILE__),));
+            }
+        }
+        $elapsed_time = getmicrotime(true) - $func_start_time;
+        $elapsed_time = $elapsed_time * 1000;
+        $elapsed_time = number_format($elapsed_time, 1, '.', '') . " ms";
+        if ($General_Debug) log::add('arduidom', 'debug', 'setPinValue(' . $_logicalId . ',' . $_value . ') takes ' . $elapsed_time);
+        return $tcpcheck;
     }
-    $elapsed_time = getmicrotime(true) - $func_start_time;
-    $elapsed_time = $elapsed_time * 1000;
-    $elapsed_time = number_format($elapsed_time, 1, '.', '') . " ms";
-    if ($General_Debug) log::add('arduidom', 'debug', 'setPinValue(' . $_logicalId . ',' . $_value . ') takes ' . $elapsed_time);
-    return $tcpcheck;
-}
 
 
     public static function sendtoArduino($_tcpmsg, $_AID)
-{
-    $General_Debug = config::byKey('generalDebug','arduidom',0, true);
-    if ($_AID == 0) $General_Debug = 0; // Pas de log sur démon direct, trop bavard...
-    if ($General_Debug) log::add('arduidom', 'debug', "^--------------------------------------------------------------------------------------");
-    if ($General_Debug) log::add('arduidom', 'debug', 'sendtoArduino(' . $_tcpmsg . ',' . $_AID . ') called');
-    $func_start_time = getmicrotime(true);
-    $daemonmode = self::get_daemon_mode();
-    if ($daemonmode == "FLASHING") {
-        log::add("arduidom","debug","sendtoArduino impossible, arduino en cours de flashage...");
-        return "DAEMON_NOT_OK";
-    }
+    {
+        $General_Debug = config::byKey('generalDebug','arduidom',0, true);
+        if ($_AID == 0) $General_Debug = 0; // Pas de log sur démon direct, trop bavard...
+        if ($General_Debug) log::add('arduidom', 'debug', "^--------------------------------------------------------------------------------------");
+        if ($General_Debug) log::add('arduidom', 'debug', 'sendtoArduino(' . $_tcpmsg . ',' . $_AID . ') called');
+        $func_start_time = getmicrotime(true);
+        $daemonmode = self::get_daemon_mode();
+        if ($daemonmode == "FLASHING") {
+            log::add("arduidom","debug","sendtoArduino impossible, arduino en cours de flashage...");
+            return "DAEMON_NOT_OK";
+        }
         $port = config::byKey('A' . $_AID . '_port', 'arduidom', 'none', true);
         $ip = config::byKey('A' . $_AID . '_daemonip', 'arduidom', '127.0.0.1', true);
         if (($port != 'none' && $port != "") || $_AID == 0) {
@@ -816,7 +839,7 @@ class arduidom extends eqLogic
                 if ($port != 'Network') {
                     //if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $_AID . ' est un démon python');
                     if ($General_Debug) log::add('arduidom','debug','IP: ' . $ip . ":" . (58200 + intval($_AID)));
-                    $fp = fsockopen($ip, (58200 + intval($_AID)), $errno, $errstr, 10);
+                    $fp = fsockopen($ip, (58200 + intval($_AID)), $errno, $errstr, 1);
                 } else {
                     //if ($General_Debug) log::add('arduidom', 'debug', 'Le démon ' . $_AID . ' est un arduino Réseau (IP:' . $ip . ")");
                     if ($General_Debug) log::add('arduidom','debug','IP: ' . $ip . ":58174");
@@ -836,7 +859,7 @@ class arduidom extends eqLogic
 
                 } else {
 
-                    stream_set_timeout($fp, 10);
+                    stream_set_timeout($fp, 3);
                     if ($_AID == 0) {
                         if ($General_Debug) log::add('arduidom', 'debug', "Le démon " . $_AID . " est connecté, envoi...");
                     } else {
@@ -897,10 +920,10 @@ class arduidom extends eqLogic
             }
         }
 
-    if ($General_Debug) log::add('arduidom', 'debug', "sendtoarduino return EMPTY");
-    if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
-    return("EMPTY");
-}
+        if ($General_Debug) log::add('arduidom', 'debug', "sendtoarduino return EMPTY");
+        if ($General_Debug) log::add('arduidom', 'debug', "v--------------------------------------------------------------------------------------");
+        return("EMPTY");
+    }
 
     public function CompileArduino($_AID = '') {
         $arduidomRadioCmd = $this->getCmd(null, 'arduidom');
@@ -919,122 +942,138 @@ class arduidom extends eqLogic
 
 
     public static function CompileArduino_OLD_FOR_TEST($_AID = '')
-{
-    $result = 0;
-    log::add('arduidom', 'info', 'compilearduino(' . $_AID . ') called');
-    if (!file_exists("/usr/local/bin/ino")) {
-        throw new Exception(__("le programme ino n'est pas installé ! (installer avec 'sudo easy_install ino')", __FILE__));
-    }
-    if (!file_exists("/usr/share/arduino")) {
-        throw new Exception(__("le programme arduino n'est pas installé ! (installer avec 'sudo apt-get install arduino')", __FILE__));
-    }
-    $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
-    $model = config::byKey('A' . $_AID . '_model', 'arduidom', 'none');
-    //$port = config::byKey('A' . $_AID . '_port', 'arduidom', 'none');
-    switch ($model) {
-        case "uno":
-            $cmd_model = "uno";
-            break;
-        case "duemilanove328":
-            $cmd_model = "atmega328";
-            break;
-        case "nano328":
-            $cmd_model = "nano328";
-            break;
-        case "mega2560":
-            $cmd_model = "mega2560";
-            break;
-        case "mega1280":
-            $cmd_model = "mega";
-            break;
-        default:
-            throw new Exception(__("Modele Arduino " . $model . " n'est pas supporté par la fonction !", __FILE__));
-            break;
-    }
+    {
+        $result = 0;
+        log::add('arduidom', 'info', 'compilearduino(' . $_AID . ') called');
+        if (!file_exists("/usr/local/bin/ino")) {
+            throw new Exception(__("le programme ino n'est pas installé ! (installer avec 'sudo easy_install ino')", __FILE__));
+        }
+        if (!file_exists("/usr/share/arduino")) {
+            throw new Exception(__("le programme arduino n'est pas installé ! (installer avec 'sudo apt-get install arduino')", __FILE__));
+        }
+        $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
+        $model = config::byKey('A' . $_AID . '_model', 'arduidom', 'none');
+        //$port = config::byKey('A' . $_AID . '_port', 'arduidom', 'none');
+        switch ($model) {
+            case "uno":
+                $cmd_model = "uno";
+                break;
+            case "duemilanove328":
+                $cmd_model = "atmega328";
+                break;
+            case "nano328":
+                $cmd_model = "nano328";
+                break;
+            case "mega2560":
+                $cmd_model = "mega2560";
+                break;
+            case "mega1280":
+                $cmd_model = "mega";
+                break;
+            case "esp201":
+                $cmd_model = "esp201";
+                break;
+            case "d1mini":
+                $cmd_model = "d1mini";
+                break;
+            default:
+                throw new Exception(__("Modele Arduino " . $model . " n'est pas supporté par la fonction !", __FILE__));
+                break;
+        }
 
-    ?><script>
+        ?><script>
         $('#md_modal').dialog({title: "{{Flash Arduino}}"});
         $('#md_modal').load('index.php?v=d&plugin=arduidom&modal=show.log').dialog('open');
     </script><?php
 
-    $cmd = 'cd ' . $daemon_path . '/arduidomTest && sudo ino clean && sudo ino build -m ' . $cmd_model . " >> " . $daemon_path . "/../../../log/arduidom_log" . $_AID . " 2>&1 &";
-    log::add('arduidom', 'info', 'Compiling arduino ' . $_AID . ': ' . $cmd);
-    //while (@ ob_end_flush()); // end all output buffers if any
+        $cmd = 'cd ' . $daemon_path . '/arduidomTest && sudo ino clean && sudo ino build -m ' . $cmd_model . " >> " . $daemon_path . "/../../../log/arduidom_log" . $_AID . " 2>&1 &";
+        log::add('arduidom', 'info', 'Compiling arduino ' . $_AID . ': ' . $cmd);
+        //while (@ ob_end_flush()); // end all output buffers if any
 
-    popen($cmd, 'r');
-    return $result;
-}
+        popen($cmd, 'r');
+        return $result;
+    }
 
     public static function FlashArduino($_AID = '')
-{
-    $result = 0;
-    log::add('arduidom', 'info', "Téléversement de l'arduino " . $_AID . '...');
+    {
+        $result = 0;
+        log::add('arduidom', 'info', "Téléversement de l'arduino " . $_AID . '...');
 
-    self::set_daemon_mode("FLASHING");
-    self::deamon_stop();
-    sleep(1);
-    if (!file_exists("/usr/bin/avrdude")) {
-        self::set_daemon_mode("KILLED");
-        throw new Exception(__("le programme avrdude n'est pas installé ! (installer avec apt-get install avrdude)", __FILE__));
-    }
-    $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
-    $model = config::byKey('A' . $_AID . '_model', 'arduidom', 'none');
-    $port = config::byKey('A' . $_AID . '_port', 'arduidom', 'none');
-    switch ($model) {
-        case "uno":
-            $cmd_model = "-patmega328p -carduino";
-            $cmd_speed = "115200";
-            $cmd_hexfile = "uno";
-            break;
-        case "duemilanove328":
-            $cmd_model = "-patmega328p -carduino";
-            $cmd_speed = "57600";
-            $cmd_hexfile = "duemilanove328";
-            break;
-        case "nano328":
-            $cmd_model = "-patmega328p -carduino";
-            $cmd_speed = "57600";
-            $cmd_hexfile = "nano328";
-            break;
-        case "mega2560":
-            $cmd_model = "-patmega2560 -cwiring";
-            $cmd_speed = "115200";
-            $cmd_hexfile = "mega2560";
-            break;
-        case "mega1280":
-            $cmd_model = "-patmega1280 -cwiring";
-            $cmd_speed = "57600";
-            $cmd_hexfile = "mega1280";
-            break;
-        default:
+        self::set_daemon_mode("FLASHING");
+        self::deamon_stop();
+        sleep(1);
+        if (!file_exists("/usr/bin/avrdude")) {
             self::set_daemon_mode("KILLED");
-            throw new Exception(__("Modele Arduino " . $model . " n'est pas supporté par la fonction !", __FILE__));
-            break;
-    }
-    $logfile = "/tmp/avrdude.log";
-    if (file_exists($logfile)) unlink($logfile);
-    $cmd = 'sudo /usr/bin/avrdude -C/etc/avrdude.conf -v -v -v -l ' . $logfile . ' ' . $cmd_model . ' -P' . $port . ' -b' . $cmd_speed . ' -D -Uflash:w:' . $daemon_path . '/' . $cmd_hexfile . '.hex:i';
-    $cmd .= ' >> ' . log::getPathToLog("arduidom") . ' 2>&1';
-    log::add('arduidom', 'info', 'Execution du téléversement: ' . $cmd);
-    $result = exec($cmd);
-    sleep(2);
-    log::add('arduidom', 'info', '# Fin du téléversement (' . $result . ')');
-    self::set_daemon_mode("KILLED");
-    if( strpos(file_get_contents($logfile),"bytes of flash written") !== false) {
-        if( strpos(file_get_contents($logfile),"bytes of flash verified") !== false) {
-            if( strpos(file_get_contents($logfile),"avrdude done.") !== false) {
-            return "OK";// do stuff
+            throw new Exception(__("le programme avrdude n'est pas installé ! (installer avec apt-get install avrdude)", __FILE__));
+        }
+        $daemon_path = realpath(dirname(__FILE__) . '/../../ressources');
+        $model = config::byKey('A' . $_AID . '_model', 'arduidom', 'none');
+        $port = config::byKey('A' . $_AID . '_port', 'arduidom', 'none');
+        switch ($model) {
+            case "uno":
+                $cmd_model = "-patmega328p -carduino";
+                $cmd_speed = "115200";
+                $cmd_hexfile = "uno";
+                break;
+            case "duemilanove328":
+                $cmd_model = "-patmega328p -carduino";
+                $cmd_speed = "57600";
+                $cmd_hexfile = "duemilanove328";
+                break;
+            case "nano328":
+                $cmd_model = "-patmega328p -carduino";
+                $cmd_speed = "57600";
+                $cmd_hexfile = "nano328";
+                break;
+            case "mega2560":
+                $cmd_model = "-patmega2560 -cwiring";
+                $cmd_speed = "115200";
+                $cmd_hexfile = "mega2560";
+                break;
+            case "mega1280":
+                $cmd_model = "-patmega1280 -cwiring";
+                $cmd_speed = "57600";
+                $cmd_hexfile = "mega1280";
+                break;
+            case "esp201":
+                $cmd_model = "";
+                $cmd_speed = "115200";
+                $cmd_hexfile = "esp201";
+                break;
+            case "d1mini":
+                $cmd_model = "";
+                $cmd_speed = "115200";
+                $cmd_hexfile = "d1mini";
+                break;
+            default:
+                self::set_daemon_mode("KILLED");
+                throw new Exception(__("Modele Arduino " . $model . " n'est pas supporté par la fonction !", __FILE__));
+                break;
+        }
+        $logfile = "/tmp/avrdude.log";
+        if (file_exists($logfile)) unlink($logfile);
+        $cmd = 'sudo /usr/bin/avrdude -C/etc/avrdude.conf -v -v -v -l ' . $logfile . ' ' . $cmd_model . ' -P' . $port . ' -b' . $cmd_speed . ' -D -Uflash:w:' . $daemon_path . '/' . $cmd_hexfile . '.hex:i';
+        $cmd .= ' >> ' . log::getPathToLog("arduidom") . ' 2>&1';
+        log::add('arduidom', 'info', 'Execution du téléversement: ' . $cmd);
+        $result = exec($cmd);
+        sleep(2);
+        log::add('arduidom', 'info', '# Fin du téléversement (' . $result . ')');
+        self::set_daemon_mode("KILLED");
+        if( strpos(file_get_contents($logfile),"bytes of flash written") !== false) {
+            if( strpos(file_get_contents($logfile),"bytes of flash verified") !== false) {
+                if( strpos(file_get_contents($logfile),"avrdude done.") !== false) {
+                    return "OK";// do stuff
+                }
             }
         }
+        return $result;
     }
-    return $result;
-}
 
 
     public function event()
-{
-    //log::add('arduidom', 'debug', 'arduidom event() called');
-}
+    {
+        //log::add('arduidom', 'debug', 'arduidom event() called');
+    }
     /*     * *********************Methode d'instance************************* */
 
 

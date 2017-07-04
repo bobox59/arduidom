@@ -20,8 +20,8 @@ echo 70 > /tmp/dependancy_arduidom_in_progress
 echo ">>> Install INOTOOLS"
 sudo easy_install ino
 echo 80 > /tmp/dependancy_arduidom_in_progress
-echo ">>> Install AVR-DUDE"
-sudo apt-get install -y avr-dude
+echo ">>> Install AVRDUDE"
+sudo apt-get install -y avrdude
 echo 90 > /tmp/dependancy_arduidom_in_progress
 sudo usermod -G dialout www-data
 echo 100 > /tmp/dependancy_arduidom_in_progress

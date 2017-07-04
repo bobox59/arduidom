@@ -35,6 +35,7 @@ from_arduino_7 = Queue()
 from_arduino_8 = Queue()
 trigger_nice = ""
 
+
 class cmdarg_data:
     def __init__(
         self,
@@ -46,7 +47,7 @@ class cmdarg_data:
         pidfile = "",
         printout_complete = True,
         printout_csv = False
-        ):
+    ):
 
         self.configFile = configFile
         self.action = action
@@ -86,7 +87,7 @@ class from_jeedom:
         if self.status() == "OK":
             return self._answer
         else:
-            return self.request + "_BAD"
+            return self.request + "_BAD(py)"
 
     def result(self, _answer):
         self._status = "OK"
@@ -366,7 +367,14 @@ def COMServer(options, threadName, arduID):
                 if len(request) >= 64:
                     SerialPort.write(request[0:64])
                     time.sleep(0.1)  # TODO WHY : Laisse le temps a l'arduino de traiter la 1e part des données, 0.5 avant modif pour tests
-                    SerialPort.write(request[64:127] + '\n')
+                    SerialPort.write(request[64:127])
+                    if len(request) >= 128:
+                        time.sleep(0.1)  # TODO WHY : Laisse le temps a l'arduino de traiter la 1e part des données, 0.5 avant modif pour tests
+                        SerialPort.write(request[128:191])
+                        if len(request) >= 192:
+                            time.sleep(0.1)  # TODO WHY : Laisse le temps a l'arduino de traiter la 1e part des données, 0.5 avant modif pour tests
+                            SerialPort.write(request[192:255])
+                    SerialPort.write('\n')
                 else:
                     SerialPort.write(request + '\n')
                 line = SerialPort.readline()
@@ -518,8 +526,8 @@ def main(argv=None):
 
     (options, args) = cli_parser(argv)
 
-    LOG_FILENAME = "/tmp/arduidom_daemon"
-    #LOG_FILENAME = pyfolder + '../../../log/arduidom_daemon'
+    #LOG_FILENAME = "/tmp/arduidom_daemon"
+    LOG_FILENAME = pyfolder + '../../../log/arduidom_daemon'
     formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(threadName)s - %(module)s:%(lineno)d - %(message)s')
 
     if options.loglevel != "INFO":
@@ -561,16 +569,18 @@ def main(argv=None):
 
     logger.info(".")
     logger.info(".")
-    logger.info(".")
+    logger.info("TESTING NOW LOGGER LEVELS")
+    logger.info(".GONNA TRY: INFO/ERROR/DEBUG.")
+    logger.info(".INFO.")
+    logger.error(".ERROR.")
+    logger.debug(".DEBUG.")
     logger.info(".")
     logger.info("######################################")
     logger.info("# ArduiDom - Arduino Link for jeeDom #")
     logger.info("# v2           by Bobox59 & Cedric02 #")
     logger.info("######################################")
-    username = os.environ['USER']
-    logger.info("Username = " + str(username))
     logger.info("LogLevel = " + loglevel + " option.logvevel = " + str(options.loglevel))
-    logger.debug("Python version: %s.%s.%s" % sys.version_info[:3])
+    # logger.debug("Python version: %s.%s.%s" % sys.version_info[:3])
 
     # ----------------------------------------------------------
     # PROCESS CONFIG.XML

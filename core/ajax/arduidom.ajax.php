@@ -26,6 +26,14 @@ try {
         throw new Exception(__('401 - Accès non autorisé', __FILE__));
     }
 
+    if (init('action') == 'resetDeamon') {
+        if (arduidom::set_daemon_mode("KILLED")) {
+            ajax::success();
+        } else {
+            ajax::error("Le démon n'a pas démarré !");
+        }
+    }
+
 
     if (init('action') == 'startDaemon') {
         if (arduidom::deamon_start(true)) {
@@ -93,7 +101,7 @@ try {
     } // end of For 1 to 8
 
     if (init('action') == 'pinMapping' ) {
-        global $ARDUPINMAP_A, $ARDUPINMAP_B, $ARDUPINMAP_C ;
+        global $ARDUPINMAP_A, $ARDUPINMAP_B, $ARDUPINMAP_C, $ARDUPINMAP_D, $ARDUPINMAP_E ;
 
         //$result = config::searchKey('pin::', 'arduidom');
         $result = '';
@@ -105,6 +113,8 @@ try {
             if ($modelPinMap == "uno" || $modelPinMap == "duemilanove328" || $modelPinMap == "leo" || $modelPinMap == "nano168" || $modelPinMap == "nano328") $ARDUPINMAP = $ARDUPINMAP_A;
             if ($modelPinMap == "mega1280" || $modelPinMap == "mega2560") $ARDUPINMAP = $ARDUPINMAP_B;
             if ($modelPinMap == "due") $ARDUPINMAP = $ARDUPINMAP_C;
+            if ($modelPinMap == "esp201") $ARDUPINMAP = $ARDUPINMAP_D;
+            if ($modelPinMap == "d1mini") $ARDUPINMAP = $ARDUPINMAP_E;
 
             if ($ARDUPINMAP != '') {
 
@@ -118,6 +128,7 @@ try {
                         if ($config == 'inx') { $conftxt = " => Entrée digitale Inversée";}
                         if ($config == 'inup') { $conftxt = " => Entrée digitale avec Pull-Up";}
                         if ($config == 'out') { $conftxt = " => Sortie digitale";}
+                        if ($config == 'outd') { $conftxt = " => Sortie digitale push down";}
                         if ($config == 'rin') { $conftxt = " => Recepteur 433MHz";}
                         if ($config == 'rout') { $conftxt = " => Emetteur 433MHz";}
                         if ($config == 'pout') { $conftxt = " => Sortie PWM";}

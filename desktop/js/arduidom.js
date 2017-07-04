@@ -307,6 +307,7 @@ function handlePin(tr) {
         tr.find('.cmdAttr[data-l1key=display][data-l2key=invertBinary]').closest('span').show();
     }
     if (tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'out' ||
+        tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'outd' ||
         tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'pup' ||
         tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'pdwn' ||
         tr.find('.cmdAttr[data-l1key=logicalId]').find('option:selected').attr('data-mode') == 'oinv' ||
@@ -536,15 +537,15 @@ function addCmdToTable(_cmd) {
     tr += '<input class="tooltips cmdAttr form-control input-sm expertModeVisible" data-l1key="configuration" data-l2key="maxValue" placeholder="Max" title="Max" style="margin-top : 5px;">';
     tr += '</td>';
     tr += '<td>';
-    tr += '<span><input type="checkbox" class="cmdAttr bootstrapSwitch" data-l1key="isVisible" data-size="mini" data-label-text="{{Afficher}}" checked/><br></span> ';
-    tr += '<span><input type="checkbox" class="cmdAttr bootstrapSwitch" data-l1key="isHistorized" data-size="mini" data-label-text="{{Historiser}}" /><br></span>';
-    tr += '<span><input type="checkbox" class="cmdAttr bootstrapSwitch expertModeVisible" data-l1key="display" data-l2key="invertBinary" data-size="mini" data-label-text="{{Inverser}}" /><br><br></span>';
+    tr += '<label class="checkbox-inline"><span><input type="checkbox" class="cmdAttr" data-l1key="isVisible" data-size="mini" checked>{{Afficher}}</span></label><br>';
+    tr += '<label class="checkbox-inline"><span><input type="checkbox" class="cmdAttr" data-l1key="isHistorized" data-size="mini">{{Historiser}}</span></label><br>';
+    tr += '<label class="checkbox-inline"><span><input type="checkbox" class="cmdAttr expertModeVisible" data-l1key="display" data-l2key="invertBinary" data-size="mini">{{Inverser}}</span></label><br>';
     tr += '<a class="btn btn-default btn-xs cmdAction expertModeVisible" data-action="configure"><i class="fa fa-cogs">{{Paramètres avancés}}</i></a> ';
     tr += '</td>';
     tr += '<td>';
-    if (_cmd.type == 'action') { // is_numeric(_cmd.id)
-        tr += '<a class="btn btn-default btn-xs cmdAction" data-action="test"><i class="fa fa-rss"></i> {{Tester}}</a>';
-    }
+    //if (_cmd.type == 'action') { // is_numeric(_cmd.id)
+    tr += '<a class="btn btn-default btn-xs cmdAction" data-action="test"><i class="fa fa-rss"></i> {{Tester}}</a>';
+    //}
     tr += '<i class="fa fa-minus-circle pull-right cmdAction cursor" data-action="remove"></i></td>';
     tr += '</tr>';
     $('#table_cmd tbody').append(tr);

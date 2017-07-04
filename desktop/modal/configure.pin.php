@@ -18,11 +18,10 @@
 if (!isConnect('admin')) {
     throw new Exception('{{401 - Accès non autorisé}}');
 }
-include_file('3rdparty', 'jquery.tablesorter/theme.bootstrap', 'css');
 include_file('3rdparty', 'jquery.tablesorter/jquery.tablesorter.min', 'js');
 include_file('3rdparty', 'jquery.tablesorter/jquery.tablesorter.widgets.min', 'js');
 include_file('core', 'pin', 'config', 'arduidom');
-global $ARDUPINMAP_A, $ARDUPINMAP_B, $ARDUPINMAP_C ;
+global $ARDUPINMAP_A, $ARDUPINMAP_B, $ARDUPINMAP_C, $ARDUPINMAP_D, $ARDUPINMAP_E ;
 $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', '1');
 
 //if (init('arduid') == '') {
@@ -78,6 +77,8 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', '1');
                 if ($modelPinMap == "uno" || $modelPinMap == "duemilanove328" || $modelPinMap == "leo" || $modelPinMap == "nano168" || $modelPinMap == "nano328") $ARDUPINMAP = $ARDUPINMAP_A;
                 if ($modelPinMap == "mega1280" || $modelPinMap == "mega2560") $ARDUPINMAP = $ARDUPINMAP_B;
                 if ($modelPinMap == "due") $ARDUPINMAP = $ARDUPINMAP_C;
+                if ($modelPinMap == "esp201") $ARDUPINMAP = $ARDUPINMAP_D;
+                if ($modelPinMap == "d1mini") $ARDUPINMAP = $ARDUPINMAP_E;
 
                 foreach ($ARDUPINMAP as $logicalId => $pin) {
 
@@ -130,6 +131,26 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', '1');
                         } else { $pinINT = 0; }
                     }
 
+                    if ($model == "esp201") {
+                        $pinDIG = 15;
+                        $pinANA = 1;
+                        if ($logicalId == 3 || $logicalId == 5 || $logicalId == 6 || $logicalId == 9 || $logicalId == 10 || $logicalId == 11) {
+                            $pinPWM = 1;
+                        } else { $pinPWM = 0; }
+                        if ($logicalId == 2 || $logicalId == 3) {
+                            $pinINT = 1;
+                        } else { $pinINT = 0; }
+                    }
+
+                    if ($model == "d1mini") {
+                        $pinDIG = 17;
+                        $pinANA = 1;
+                        if ($logicalId > 0 && $logicalId < 8) {
+                            $pinPWM = 1;
+                            $pinINT = 1;
+                        }
+                    }
+
                     if ($pin['ethernet'] == 1 && $shieldEthernet == 1) {
                         echo '<select class="form-control input-sm pinAttr" data-l1key="A' . $_AID . '_pin::' . $logicalId . '">';
                         echo '<option value="disable">{{Réservée au Shield Ethernet}}</option>'; // Attention si modifs ici, mettre a jour egalement le AJAX !
@@ -144,11 +165,13 @@ $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', '1');
                                 if ($logicalId >= $pinDIG && $logicalId < $pinDIG + $pinANA) {
                                     echo '<option value="ain">{{Entrée analogique}}</option>';
                                     echo '<option value="out">{{Sortie Digitale}}</option>';
+                                    echo '<option value="outd">{{Sortie Digitale en Push down}}</option>';
                                 } else {
                                     echo '<option value="in">{{Entrée Digitale}}</option>';
                                     echo '<option value="inx">{{Entrée Digitale Inversée}}</option>';
                                     echo '<option value="inup">{{Entrée Digitale avec Pull-Up}}</option>';
                                     echo '<option value="out">{{Sortie Digitale}}</option>';
+                                    echo '<option value="outd">{{Sortie Digitale en Push down}}</option>';
                                     echo '<option value="pup">{{Sortie Digitale en pulse UP}}</option>';
                                     echo '<option value="pdwn">{{Sortie Digitale en pulse DOWN}}</option>';
                                     echo '<option value="oinv">{{Sortie Digitale à inversion}}</option>';

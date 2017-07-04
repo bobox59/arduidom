@@ -6,9 +6,9 @@
     <icon>fa fa-bug</icon>
     <licence>AGPL</licence>
     <author>Benoit Masquelier</author>
-    <installation>Installer les dépendances. Téléverser via la page Configurer sur arduino. Pour personnalier via les Customs, Utilisez Arduino IDE 1.6.7 mini, charger le sketch téléchargable ci-dessous, l'adapter a votre cas puis téléverser avec Arduino IDE.  Surtout bien reconfigurer le plugin apres une mise a jour d'une version inférieure a V2.00. ATTENTION: Depuis la V2 du plugin, le téléversement du nouveau sketch est OBLIGATOIRE car il y a une verification des versions. Les Sondes DHT sont parametrables directement dans la configuration des pins et non plus dans le sketch !</installation>
-    <require>1.212</require>
-    <version>2.023</version>
+    <installation>Necessite le sketch Arduidom v127. Installer les dépendances. Téléverser via la page Configurer sur arduino. Pour personnalier via les Customs, Utilisez Arduino IDE 1.6.7 mini, charger le sketch téléchargable ci-dessous, l'adapter a votre cas puis téléverser avec Arduino IDE.  Surtout bien reconfigurer le plugin apres une mise a jour d'une version inférieure a V2.00. ATTENTION: Depuis la V2 du plugin, le téléversement du nouveau sketch est OBLIGATOIRE car il y a une verification des versions. Les Sondes DHT sont parametrables directement dans la configuration des pins et non plus dans le sketch !</installation>
+    <require>3.0.9</require>
+    <version>2.127</version>
     <category>automation protocol</category>
     <allowRemote>1</allowRemote>
     <hasDependency>1</hasDependency>

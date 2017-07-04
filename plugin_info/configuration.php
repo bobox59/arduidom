@@ -24,9 +24,24 @@ if (!isConnect()) {
 
 $ArduinoQty = config::byKey('ArduinoQty', 'arduidom', 1);
 $Sketch = "Arduidom_unified_v" . (config::byKey("ArduinoRequiredVersion","arduidom",0,true) - 100);
+$DaemonReady = arduidom::get_daemon_mode();
 ?>
 <input class="form-control col-md-12" style="background-color: #FFE3AF" value="Cette version de plugin NECESSITE le Sketch <?php echo $Sketch;?> sur vos Arduinos pour pouvoir fonctionner." disabled/>
 <br />&nbsp;
+
+<div class="row">
+    <div class="form-group">
+        <div class="col-lg-3">
+            <label class="col-xs-9 control-label-inline">Etat du démon : <?php echo $DaemonReady ?></label>
+        </div>
+        <div class="col-lg-5">
+            <a class="btn btn-danger" id="bt_ResetArduidomDeamonState"><i class="fa fa-arrow-circle-right"></i>{{ Forcer l'etat du démon à KILLED}}</a>&nbsp
+        </div>
+    </div>
+
+    <hr>
+
+</div>
 <div class="row">
     <label class="col-xs-2 control-label">Nombre d'arduino(s) utilisés</label>
     <div class="col-xs-2">
@@ -80,7 +95,7 @@ $Sketch = "Arduidom_unified_v" . (config::byKey("ArduinoRequiredVersion","arduid
                                     echo '<option value="' . $value . '">' . $name . ' (' . $value . ')</option>';
                                 };
                                 echo '<optgroup label="Réseau" />';
-                                echo '<option value="' . "Network" . '">' . "Arduino avec Shield Ethernet" . ' (' . "Network" . ')</option>';
+                                echo '<option value="' . "Network" . '">' . "Arduino avec Shield Ethernet / ESP WiFi" . ' (' . "Network" . ')</option>';
                                 echo '<optgroup label="Manuel (si non détecté)" />';
                                 echo '<option value="' . "/dev/ttyUSB0" . '">' . "Arduino sur USB /dev/ttyUSB0" . ' (' . "/dev/ttyUSB0" . ')</option>';
                                 echo '<option value="' . "/dev/ttyUSB1" . '">' . "Arduino sur USB /dev/ttyUSB1" . ' (' . "/dev/ttyUSB1" . ')</option>';
@@ -99,12 +114,16 @@ $Sketch = "Arduidom_unified_v" . (config::byKey("ArduinoRequiredVersion","arduid
                         <div class="col-lg-4">
                             <select class="configKey form-control" data-l1key="A<?php echo $i ?>_model">
                                 <option value="" id="arduinomodelselect">Aucun - Désactivé</option>
+                                <optgroup label="Modèles USB" />
                                 <option value="uno" id="arduinomodelselect">Arduino UNO</option>
                                 <option value="nano328" id="arduinomodelselect">Arduino NANO (ATMega 328)</option>
                                 <option value="mega1280" id="arduinomodelselect">Arduino MEGA 1280</option>
                                 <option value="mega2560" id="arduinomodelselect">Arduino MEGA 2560</option>
                                 <option value="due" id="arduinomodelselect">Arduino DUE (Non flashable par JeeDom)</option>
                                 <option value="leo" id="arduinomodelselect">Arduino LEONARDO (Non flashable par JeeDom)</option>
+                                <optgroup label="Modèles WiFi" />
+                                <option value="esp201" id="arduinomodelselect">ESP 201 (Wifi - Flash par IDE via USB)</option>
+                                <option value="d1mini" id="arduinomodelselect">WeMos D1 Mini (Wifi - Flash par IDE via USB)</option>
                             </select>
                         </div>
                     </div>
@@ -172,6 +191,30 @@ $Sketch = "Arduidom_unified_v" . (config::byKey("ArduinoRequiredVersion","arduid
 
 <script>
     var jsinitok = false;
+
+    $('#bt_ResetArduidomDeamonState').on('click', function () {
+        $.ajax({// fonction permettant de faire de l'ajax
+            type: "POST", // methode de transmission des données au fichier php
+            url: "plugins/arduidom/core/ajax/arduidom.ajax.php", // url du fichier php
+            data: {
+                action: "resetDeamon"
+            },
+            dataType: 'json',
+            error: function (request, status, error) {
+                handleAjaxError(request, status, error);
+            },
+            success: function (data) { // si l'appel a bien fonctionné
+                if (data.state != 'ok') {
+                    $('#div_alert').showAlert({message: data.result, level: 'danger'});
+                    return;
+                }
+                $('#div_alert').showAlert({message: 'L état du démon a été correctement changé', level: 'success'});
+                $('#ul_plugin .li_plugin[data-plugin_id=arduidom]').click();
+            }
+        });
+        //history.go(0);
+    });
+
     $('#bt_RestartArduidomDeamon').on('click', function () {
         $.ajax({// fonction permettant de faire de l'ajax
             type: "POST", // methode de transmission des données au fichier php

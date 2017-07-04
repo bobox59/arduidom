@@ -16,7 +16,9 @@
  * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
  */
 require_once dirname(__FILE__) . "/../../../../core/php/core.inc.php";
-$ip = $_SERVER['REMOTE_ADDR'];
+if ($_SERVER['REMOTE_ADDR'] != '') {
+    $ip = $_SERVER['REMOTE_ADDR'];
+}
 
 $DebugTimetoDo = false;
 $starttime = microtime(true);
@@ -131,7 +133,7 @@ if ($daemonreadyfound == 1) { // informe start_daemon() que python est pret.
         die();
     }
 }
-echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r"); 
+//echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r");
 
 if (file_exists($ardulogfile) == false) {
     log::add('arduidom', 'info', $rid . "Creation de arduidom.message");
