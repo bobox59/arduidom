@@ -51,16 +51,16 @@
 #if (CNF_BOARD_MODEL > 10 && CNF_BOARD_MODEL <= 29 )
     #if (CNF_BOARD_MODEL > 20 && CNF_BOARD_MODEL <= 29 )
         #include <ESP8266WiFi.h>
-        const char* ssid     = "!!!SSID!!!"; // SSID de votre routeur WiFi
-        const char* password = "!!!KEY!!!"; // Clé WiFi de votre routeur
+        const char* ssid     = "???????????"; // SSID de votre routeur WiFi
+        const char* password = "???????????"; // Clé WiFi de votre routeur
     #else
         #include <SPI.h>
         #include <Ethernet.h>
     #endif
     //
-    IPAddress CNF_IP_JEEDOM (192, 168, 1, 100); // ADRESSE IP du serveur JeeDom
+    IPAddress CNF_IP_JEEDOM (192, 168, 1, 2); // ADRESSE IP du serveur JeeDom
     //
-    IPAddress CNF_IP_ARDUIN (192, 168, 1, 42); // ADRESSE IP DE L'ARDUINO
+    IPAddress CNF_IP_ARDUIN (192, 168, 1, 203); // ADRESSE IP DE L'ARDUINO
     //                /!\ l'IP est en DHCP sur WeMOS /!\
     //          il vous faudra creer une reservation d'IP sur votre routeur pour eviter les soucis !
     //
@@ -208,7 +208,7 @@ String data;
 String request;
 byte API_LEN = 20;
 byte compteur = 0;
-String CNF_API = "................................................";    // Creation de la variable vide, jeedom l'enverra pour la stocker dans l'eeprom, NE PAS LA CHANGER ICI !
+String CNF_API = "....";    // Creation de la variable vide, jeedom l'enverra pour la stocker dans l'eeprom, NE PAS LA CHANGER ICI !
 byte RadioRXpin = 0;
 byte RadioTXPin = 0;
 byte pinToSet = 0;
@@ -578,15 +578,23 @@ void ReloadEEPROM() {
 
 
     }
-    /*
-    API_LEN = EEPROM.read(400);
-    for (int i = 0; i < API_LEN; i++) {
-        CNF_API[i] = EEPROM.read(401 + i); // Cle API Jeedom
-    }
-    Serial.println();
-    Serial.print(F("API="));
-    Serial.println(CNF_API);
-*/  
+
+    #if (CNF_BOARD_MODEL > 10)
+  
+      API_LEN = EEPROM.read(400);
+      if (API_LEN == 20) CNF_API = "....................";
+      if (API_LEN == 32) CNF_API = "................................";
+      if (API_LEN == 48) CNF_API = "................................................";
+      for (int i = 0; i < API_LEN; i++) {
+          CNF_API[i] = EEPROM.read(401 + i); // Cle API Jeedom
+      }
+      Serial.println();
+      Serial.print(F("API LEN:"));
+      Serial.println(API_LEN);
+      Serial.print(F("API="));
+      Serial.println(CNF_API);
+
+    #endif
             
 }// END OF ReloadEEPROM()
 
@@ -928,13 +936,15 @@ delay(1); // Compatibility WiFi Modules
         #if (CNF_BOARD_MODEL > 10 && CNF_BOARD_MODEL <= 29)
             if (DataSerie[0] == 'A' && DataSerie[1] == 'P') { // ****************************************************************************** AP
                 if (LenSerial >= (2 + 20)) {
-                    if (LenSerial <= (2 + 40)) {
-                      API_LEN = 20;
-                    } else {
-                      API_LEN = 48;
-                    }
+                    API_LEN = 20;
+                    if (LenSerial > (25)) { API_LEN = 32; }
+                    if (LenSerial > (36)) { API_LEN = 48; }
+                    Serial.print(F("Write API LEN:"));
+                    Serial.println(API_LEN);
                     EEPROM.write(400, API_LEN);
                     for (int i = 0; i < API_LEN; i++) {
+                        Serial.print(F("Write API @ "));
+                        Serial.println(i + 401);
                         EEPROM.write(i + 401, DataSerie[i + 2]); // Stockage de cle API en adresse 200
                     }
                     EEPROM.commit();
