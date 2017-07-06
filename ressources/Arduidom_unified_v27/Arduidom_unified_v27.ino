@@ -17,10 +17,6 @@
 /////////// /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\
 //
 //---------------------------------------------------------------------------------------------------------------------------------------------------
-//#define FOR_BOBOX59_ONLY    // LIGNE A RETIRER POUR DESACTIVER DES FONCTIONS QUI ME SONT PERSONELLES
-//#define DBG_PRINT_CP
-//
-//
 //---------------------------------------------------------------------------------------------------------------------------------------------------
 //--------------------------- CONFIGURATIONS DU RESEAU ARDUINO --------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -30,57 +26,45 @@
 // Le réseau ou wifi sont définis désormais par le CNF_BOARD_MODEL !
 //
 //
-//                                              TYPE DE BOARD
+//                                                 TYPE DE BOARD
 //                                      ----------------------------------
 //
-#define CNF_BOARD_MODEL 1  // Mettre la valeur correspondante au tableau ci-dessous !
+#define CNF_BOARD_MODEL 1  // <-- Mettre la valeur correspondante au tableau ci-dessous !
+//                         //     -------------------------------------------------------
+//                         // 
 //                         // 
 //                         // 1 = Arduino Generique (UNO / NANO / MEGA / etc) en USB
 //                         // 
-//                         // 11 = Arduino (UNO / NANO / MEGA / etc) en LAN avec un SHIELD ETHERNET
+//                         // 11 = Arduino (UNO / NANO / MEGA / etc) en LAN avec un SHIELD ETHERNET v1
+//                         // 12 = Arduino (UNO / NANO / MEGA / etc) en LAN avec un SHIELD ETHERNET v2 ( W5500 )
 //                         // 
-//                         // 21 = ESP 201 en WiFi (basé sur l'ESP8266, 22 pins + 4 pins   ----   Librairie "ESP8266WiFi" nécessaire
-//                         // 22 = WeMOS D1 Mini en WiFi (basé sur l'ESP8266, 16 pins + port USB
+//                         // 21 = ESP 201 en WiFi (basé sur l'ESP8266, 22 pins + 4 pins  ----  Librairie "ESP8266WiFi" nécessaire
+//                         // 22 = WeMOS D1 Mini en WiFi ( basé sur l'ESP8266, 16 pins + port USB )
+//                         // 
+//                         // 
 //
+// ********* CONFIGURATION DE GESTION DE SONDES DHT 11 / 22 *********
 //
 #define CNF_DHT 1 // Mettre à 0 pour desactiver les DHT pour gagner en espace Programme/Ram surtout sur les petits arduino ( 4,9% Firmware / 6,3% RAM sur un UNO)
 #define CNF_DHT11_COMPATIBILITY 0 // Mettre à 1 pour activer la compatibilité des Sondes DHT 11, Attention, un delai de 2 secondes par sonde Dht est ajouté !!!
 //
+//
+//
+// ********* CONFIGURATION DE GESTION DES EMMETEURS / RECEPTEURS RADIO *********
+//
 #define CNF_RADIO 1 // Mettre à 0 pour desactiver la RADIO pour gagner en espace Programme/Ram surtout sur les petits arduino ( consomme 18,8% Firmware / 23,9% RAM sur un UNO )
 //
-#if (CNF_BOARD_MODEL > 10 && CNF_BOARD_MODEL <= 29 )
-    #if (CNF_BOARD_MODEL > 20 && CNF_BOARD_MODEL <= 29 )
-        #include <ESP8266WiFi.h>
-        const char* ssid     = "???????????"; // SSID de votre routeur WiFi
-        const char* password = "???????????"; // Clé WiFi de votre routeur
-    #else
-        #include <SPI.h>
-        #include <Ethernet.h>
-    #endif
-    //
-    IPAddress CNF_IP_JEEDOM (192, 168, 1, 2); // ADRESSE IP du serveur JeeDom
-    //
-    IPAddress CNF_IP_ARDUIN (192, 168, 1, 203); // ADRESSE IP DE L'ARDUINO
-    //                /!\ l'IP est en DHCP sur WeMOS /!\
-    //          il vous faudra creer une reservation d'IP sur votre routeur pour eviter les soucis !
-    //
-    IPAddress CNF_IP_GATEWAY (192, 168, 1, 254);
-
-    IPAddress CNF_IP_MASK(255,255,255,0);
-    //
-    #define CNF_PORT_JEEDOM 80 // Port d'ecoute Jeedom
-    //
-    #define CNF_JEEDOM_BOX 1 // Mettre a 1 si c'est une jeedom Box ( pas de /jeedom dans le http pour les Jeedom BOX)
-    //
-    // CNF_AID est Désormais détecté automatiquement par jeedom ! Numéro de l'arduino dans jeedom
-#endif
-
+//#define DBG_PRINT_CP
+//
 //
 //
 //--------------------------------------------------------------------------------------------------------------------------------------------------
-// ---------------------- CONFIGURATIONS DES DIFFERENTES VARIABLES DISPONIBLE ----------------------------------------------------------------------
+//---------------------- CONFIGURATIONS DES DIFFERENTES VARIABLES DISPONIBLE ----------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------------------------------------
+//
 // DELAI D'EXECUTION ET MISE A JOUR DES CUSTOMS (ATTENTION A NE PAS METTRE TROP BAS POUR NE PAS SURCHARGER L'ARDUINO)
+// --------------------------------------------
+//
 #define CUSTOM_DELAY 30000 // Temps en MILLISECONDES ou est executé la partie Customs
 //
 #define DHT_DELAY 45000 // Temps en MILLISECONDES entre les captures et envoi des valeurs de sondes DHT
@@ -103,6 +87,9 @@
 
 
 
+
+
+
 /////////// /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\
 ///////////
 ///////////                                 La Librairie AHRCSwitch n'est plus necessaire non plus car integree directement dans le sketch
@@ -111,6 +98,55 @@
 ///////////
 /////////// /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+#if (CNF_BOARD_MODEL > 10 && CNF_BOARD_MODEL <= 29 )
+    #if (CNF_BOARD_MODEL > 20 && CNF_BOARD_MODEL <= 29 )
+        #include <ESP8266WiFi.h>
+        //
+        const char* ssid     = "???????????"; // SSID de votre routeur WiFi <<<<------<<<<<<<<<<<<<----------------- WiFi
+        const char* password = "***********"; // Clé WiFi de votre routeur  <<<<------<<<<<<<<<<<<<----------------- WiFi
+        //
+    #endif
+    #if (CNF_BOARD_MODEL == 11 )
+        #include <SPI.h>
+        #include <Ethernet.h>
+    #endif
+    #if (CNF_BOARD_MODEL == 12 )
+        #include <SPI.h>
+        #include <Ethernet2.h>
+    #endif
+    //
+    IPAddress CNF_IP_JEEDOM (192, 168, 1, 2); // ADRESSE IP du serveur JeeDom
+    //
+    IPAddress CNF_IP_ARDUIN (192, 168, 1, 203); // ADRESSE IP DE L'ARDUINO
+    //                /!\ l'IP est en DHCP sur WeMOS /!\
+    //          il vous faudra creer une reservation d'IP sur votre routeur pour eviter les soucis !
+    //
+    IPAddress CNF_IP_GATEWAY (192, 168, 1, 254);
+
+    IPAddress CNF_IP_MASK(255,255,255,0);
+    //
+    #define CNF_PORT_JEEDOM 80 // Port d'ecoute Jeedom
+    //
+    #define CNF_JEEDOM_BOX 1 // Mettre a 1 si c'est une jeedom Box ( pas de /jeedom dans le http pour les Jeedom BOX)
+    //
+    // CNF_AID est Désormais détecté automatiquement par jeedom ! Numéro de l'arduino dans jeedom
+#endif
 //
 //
 //
@@ -123,7 +159,7 @@
     //--------------------------------------------------------------------------------------------------------------------------------------------------
     //----------------------- CONFIGURATION DE L'ADRESSE MAC ARDUINO -----------------------------------------------------------------------------------
     //--------------------------------------------------------------------------------------------------------------------------------------------------
-    //byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; // ADRESSE MAC DE L'ARDUINO, A CHANGER DANS LE CAS DE PLUSIEURS ARDUINO DANS LE MEME RESEAU
+    byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; // ADRESSE MAC DE L'ARDUINO, A CHANGER DANS LE CAS DE PLUSIEURS ARDUINO DANS LE MEME RESEAU
     //--------------------------------------------------------------------------------------------------------------------------------------------------
     #if (CNF_BOARD_MODEL > 20 && CNF_BOARD_MODEL <= 29)
         WiFiServer server(58174);
@@ -620,7 +656,12 @@ void setup() {
     } else {
       Serial.println("OK");
     }
-    #if (CNF_BOARD_MODEL > 10 && CNF_BOARD_MODEL <= 19)
+    #if (CNF_BOARD_MODEL == 11)
+        Ethernet.begin(mac, CNF_IP_ARDUIN);
+        server.begin();
+        ReloadEEPROM();
+    #endif
+    #if (CNF_BOARD_MODEL == 12)
         Ethernet.begin(mac, CNF_IP_ARDUIN);
         server.begin();
         ReloadEEPROM();
@@ -947,7 +988,9 @@ delay(1); // Compatibility WiFi Modules
                         Serial.println(i + 401);
                         EEPROM.write(i + 401, DataSerie[i + 2]); // Stockage de cle API en adresse 200
                     }
-                    EEPROM.commit();
+                    #if (CNF_BOARD_MODEL > 20 && CNF_BOARD_MODEL <= 29 )
+                      EEPROM.commit();
+                    #endif
                     ReloadEEPROM();
                     Serial.print(DataSerie);
                     Serial.println("_OK");
@@ -966,7 +1009,9 @@ delay(1); // Compatibility WiFi Modules
                     EEPROM.write(231, (100 * DataSerie[5] + 10 * DataSerie[6] + DataSerie[7])); // Stockage de IP Jeedom en adresse 230
                     EEPROM.write(232, (100 * DataSerie[8] + 10 * DataSerie[9] + DataSerie[10])); // Stockage de IP Jeedom en adresse 230
                     EEPROM.write(233, (100 * DataSerie[11] + 10 * DataSerie[12] + DataSerie[13])); // Stockage de IP Jeedom en adresse 230
-                    EEPROM.commit();
+                    #if (CNF_BOARD_MODEL > 20 && CNF_BOARD_MODEL <= 29 )
+                      EEPROM.commit();
+                    #endif
                     ReloadEEPROM();
                     Serial.print(DataSerie);
                     Serial.println("_OK");
@@ -1172,12 +1217,7 @@ delay(1); // Compatibility WiFi Modules
         //
 
         #if (CNF_RADIO == 1)
-            #if defined(FOR_BOBOX59_ONLY)
-                if (digitalRead(7) == 0) RAZRadio = false;
-                if (mySwitch.available() || digitalRead(7) == 1) {
-            #else
                 if (mySwitch.available()) {
-            #endif
                 RFData = mySwitch.getReceivedValue();
                 RFAddr = mySwitch.getReceivedAddr();
                 RFProtocol = mySwitch.getReceivedProtocol();
@@ -1219,14 +1259,12 @@ delay(1); // Compatibility WiFi Modules
                     LastRadioMessage = millis();
 
                     /*
-                    #if defined(FOR_BOBOX59_ONLY) //////// NON UTILISE POUR AUTRES QUE BOBOX59
                         Serial.print("Raw data: ");
                         for (int i=0; i<= RFLenght*2; i++) {
                             Serial.print(raw[i]);
                             Serial.print(",");
                         }
                         Serial.println();
-                    #endif
                     */
                 }
 

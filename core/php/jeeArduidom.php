@@ -20,7 +20,7 @@ if ($_SERVER['REMOTE_ADDR'] != '') {
     $ip = $_SERVER['REMOTE_ADDR'];
 }
 
-$DebugTimetoDo = false;
+$DebugTimetoDo = true;
 $starttime = microtime(true);
 $rid = rand(10,99) . " ^ ";
 $steps = 0;
@@ -43,14 +43,16 @@ if (isset($argv)) {
         if (isset($argList[0]) && isset($argList[1])) {
             if ($argList[0] == 'arduid') {
                 if ($argList[1] == "net") { // Detection automatique de l'arduino ID pour les shield ethernet
+                    if ($DebugTimetoDo) log::add('arduidom', 'debug', "Recherche de l'ID par l'IP..." . $d);
                     $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1));
                     for ($d = 1; $d <= $nbArduinos; $d++) {
                         if (config::byKey('A' . $d . '_port', 'arduidom', '', true) == "Network") {
-                            if (config::byKey('A' . $d . '_port', 'daemonip', '', true) != "127.0.0.1") {
-                                if ($DebugTimetoDo) log::add('arduidom', 'debug', "Shield Ethernet detecté en ID:" . $d);
-                                $argList[1] = $d;
-                                $arduid = $d;
-
+                            if (config::byKey('A' . $d . '_daemonip', 'arduidom', '', true) != "127.0.0.1") {
+                                if (config::byKey('A' . $d . '_daemonip', 'arduidom', '', true) == $ip) {
+                                    if ($DebugTimetoDo) log::add('arduidom', 'debug', "Shield Ethernet detecté en ID:" . $d);
+                                        $argList[1] = $d;
+                                        $arduid = $d;
+                                }
                             }
                         }
                     }
@@ -78,13 +80,18 @@ if (!isset($argv)) {
         if (isset($argList[0]) && isset($argList[1])) {
             if ($argList[0] == 'arduid') {
                 if ($argList[1] == "net") { // Detection automatique de l'arduino ID pour les shield ethernet
+                    if ($DebugTimetoDo) log::add('arduidom', 'debug', "Recherche de l'ID par l'IP..." . $d);
                     $nbArduinos = intval(config::byKey("ArduinoQty", "arduidom", 1));
                     for ($d = 1; $d <= $nbArduinos; $d++) {
                         if (config::byKey('A' . $d . '_port', 'arduidom', '', true) == "Network") {
-                            if (config::byKey('A' . $d . '_port', 'daemonip', '', true) != "127.0.0.1") {
-                                if ($DebugTimetoDo) log::add('arduidom', 'debug', "Shield Ethernet detecté en ID:" . $d);
-                                $argList[1] = $d;
-                                $arduid = $d;
+                            if (config::byKey('A' . $d . '_daemonip', 'arduidom', '', true) != "127.0.0.1") {
+                                log::add('arduidom', 'debug', "Compare " . config::byKey('A' . $d . '_daemonip', 'arduidom', '', true) . " ?= " . $ip);
+                                if (config::byKey('A' . $d . '_daemonip', 'arduidom', '', true) == $ip) {
+                                    if ($DebugTimetoDo) log::add('arduidom', 'debug', "Shield Ethernet detecté en ID:" . $d);
+                                    $argList[1] = $d;
+                                    $arduid = $d;
+
+                                }
 
                             }
                         }
@@ -113,8 +120,8 @@ if (!isset($argv)) {
 
 if (!jeedom::apiAccess(init('api'))) {
     connection::failed();
-    echo 'Clef API non valide, vous n\'etes pas autorisé à effectuer cette action (arduidom)';
-    log::add('arduidom', 'error', "Clef API non valide, vous n\'etes pas autorisé à effectuer cette action");
+    echo 'Clef API (' . $_GET['api'] . ') non valide, vous n\'etes pas autorisé à effectuer cette action (arduidom)';
+    log::add('arduidom', 'error', "Clef API (" . $_GET['api'] . ") non valide, vous n\'etes pas autorisé à effectuer cette action");
     die();
 }
 //echo( $rid . "$$$" . $steps++ . " @ " . (microtime(true) - $starttime) . "\n\r");
