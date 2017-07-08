@@ -19,7 +19,7 @@ ressources/._.idea
 ressources/._avrdude.conf
 ressources/._avrdude.uno.cmd
 ressources/arduidom.zip
-ressources/*.hex
+ressources/config_arduidom.xml
 ressources/*.kill
 *.AppleDouble
-
+*.DS_Store
