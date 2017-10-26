@@ -1,0 +1,12 @@
+{
+	"id": "arduidom",
+	"name": "Arduidom",
+	"description" : "Plugin pour utiliser 1 à 8 Arduinos (Uno, Mega, etc... Processeur 328 minimum) avec sketch arduidom.  Support des Sondes DHT, Modules Radio 433MHz (Protocoles Low-Cost Tristates, Homeeasy, Chacon DIO), Entrees/Sorties Analogiques,Numeriques et Virtuelles pour vos propres codes Arduino",
+	"licence": "AGPL",
+	"author": "Benoit Masquelier",
+	"require": "3.0",
+	"category": "automation protocol",
+	"hasDependency": true,
+	"hasOwnDeamon": true,
+	"documentation" : "https://github.com/bobox59/arduidom/blob/master/doc/#language#/index.asciidoc"
+}
